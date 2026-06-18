@@ -1,0 +1,78 @@
+name: bargain-hunter
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # every 5 minutes; actual trigger ~5-15 min due to queue
+  workflow_dispatch:          # manual trigger for testing
+
+# Prevent overlapping runs if a prior one is still in progress
+concurrency:
+  group: bargain-hunter-run
+  cancel-in-progress: false   # don't cancel; let in-flight run finish
+
+permissions:
+  contents: write             # needed only for the daily state commit
+
+jobs:
+  hunt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2d  # v5.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -e . --quiet
+
+      # Restore hot state (velocity snapshots) from previous run.
+      # best-effort: missing cache means cold-start logic kicks in.
+      - name: Restore deal state (hot cache)
+        uses: actions/cache/restore@6849a6489940f00c2f30c0fb92c6274307ccb58a  # v4.1.2
+        with:
+          path: data/deals_state.json
+          key: deals-state-${{ github.run_id }}
+          restore-keys: deals-state-
+
+      - name: Run bargain hunter
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_SUBSCRIBERS_DB_ID: ${{ secrets.NOTION_SUBSCRIBERS_DB_ID }}
+          NOTION_SENT_LOG_DB_ID: ${{ secrets.NOTION_SENT_LOG_DB_ID }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          MAINTAINER_EMAIL: ${{ secrets.MAINTAINER_EMAIL }}
+        run: python -m bargain_hunter.main
+
+      # Save updated state (hot cache) for the next run.
+      - name: Save deal state (hot cache)
+        if: always()    # save even if main step failed so we don't lose snapshots
+        uses: actions/cache/save@6849a6489940f00c2f30c0fb92c6274307ccb58a  # v4.1.2
+        with:
+          path: data/deals_state.json
+          key: deals-state-${{ github.run_id }}
+
+      # Once per AET day: commit the state as a calibration seed / disaster recovery.
+      # Uses a simple time-based gate: commit only if the hour is 00 (AET midnight).
+      - name: Daily state commit (seed / calibration)
+        if: success()
+        env:
+          TZ: Australia/Sydney
+        run: |
+          hour=$(date +%H)
+          if [ "$hour" = "00" ] && [ -f data/deals_state.json ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add data/deals_state.json
+            # Only commit if there's actually something to commit
+            git diff --staged --quiet || git commit -m "chore: daily state snapshot [skip ci]"
+            git push
+          fi
