@@ -20,10 +20,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2d  # v5.3.0
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
@@ -33,7 +33,7 @@ jobs:
       # Restore hot state (velocity snapshots) from previous run.
       # best-effort: missing cache means cold-start logic kicks in.
       - name: Restore deal state (hot cache)
-        uses: actions/cache/restore@6849a6489940f00c2f30c0fb92c6274307ccb58a  # v4.1.2
+        uses: actions/cache/restore@v4
         with:
           path: data/deals_state.json
           key: deals-state-${{ github.run_id }}
@@ -55,7 +55,7 @@ jobs:
       # Save updated state (hot cache) for the next run.
       - name: Save deal state (hot cache)
         if: always()    # save even if main step failed so we don't lose snapshots
-        uses: actions/cache/save@6849a6489940f00c2f30c0fb92c6274307ccb58a  # v4.1.2
+        uses: actions/cache/save@v4
         with:
           path: data/deals_state.json
           key: deals-state-${{ github.run_id }}
