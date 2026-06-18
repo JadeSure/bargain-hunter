@@ -16,16 +16,16 @@ sources:
 scoring:
   window_minutes: 60               # velocity 计算窗口
   hot:
-    min_votes_gain_per_window: 15  # 窗口内净增票阈值 (V1)
+    min_votes_gain_per_window: 8   # 窗口内净增票阈值 (V1) — 调参中，原值 15
     early_burst_age_hours: 2       # 早期爆发判定时长 (H)
-    early_burst_min_votes: 25      # 早期爆发票数 (V2)
+    early_burst_min_votes: 15      # 早期爆发票数 (V2) — 调参中，原值 25
     velocity_top_percent: 10       # 进入活跃 deal 前 P% 视为候选
-    hot_threshold: 1.0             # 加权热度分阈值
+    hot_threshold: 0.6             # 加权热度分阈值 — 调参中，原值 1.0
     neg_vote_penalty_weight: 0.5   # 负票惩罚权重
     age_penalty_half_life_hours: 12  # 年龄衰减半衰期
     min_votes_for_percentile: 5    # 低于该票数不参与 top-percentile 候选,防低样本噪声
   watch:
-    default_min_discount_percent: 15
+    default_min_discount_percent: 10  # 调参中，原值 15
     unpriced_min_votes: 5          # 无法解析价格时,纯关键词提醒所需最低正票数
 
 dedup:
