@@ -99,9 +99,7 @@ class DedupStore:
             body: dict = {"filter": filter_payload, "page_size": 100}
             if cursor:
                 body["start_cursor"] = cursor
-            resp = notion.request(
-                path=f"databases/{db_id}/query", method="POST", body=body
-            )
+            resp = notion.request(path=f"databases/{db_id}/query", method="POST", body=body)
             for page in resp.get("results", []):
                 entry = _parse_sent_entry(page.get("properties", {}))
                 if entry:

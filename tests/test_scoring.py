@@ -19,13 +19,17 @@ from bargain_hunter.scoring import (
 # Price / discount extraction
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("text,expected_price,expected_was,expected_pct", [
-    ("Acme Widget $49.99 (was $79.99)", 49.99, 79.99, pytest.approx(37.5, abs=0.2)),
-    ("30% off all shoes $120", 120.0, pytest.approx(171.43, abs=0.2), 30.0),
-    ("TV $1,299 RRP $1,999", 1299.0, 1999.0, pytest.approx(35.0, abs=0.2)),
-    ("Free shipping on orders", None, None, None),
-    ("iPhone $799 (was $999) 20% off", 799.0, 999.0, 20.0),
-])
+
+@pytest.mark.parametrize(
+    "text,expected_price,expected_was,expected_pct",
+    [
+        ("Acme Widget $49.99 (was $79.99)", 49.99, 79.99, pytest.approx(37.5, abs=0.2)),
+        ("30% off all shoes $120", 120.0, pytest.approx(171.43, abs=0.2), 30.0),
+        ("TV $1,299 RRP $1,999", 1299.0, 1999.0, pytest.approx(35.0, abs=0.2)),
+        ("Free shipping on orders", None, None, None),
+        ("iPhone $799 (was $999) 20% off", 799.0, 999.0, 20.0),
+    ],
+)
 def test_extract_price_signals(text, expected_price, expected_was, expected_pct):
     price, was, pct = extract_price_signals(text)
     if expected_price is None:
@@ -44,8 +48,13 @@ def test_extract_price_signals(text, expected_price, expected_was, expected_pct)
 
 def _deal(**kwargs) -> Deal:
     defaults = dict(
-        source="ozbargain", deal_id="1", title="Test deal", url="https://ozbargain.com.au/node/1",
-        votes_pos=0, votes_neg=0, comment_count=0,
+        source="ozbargain",
+        deal_id="1",
+        title="Test deal",
+        url="https://ozbargain.com.au/node/1",
+        votes_pos=0,
+        votes_neg=0,
+        comment_count=0,
         posted_at=datetime.now(UTC) - timedelta(hours=1),
     )
     defaults.update(kwargs)
@@ -69,6 +78,7 @@ def test_enrich_deal_skips_if_already_set():
 # ---------------------------------------------------------------------------
 # Velocity
 # ---------------------------------------------------------------------------
+
 
 def _snaps(*votes_pos_list: int, spacing_minutes: int = 10) -> list[DealSnapshot]:
     base = datetime.now(UTC) - timedelta(minutes=spacing_minutes * len(votes_pos_list))
@@ -100,6 +110,7 @@ def test_velocity_growing():
 # ---------------------------------------------------------------------------
 # Hot candidacy and score
 # ---------------------------------------------------------------------------
+
 
 def _cfg() -> ScoringConfig:
     return ScoringConfig()

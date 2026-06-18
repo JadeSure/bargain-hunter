@@ -175,11 +175,11 @@ def compute_hot_score(
     v1 = hot.min_votes_gain_per_window or 1
     v2 = hot.early_burst_min_votes or 1
 
-    score = age_factor * (
-        vote_vel / v1
-        + math.log1p(deal.votes_pos) / math.log1p(v2)
-        + 0.25 * comment_vel
-    ) - hot.neg_vote_penalty_weight * neg_ratio
+    score = (
+        age_factor
+        * (vote_vel / v1 + math.log1p(deal.votes_pos) / math.log1p(v2) + 0.25 * comment_vel)
+        - hot.neg_vote_penalty_weight * neg_ratio
+    )
 
     return round(max(score, 0.0), 4)
 

@@ -122,9 +122,7 @@ def run(settings: Settings, dry_run: bool = False) -> dict:
 
     if not has_notion:
         if not dry_run:
-            log.warning(
-                "NOTION_TOKEN / DB IDs not set — skipping subscriber fetch and dedup."
-            )
+            log.warning("NOTION_TOKEN / DB IDs not set — skipping subscriber fetch and dedup.")
         state.save()
         return summary
 
@@ -174,7 +172,7 @@ def run(settings: Settings, dry_run: bool = False) -> dict:
                 notified_keys.add(deal.key)
 
         # Watch track
-        watch_hits = filter_watch_matches(active_deals, sub, settings.scoring.watch)
+        watch_hits = filter_watch_matches(active_deals, sub, settings.scoring.watch, now=now)
         for deal, reason in watch_hits:
             if len(items) >= remaining_cap:
                 break
@@ -205,13 +203,20 @@ def run(settings: Settings, dry_run: bool = False) -> dict:
                 trigger_sig = f"{item.track}:{item.reason[:200]}"
                 try:
                     dedup.record_sent(
-                        notion, sent_log_db, item.deal, sub,
-                        channel="Email", track=item.track, trigger_sig=trigger_sig,
+                        notion,
+                        sent_log_db,
+                        item.deal,
+                        sub,
+                        channel="Email",
+                        track=item.track,
+                        trigger_sig=trigger_sig,
                     )
                 except Exception as exc:
                     log.error(
                         "Sent Log write failed for %s / %s: %s",
-                        item.deal.key, sub.email, exc,
+                        item.deal.key,
+                        sub.email,
+                        exc,
                     )
                     summary["errors"].append(f"Sent log write error: {exc}")
 
@@ -259,8 +264,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Bargain Hunter deal alerter.")
     parser.add_argument("--dry-run", action="store_true", help="Print actions without sending.")
     parser.add_argument(
-        "--settings", type=Path, default=None,
-        help="Path to settings.yaml (default: config/settings.yaml)."
+        "--settings",
+        type=Path,
+        default=None,
+        help="Path to settings.yaml (default: config/settings.yaml).",
     )
     args = parser.parse_args()
 

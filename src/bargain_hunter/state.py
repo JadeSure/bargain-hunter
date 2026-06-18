@@ -85,9 +85,7 @@ class StateStore:
                 self._first_seen[key] = datetime.fromisoformat(ts_str)
 
         self._cold_start = raw.get("cold_start", False)
-        log.info(
-            "Loaded state: %d deals, cold_start=%s", len(self._data), self._cold_start
-        )
+        log.info("Loaded state: %d deals, cold_start=%s", len(self._data), self._cold_start)
 
     def save(self) -> None:
         """Prune old snapshots and write state to disk."""
@@ -106,9 +104,7 @@ class StateStore:
                 ]
                 for key, snaps in self._data.items()
             },
-            "first_seen": {
-                key: ts.isoformat() for key, ts in self._first_seen.items()
-            },
+            "first_seen": {key: ts.isoformat() for key, ts in self._first_seen.items()},
         }
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.write_text(json.dumps(payload, indent=2), encoding="utf-8")

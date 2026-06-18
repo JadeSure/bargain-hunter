@@ -27,10 +27,14 @@ class SMTPConfig:
         self.from_addr: str = os.environ.get("EMAIL_FROM", self.username)
 
     def validate(self) -> None:
-        missing = [k for k, v in [
-            ("SMTP_USERNAME", self.username),
-            ("SMTP_PASSWORD", self.password),
-        ] if not v]
+        missing = [
+            k
+            for k, v in [
+                ("SMTP_USERNAME", self.username),
+                ("SMTP_PASSWORD", self.password),
+            ]
+            if not v
+        ]
         if missing:
             raise RuntimeError(f"Missing SMTP env vars: {', '.join(missing)}")
 
