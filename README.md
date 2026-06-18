@@ -1,42 +1,86 @@
 # Bargain Hunter
 
-定时在 GitHub Actions 上抓取折扣信息(先做 OzBargain),用"涨势(velocity)"和"个人盯货清单"两条赛道判断哪些 deal 真正值得出手,再通过邮件(v1;Telegram 后期)推送给 Notion 里登记的订阅者。
+Runs every 5 minutes on GitHub Actions. Fetches deals from OzBargain, scores
+them for velocity ("爆款") and matches against personal watch lists ("盯货"),
+then sends email digests to subscribers managed in Notion.
 
-完整设计见 [`docs/PRD.md`](docs/PRD.md) 与 [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md)。
+Full design: [`docs/PRD.md`](docs/PRD.md) · [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md)
 
-## 两条赛道
+## Two tracks
 
-- **爆款 (Hot):** 投票涨速 + 票数 + 发布时长,过阈值才推给所有人。高精度、低频。
-- **盯货 (Watch):** 命中你在 Notion 里登记的关键词且有折扣,只推给关注该商品的人。
+- **Hot (爆款):** vote velocity + absolute votes + age. Passes a threshold → notifies all opt-in subscribers. Low frequency, high precision.
+- **Watch (盯货):** keyword hits your Notion watch list and meets a discount / target price condition. Only notifies the subscriber who listed that keyword.
 
-## 本地开发
+A deal that qualifies on both tracks is merged into one notification.
+
+## Quick start (local dev)
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 ruff check .
 pytest
 ```
 
-## 配置
-
-- 复制 `.env.example` 为 `.env` 填入密钥(Notion / SMTP;Telegram 后期可选)。`.env` 不入库。
-- 可调参数(阈值、窗口、来源开关)都在 `config/settings.yaml`,改完即生效。
-
-## 状态与隐私
-
-- `data/deals_state.json` 存 deal 票数滚动快照(非个人数据,用于算 velocity)。热状态走 best-effort GitHub Actions Cache,每天向 repo 落盘一次作调参与灾备种子,避免高频提交刷脏历史(见 PRD §10.1)。
-- 订阅者、关注清单、已发送记录只存私有 Notion;公开仓库不含任何个人数据。
-
-## 运行(开发中)
-
-完整 CLI 入口与 GitHub Actions 工作流将在后续阶段加入(见实施计划 Phase 8-9)。当前已可直接验证抓取与解析:
+Verify the OzBargain fetcher works:
 
 ```bash
-python -c "from bargain_hunter.sources.ozbargain import OzBargainSource as S; print(len(S().fetch()), 'deals fetched')"
+python -m bargain_hunter --dry-run
+# or the installed script:
+bargain-hunter --dry-run
 ```
 
-## 当前进度
+## First-time Notion setup
 
-OzBargain 抓取与解析已完成并有测试覆盖。后续:状态/velocity、评分、盯货匹配、Notion、通知、编排、Actions。
+1. Create a Notion integration at <https://www.notion.so/my-integrations> with
+   **Insert content** + **Read content** + **Update content** permissions.
+2. Create or pick an existing Notion page and share it with the integration.
+   Copy the page ID from its URL (32 hex chars after the last `/`).
+3. Run the setup script — it creates both databases and prints the IDs:
+
+   ```bash
+   export NOTION_TOKEN=secret_xxx
+   export NOTION_PARENT_PAGE_ID=<page-id>
+   python scripts/setup_notion.py
+   ```
+
+4. Copy the printed DB IDs into your `.env` (local) and GitHub Secrets (Actions).
+
+## Configuration
+
+Copy `.env.example` → `.env` and fill in credentials. `.env` is git-ignored.
+
+Tunable thresholds (velocity window, hot score, discount %, quiet hours, etc.)
+are in `config/settings.yaml` — edit and redeploy, no code change needed.
+
+## GitHub Actions setup
+
+Add these Secrets to the repo (Settings → Secrets and variables → Actions):
+
+| Secret | Description |
+|---|---|
+| `NOTION_TOKEN` | Integration token |
+| `NOTION_SUBSCRIBERS_DB_ID` | From `setup_notion.py` output |
+| `NOTION_SENT_LOG_DB_ID` | From `setup_notion.py` output |
+| `SMTP_HOST` | e.g. `smtp.gmail.com` |
+| `SMTP_PORT` | e.g. `587` |
+| `SMTP_USERNAME` | Your Gmail address |
+| `SMTP_PASSWORD` | Gmail app password (not your login password) |
+| `EMAIL_FROM` | Display name + address, e.g. `Bargain Hunter <you@gmail.com>` |
+| `MAINTAINER_EMAIL` | Where to send failure alerts |
+
+Then trigger a manual run with `workflow_dispatch` and watch the logs.
+The first run is always a cold start — it records a baseline but sends nothing.
+From the second run onwards, hot deals and watch matches will generate notifications.
+
+## Privacy
+
+- `data/deals_state.json` stores vote snapshots only (no personal data). It is
+  committed once per day (AET midnight) as a calibration seed; hot-path state
+  travels via GitHub Actions Cache.
+- Subscriber info, watch lists, and sent records live only in your private Notion.
+- Public repo logs never print subscriber identifiers — only aggregate counts.
+
+## Current state
+
+All phases implemented. Ready for Phase 10 (connect real Notion + SMTP, calibrate thresholds).

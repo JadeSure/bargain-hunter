@@ -13,6 +13,9 @@ dependencies = [
   "jinja2>=3.1",
 ]
 
+[project.scripts]
+bargain-hunter = "bargain_hunter.main:main"
+
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0",

@@ -1,0 +1,141 @@
+"""Create the Subscribers and Sent Log databases in Notion.
+
+Usage:
+  python scripts/setup_notion.py
+
+Requires:
+  NOTION_TOKEN          — integration token with "Insert content" capability
+  NOTION_PARENT_PAGE_ID — ID of the Notion page to create the DBs under
+                          (the page must be shared with your integration)
+
+On success, prints the two DB IDs.  Copy them into GitHub Secrets:
+  NOTION_SUBSCRIBERS_DB_ID
+  NOTION_SENT_LOG_DB_ID
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+
+from notion_client import Client
+
+
+def _require_env(name: str) -> str:
+    val = os.environ.get(name)
+    if not val:
+        print(f"ERROR: {name} is not set.", file=sys.stderr)
+        sys.exit(1)
+    return val
+
+
+# ---------------------------------------------------------------------------
+# Subscribers DB schema  (PRD §7)
+# ---------------------------------------------------------------------------
+
+SUBSCRIBERS_TITLE = "Bargain Hunter — Subscribers"
+
+SUBSCRIBERS_PROPS: dict = {
+    "Name": {"title": {}},
+    "Email": {"email": {}},
+    "Telegram Chat ID": {"rich_text": {}},
+    "Active": {"checkbox": {}},
+    "Channels": {
+        "multi_select": {
+            "options": [
+                {"name": "Email", "color": "blue"},
+                {"name": "Telegram", "color": "green"},
+            ]
+        }
+    },
+    "Subscribe Hot Deals": {"checkbox": {}},
+    "Watch Keywords": {"rich_text": {}},
+    "Min Discount %": {"number": {"format": "number"}},
+    "Categories": {
+        "multi_select": {
+            "options": [
+                {"name": "Computing", "color": "gray"},
+                {"name": "Gaming", "color": "purple"},
+                {"name": "Home & Garden", "color": "yellow"},
+                {"name": "Automotive", "color": "orange"},
+                {"name": "Travel", "color": "pink"},
+                {"name": "Clothing", "color": "red"},
+                {"name": "Health & Beauty", "color": "green"},
+            ]
+        }
+    },
+    "Max Alerts/Day": {"number": {"format": "number"}},
+    "Quiet Hours": {"rich_text": {}},
+}
+
+# ---------------------------------------------------------------------------
+# Sent Log DB schema  (PRD §7)
+# ---------------------------------------------------------------------------
+
+SENT_LOG_TITLE = "Bargain Hunter — Sent Log"
+
+SENT_LOG_PROPS: dict = {
+    "Deal ID": {"title": {}},
+    "Subscriber Email": {"email": {}},
+    "Channel": {
+        "select": {
+            "options": [
+                {"name": "Email", "color": "blue"},
+                {"name": "Telegram", "color": "green"},
+            ]
+        }
+    },
+    "Track": {
+        "select": {
+            "options": [
+                {"name": "hot", "color": "orange"},
+                {"name": "watch", "color": "blue"},
+                {"name": "mixed", "color": "purple"},
+            ]
+        }
+    },
+    "Sent At": {"date": {}},
+    "Price": {"number": {"format": "dollar"}},
+    "Discount %": {"number": {"format": "number"}},
+    "Votes Pos": {"number": {"format": "number"}},
+    "Heat Band": {"number": {"format": "number"}},
+    "Re-alert Count": {"number": {"format": "number"}},
+    "Trigger Signature": {"rich_text": {}},
+}
+
+
+def create_db(notion: Client, parent_page_id: str, title: str, props: dict) -> str:
+    resp = notion.databases.create(
+        parent={"type": "page_id", "page_id": parent_page_id},
+        title=[{"type": "text", "text": {"content": title}}],
+        properties=props,
+    )
+    return resp["id"].replace("-", "")
+
+
+def main() -> None:
+    token = _require_env("NOTION_TOKEN")
+    parent_page_id = _require_env("NOTION_PARENT_PAGE_ID")
+
+    notion = Client(auth=token)
+
+    print("Creating Subscribers database...")
+    subs_id = create_db(notion, parent_page_id, SUBSCRIBERS_TITLE, SUBSCRIBERS_PROPS)
+    print(f"  ✓ NOTION_SUBSCRIBERS_DB_ID={subs_id}")
+
+    print("Creating Sent Log database...")
+    log_id = create_db(notion, parent_page_id, SENT_LOG_TITLE, SENT_LOG_PROPS)
+    print(f"  ✓ NOTION_SENT_LOG_DB_ID={log_id}")
+
+    print()
+    print("Add these to your GitHub Secrets (Settings → Secrets → Actions):")
+    print(f"  NOTION_SUBSCRIBERS_DB_ID = {subs_id}")
+    print(f"  NOTION_SENT_LOG_DB_ID    = {log_id}")
+    print()
+    print("Also update your .env for local testing:")
+    print(f"  NOTION_SUBSCRIBERS_DB_ID={subs_id}")
+    print(f"  NOTION_SENT_LOG_DB_ID={log_id}")
+
+
+if __name__ == "__main__":
+    main()
