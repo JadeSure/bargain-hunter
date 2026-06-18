@@ -1,0 +1,38 @@
+# Bargain Hunter 可调参数。改完即生效,无需改代码。
+
+run:
+  dry_run: false
+  max_alerts_per_user_per_day: 10
+  timezone: "Australia/Sydney"      # AET/AEDT,统一用于每日上限、quiet hours、每日落盘边界
+
+sources:
+  ozbargain:
+    enabled: true
+    feed_url: "https://www.ozbargain.com.au/deals/feed"
+  camelcamelcamel:
+    enabled: false                 # 第二来源,增量接入,默认关闭
+    top_drops_url: "https://au.camelcamelcamel.com/top_drops"
+
+scoring:
+  window_minutes: 60               # velocity 计算窗口
+  hot:
+    min_votes_gain_per_window: 15  # 窗口内净增票阈值 (V1)
+    early_burst_age_hours: 2       # 早期爆发判定时长 (H)
+    early_burst_min_votes: 25      # 早期爆发票数 (V2)
+    velocity_top_percent: 10       # 进入活跃 deal 前 P% 视为候选
+    hot_threshold: 1.0             # 加权热度分阈值
+    neg_vote_penalty_weight: 0.5   # 负票惩罚权重
+    age_penalty_half_life_hours: 12  # 年龄衰减半衰期
+    min_votes_for_percentile: 5    # 低于该票数不参与 top-percentile 候选,防低样本噪声
+  watch:
+    default_min_discount_percent: 15
+    unpriced_min_votes: 5          # 无法解析价格时,纯关键词提醒所需最低正票数
+
+dedup:
+  lookback_days: 7                 # 每轮读取近窗 Sent Log 做本地去重
+  max_realerts_per_deal: 1         # 同一 deal 对同一人最多再提醒次数
+  significant_price_drop_percent: 5.0
+  heat_band_size_votes: 50         # 票数每跨一个档位可视为实质变好
+
+cold_start:
+  ignore_deals_older_than_hours: 6  # 首次见到时,早于该时长的旧 deal 不推

@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets / local env
+.env
+.env.local
+
+# OS
+.DS_Store
+
+# Local tooling state
+.omc/
+.claude/
+
+# Note: data/ is intentionally tracked (non-personal deal history powers velocity).
