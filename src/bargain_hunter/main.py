@@ -16,7 +16,7 @@ import traceback
 from datetime import UTC, datetime
 from pathlib import Path
 
-from .config import Settings, load_settings
+from .config import Settings, load_dotenv, load_settings
 from .dedup import DedupStore
 from .matching import filter_watch_matches
 from .models import Deal
@@ -255,6 +255,7 @@ def _alert_if_needed(summary: dict, settings: Settings) -> None:
 
 
 def main() -> None:
+    load_dotenv()  # load .env if present; real env vars (Actions Secrets) always win
     parser = argparse.ArgumentParser(description="Bargain Hunter deal alerter.")
     parser.add_argument("--dry-run", action="store_true", help="Print actions without sending.")
     parser.add_argument(

@@ -59,10 +59,12 @@ def fetch_subscribers(
     results: list[Subscriber] = []
     cursor = None
     while True:
-        kwargs: dict = {"database_id": db_id, "page_size": 100}
+        body: dict = {"page_size": 100}
         if cursor:
-            kwargs["start_cursor"] = cursor
-        resp = notion.databases.query(**kwargs)
+            body["start_cursor"] = cursor
+        resp = notion.request(
+            path=f"databases/{db_id}/query", method="POST", body=body
+        )
         for page in resp.get("results", []):
             props = page.get("properties", {})
             try:
@@ -110,4 +112,4 @@ def make_notion_client() -> Client:
     token = os.environ.get("NOTION_TOKEN")
     if not token:
         raise RuntimeError("NOTION_TOKEN environment variable not set.")
-    return Client(auth=token)
+    return Client(auth=token, notion_version="2022-06-28")

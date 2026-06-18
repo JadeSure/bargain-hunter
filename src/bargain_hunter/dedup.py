@@ -96,14 +96,12 @@ class DedupStore:
         cursor = None
         count = 0
         while True:
-            kwargs: dict = {
-                "database_id": db_id,
-                "filter": filter_payload,
-                "page_size": 100,
-            }
+            body: dict = {"filter": filter_payload, "page_size": 100}
             if cursor:
-                kwargs["start_cursor"] = cursor
-            resp = notion.databases.query(**kwargs)
+                body["start_cursor"] = cursor
+            resp = notion.request(
+                path=f"databases/{db_id}/query", method="POST", body=body
+            )
             for page in resp.get("results", []):
                 entry = _parse_sent_entry(page.get("properties", {}))
                 if entry:
@@ -251,4 +249,4 @@ def make_notion_client() -> Client:
     token = os.environ.get("NOTION_TOKEN")
     if not token:
         raise RuntimeError("NOTION_TOKEN environment variable not set.")
-    return Client(auth=token)
+    return Client(auth=token, notion_version="2022-06-28")
