@@ -6,34 +6,7 @@ Full design: [`docs/PRD.md`](docs/PRD.md) · Implementation notes: [`docs/IMPLEM
 
 ## How it works
 
-```mermaid
-flowchart TD
-    T1["⏱ GitHub Actions cron\nevery 5 min"] & T2["🌐 cron-job.org\nexternal trigger"] --> FETCH
-
-    subgraph FETCH["Sources"]
-        OZB[OzBargain RSS\nvotes · velocity]
-        CCC[CamelCamelCamel AU\nprice drops · discount %]
-    end
-
-    FETCH --> ENRICH["Enrich + filter\nextract price · discount · drop expired deals"]
-    CACHE[("Actions Cache\ndeals_state.json")] -->|restore| SNAP
-    ENRICH --> SNAP["Record vote snapshots\n24 h rolling window"]
-    SNAP -->|save| CACHE
-
-    SNAP --> HOT["🔥 Hot score\nvote velocity × age decay · threshold 1.2"]
-    SNAP --> WATCH["👀 Watch match\nkeyword · ≥ 15 votes · age ≤ 36 h"]
-
-    HOT & WATCH --> QH{{"Quiet hours?\n22:00 – 07:00 AEST"}}
-    QH -. skip .-> CACHE
-    QH -- "07:00 – 22:00" --> NOTION
-
-    NOTION[("Notion\nSubscribers · Sent Log")] --> DEDUP["Dedup\n7-day window · daily cap"]
-    DEDUP --> EMAIL["📧 Email digest\nSMTP / Gmail"]
-    EMAIL -->|log sent| NOTION
-
-    EMAIL -- "👍/👎\nHMAC-signed links" --> CFW["Cloudflare Worker"]
-    CFW --> FDB[("Notion\nFeedback DB")]
-```
+![Architecture](docs/architecture.svg)
 
 ## Two tracks
 

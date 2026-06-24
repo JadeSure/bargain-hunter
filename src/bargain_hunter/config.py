@@ -43,6 +43,12 @@ class HotConfig(StrictConfigModel):
     neg_vote_penalty_weight: float = 0.5
     age_penalty_half_life_hours: float = 12.0
     min_votes_for_percentile: int = 5
+    # Absolute minimum votes before a deal is even considered for hot candidacy.
+    # Prevents very new posts with 2-3 votes (but high comment velocity) from inflating scores.
+    min_votes_to_candidate: int = 10
+    # Weight applied to comment velocity in the hot score formula.
+    # Comments are noisy early on; 0.1 prevents comment bursts from dominating.
+    comment_velocity_weight: float = 0.25
 
 
 class WatchConfig(StrictConfigModel):

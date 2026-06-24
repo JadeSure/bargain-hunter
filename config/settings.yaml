@@ -18,14 +18,23 @@ sources:
 scoring:
   window_minutes: 60               # velocity 计算窗口
   hot:
-    min_votes_gain_per_window: 20  # 窗口内净增票阈值 (V1)，提高以减少误报
+    # V1=20: p95 of 60-min velocity in observed data (73 active deals, p95=22/h)
+    min_votes_gain_per_window: 20  # 窗口内净增票阈值 (V1)
     early_burst_age_hours: 2       # 早期爆发判定时长 (H)
-    early_burst_min_votes: 30      # 早期爆发票数 (V2)，提高门槛
+    # V2=30: p90 of votes_pos in observed data is 44; 30 targets top ~25%
+    early_burst_min_votes: 30      # 早期爆发票数 (V2)
     velocity_top_percent: 10       # 进入活跃 deal 前 P% 视为候选
-    hot_threshold: 1.2             # 加权热度分阈值，提高以减少质量差的推送
+    # threshold=1.5: calibrated on 143 observed deals → ~7% fire rate (10/143)
+    hot_threshold: 1.5             # 加权热度分阈值
     neg_vote_penalty_weight: 0.5   # 负票惩罚权重
     age_penalty_half_life_hours: 12  # 年龄衰减半衰期
     min_votes_for_percentile: 10   # 低于该票数不参与 top-percentile 候选
+    # Data finding: deals with <10 votes but high comment velocity scored 12.4 (false positives).
+    # Floor gates out these noise cases before scoring.
+    min_votes_to_candidate: 10     # 进入热度候选所需的最低票数（数据校准）
+    # Data finding: comment velocity at 0.25 weight dominated scores (e.g. 10+ pts from comments alone).
+    # 0.1 still rewards comment engagement without letting it override vote signal.
+    comment_velocity_weight: 0.1   # 评分公式中 comment velocity 的权重（降低以减少噪声）
   watch:
     min_votes: 15                  # 关键词命中后,需要至少这么多正票才推送（提高到 15）
     min_discount_percent: 15       # 没有票数时(如 CCC)的折扣门槛（提高到 15%）

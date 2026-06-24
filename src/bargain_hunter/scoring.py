@@ -199,11 +199,9 @@ def compute_hot_score(
     v1 = hot.min_votes_gain_per_window or 1
     v2 = hot.early_burst_min_votes or 1
 
-    score = (
-        age_factor
-        * (vote_vel / v1 + math.log1p(deal.votes_pos) / math.log1p(v2) + 0.25 * comment_vel)
-        - hot.neg_vote_penalty_weight * neg_ratio
-    )
+    vote_term = vote_vel / v1 + math.log1p(deal.votes_pos) / math.log1p(v2)
+    comment_term = hot.comment_velocity_weight * comment_vel
+    score = age_factor * (vote_term + comment_term) - hot.neg_vote_penalty_weight * neg_ratio
 
     return round(max(score, 0.0), 4)
 
@@ -223,6 +221,11 @@ def is_hot_candidate(
     """Return True if deal passes at least one of the three hot candidacy gates."""
     now = now or datetime.now(UTC)
     hot = cfg.hot
+
+    # Absolute floor: no deal with fewer votes than this can be a hot candidate.
+    # Data-backed: prevents 2-3 vote posts with high comment velocity from scoring high.
+    if deal.votes_pos < hot.min_votes_to_candidate:
+        return False
 
     # Gate 1: window vote gain
     if len(snapshots) >= 2:

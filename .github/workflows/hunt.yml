@@ -68,8 +68,7 @@ jobs:
             data/observations
           key: deals-state-${{ github.run_id }}
 
-      # Once per AET day: commit the state as a calibration seed / disaster recovery.
-      # Uses a simple time-based gate: commit only if the hour is 00 (AET midnight).
+      # Once per AET day: commit deals_state.json as a calibration seed / disaster-recovery baseline.
       - name: Daily state commit (seed / calibration)
         if: success()
         env:
@@ -77,13 +76,26 @@ jobs:
         run: |
           today=$(date +%Y-%m-%d)
           last=$(git log -1 --format=%cd --date=format-local:%Y-%m-%d -- data/deals_state.json 2>/dev/null || true)
-          # Commit at most once per AET day. The midnight hour fires ~12 runs;
-          # gating on "last commit date != today" (not hour==00) keeps it to one.
+          # Commit at most once per AET day.
           if [ "$last" != "$today" ] && [ -f data/deals_state.json ]; then
             git config user.name  "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add data/deals_state.json
-            if [ -d data/observations ]; then git add data/observations; fi
-            git diff --staged --quiet || git commit -m "chore: daily state + observations [skip ci]"
+            git diff --staged --quiet || git commit -m "chore: daily state snapshot [skip ci]"
             git push
           fi
+
+      # Every successful run: commit new observation rows so calibration data accumulates
+      # continuously, not just once per day. Observations are the feature log used to tune
+      # thresholds; missing a run means a gap in the training set.
+      - name: Commit observations (calibration log)
+        if: success()
+        run: |
+          if [ ! -d data/observations ] || [ -z "$(ls data/observations/*.jsonl 2>/dev/null)" ]; then
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/observations/
+          git diff --staged --quiet || git commit -m "chore: observations [skip ci]"
+          git push
