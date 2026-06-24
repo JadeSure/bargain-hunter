@@ -7,6 +7,7 @@ import pytest
 from bargain_hunter.config import ScoringConfig
 from bargain_hunter.models import Deal, DealSnapshot
 from bargain_hunter.scoring import (
+    compute_click_velocity,
     compute_hot_score,
     compute_vote_velocity,
     enrich_deal,
@@ -157,3 +158,31 @@ def test_is_hot_end_to_end():
     # Velocity: went from 0 to 30 in 30 min = 60 v/hr >> V1=15
     snaps = _snaps(0, 15, 30, spacing_minutes=15)
     assert is_hot(d, snaps, cfg)
+
+
+# ---------------------------------------------------------------------------
+# Click velocity
+# ---------------------------------------------------------------------------
+
+
+def _click_snaps(*clicks: int, spacing_minutes: int = 15) -> list[DealSnapshot]:
+    base = datetime.now(UTC) - timedelta(minutes=spacing_minutes * len(clicks))
+    return [
+        DealSnapshot(
+            ts=base + timedelta(minutes=i * spacing_minutes),
+            votes_pos=0,
+            votes_neg=0,
+            comment_count=0,
+            click_count=c,
+        )
+        for i, c in enumerate(clicks)
+    ]
+
+
+def test_click_velocity_zero_for_single_snapshot():
+    assert compute_click_velocity(_click_snaps(5), window_minutes=60) == 0.0
+
+
+def test_click_velocity_growing():
+    # 0 -> 10 -> 30 clicks: positive rate
+    assert compute_click_velocity(_click_snaps(0, 10, 30), window_minutes=60) > 0

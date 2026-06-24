@@ -73,6 +73,7 @@ class StateStore:
                             votes_pos=s["votes_pos"],
                             votes_neg=s["votes_neg"],
                             comment_count=s["comment_count"],
+                            click_count=s.get("click_count", 0),
                         )
                     )
                 except (KeyError, ValueError):
@@ -99,6 +100,7 @@ class StateStore:
                         "votes_pos": s.votes_pos,
                         "votes_neg": s.votes_neg,
                         "comment_count": s.comment_count,
+                        "click_count": s.click_count,
                     }
                     for s in snaps
                 ]
@@ -123,6 +125,7 @@ class StateStore:
             votes_pos=deal.votes_pos,
             votes_neg=deal.votes_neg,
             comment_count=deal.comment_count,
+            click_count=deal.click_count,
         )
         self._data.setdefault(key, []).append(snap)
         self._first_seen.setdefault(key, now)
@@ -148,23 +151,29 @@ class StateStore:
     # Cold-start / age guard (FR8)
     # ------------------------------------------------------------------
 
-    def should_notify(self, deal: Deal, ignore_older_than_hours: float) -> bool:
-        """Return False during cold start, or if the deal pre-dates the system.
+    def should_notify(
+        self,
+        deal: Deal,
+        ignore_older_than_hours: float,
+        is_first_sighting: bool,
+        now: datetime | None = None,
+    ) -> bool:
+        """Return False during cold start, or if a newly-seen deal is stale.
 
-        On cold start we record snapshots but suppress notifications entirely.
-        After cold start, deals whose posted_at pre-dates our first-seen window
-        are treated as old inventory and not pushed.
+        ``is_first_sighting`` MUST be captured *before* this run's snapshots are
+        recorded (see ``main.run``). Otherwise ``record()`` would have already
+        populated first-seen for every deal and the staleness guard below could
+        never fire. On the first run we suppress everything (cold start). After
+        that, a deal we are seeing for the first time is only eligible if it
+        isn't already old inventory.
         """
         if self._cold_start:
             return False
-        key = deal.key
-        first = self._first_seen.get(key)
-        if first is None:
-            # Seen for the first time this run — not cold start, so allow it
-            # only if the deal itself isn't stale.
+        if is_first_sighting:
             if deal.posted_at is None:
                 return True
-            age = (datetime.now(UTC) - deal.posted_at).total_seconds() / 3600
+            now = now or datetime.now(UTC)
+            age = (now - deal.posted_at).total_seconds() / 3600
             return age <= ignore_older_than_hours
         return True
 

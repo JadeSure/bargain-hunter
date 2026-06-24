@@ -52,7 +52,7 @@ class EmailSender:
     ) -> bool:
         """Render and send a deal digest.  Returns True on success."""
         if not subscriber.email:
-            log.warning("Subscriber %s has no email; skipping.", subscriber.name)
+            log.warning("Subscriber %s has no email; skipping.", subscriber.ref)
             return False
 
         html = render_email(subscriber, items)
@@ -61,7 +61,7 @@ class EmailSender:
         if self.dry_run:
             log.info(
                 "[DRY RUN] Would email %s (%d deals): %s",
-                subscriber.email,
+                subscriber.ref,
                 len(items),
                 subject,
             )
@@ -81,10 +81,10 @@ class EmailSender:
                 server.login(self.cfg.username, self.cfg.password)
                 server.sendmail(self.cfg.from_addr, [subscriber.email], msg.as_string())
 
-            log.info("Emailed %s: %d deals.", subscriber.email, len(items))
+            log.info("Emailed %s: %d deals.", subscriber.ref, len(items))
             return True
         except Exception as exc:
-            log.error("Failed to email %s: %s", subscriber.email, exc)
+            log.error("Failed to email %s: %s", subscriber.ref, exc)
             return False
 
 

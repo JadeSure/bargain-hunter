@@ -144,6 +144,30 @@ def compute_comment_velocity(
     return max(delta / delta_hours, 0.0) if delta_hours > 0 else 0.0
 
 
+def compute_click_velocity(
+    snapshots: list[DealSnapshot],
+    window_minutes: int,
+    now: datetime | None = None,
+) -> float:
+    """Return outbound-click growth rate (clicks/hour) over the window.
+
+    Clicks are a direct "people are acting on this" signal and often move
+    earlier than votes settle.  Logged for calibration; not yet scored.
+    """
+    if len(snapshots) < 2:
+        return 0.0
+    now = now or datetime.now(UTC)
+    window_start = now.timestamp() - window_minutes * 60
+    latest = snapshots[-1]
+    baseline = snapshots[0]
+    for snap in snapshots:
+        if snap.ts.timestamp() <= window_start:
+            baseline = snap
+    delta = latest.click_count - baseline.click_count
+    delta_hours = (latest.ts.timestamp() - baseline.ts.timestamp()) / 3600
+    return max(delta / delta_hours, 0.0) if delta_hours > 0 else 0.0
+
+
 # ---------------------------------------------------------------------------
 # Hot score (PRD §6.2)
 # ---------------------------------------------------------------------------

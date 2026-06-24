@@ -59,22 +59,30 @@ SUBSCRIBERS_PROPS: dict = {
     "Email": {"email": {}},
     "Telegram Chat ID": {"rich_text": {}},
     "Active": {"checkbox": {}},
-    "Channels": {"multi_select": {"options": [
-        {"name": "Email", "color": "blue"},
-        {"name": "Telegram", "color": "green"},
-    ]}},
+    "Channels": {
+        "multi_select": {
+            "options": [
+                {"name": "Email", "color": "blue"},
+                {"name": "Telegram", "color": "green"},
+            ]
+        }
+    },
     "Subscribe Hot Deals": {"checkbox": {}},
     "Watch Keywords": {"rich_text": {}},
     "Min Discount %": {"number": {"format": "number"}},
-    "Categories": {"multi_select": {"options": [
-        {"name": "Computing", "color": "gray"},
-        {"name": "Gaming", "color": "purple"},
-        {"name": "Home & Garden", "color": "yellow"},
-        {"name": "Automotive", "color": "orange"},
-        {"name": "Travel", "color": "pink"},
-        {"name": "Clothing", "color": "red"},
-        {"name": "Health & Beauty", "color": "green"},
-    ]}},
+    "Categories": {
+        "multi_select": {
+            "options": [
+                {"name": "Computing", "color": "gray"},
+                {"name": "Gaming", "color": "purple"},
+                {"name": "Home & Garden", "color": "yellow"},
+                {"name": "Automotive", "color": "orange"},
+                {"name": "Travel", "color": "pink"},
+                {"name": "Clothing", "color": "red"},
+                {"name": "Health & Beauty", "color": "green"},
+            ]
+        }
+    },
     "Max Alerts/Day": {"number": {"format": "number"}},
     "Quiet Hours": {"rich_text": {}},
 }
@@ -88,15 +96,23 @@ SENT_LOG_TITLE = "Bargain Hunter — Sent Log"
 SENT_LOG_PROPS: dict = {
     "Deal ID": {"title": {}},
     "Subscriber Email": {"email": {}},
-    "Channel": {"select": {"options": [
-        {"name": "Email", "color": "blue"},
-        {"name": "Telegram", "color": "green"},
-    ]}},
-    "Track": {"select": {"options": [
-        {"name": "hot", "color": "orange"},
-        {"name": "watch", "color": "blue"},
-        {"name": "mixed", "color": "purple"},
-    ]}},
+    "Channel": {
+        "select": {
+            "options": [
+                {"name": "Email", "color": "blue"},
+                {"name": "Telegram", "color": "green"},
+            ]
+        }
+    },
+    "Track": {
+        "select": {
+            "options": [
+                {"name": "hot", "color": "orange"},
+                {"name": "watch", "color": "blue"},
+                {"name": "mixed", "color": "purple"},
+            ]
+        }
+    },
     "Sent At": {"date": {}},
     "Price": {"number": {"format": "dollar"}},
     "Discount %": {"number": {"format": "number"}},
@@ -104,6 +120,44 @@ SENT_LOG_PROPS: dict = {
     "Heat Band": {"number": {"format": "number"}},
     "Re-alert Count": {"number": {"format": "number"}},
     "Trigger Signature": {"rich_text": {}},
+}
+
+# ---------------------------------------------------------------------------
+# Feedback DB schema  (labels for calibration: 👍/👎 from customers + manual)
+# ---------------------------------------------------------------------------
+
+FEEDBACK_TITLE = "Bargain Hunter — Feedback"
+
+FEEDBACK_PROPS: dict = {
+    "Deal ID": {"title": {}},
+    "Subscriber Email": {"email": {}},
+    "Verdict": {
+        "select": {
+            "options": [
+                {"name": "up", "color": "green"},
+                {"name": "down", "color": "red"},
+            ]
+        }
+    },
+    "At": {"date": {}},
+    "Source": {
+        "select": {
+            "options": [
+                {"name": "customer", "color": "blue"},
+                {"name": "manual", "color": "gray"},
+            ]
+        }
+    },
+    # Filled in by you (or derived from Verdict) — the calibration label.
+    "Label": {
+        "select": {
+            "options": [
+                {"name": "Good", "color": "green"},
+                {"name": "Meh", "color": "yellow"},
+                {"name": "Bad", "color": "red"},
+            ]
+        }
+    },
 }
 
 
@@ -135,6 +189,10 @@ def main() -> None:
     log_id = create_db(token, parent_page_id, SENT_LOG_TITLE, SENT_LOG_PROPS)
     print(f"  ✓ NOTION_SENT_LOG_DB_ID={log_id}")
 
+    print("Creating Feedback database...")
+    feedback_id = create_db(token, parent_page_id, FEEDBACK_TITLE, FEEDBACK_PROPS)
+    print(f"  ✓ NOTION_FEEDBACK_DB_ID={feedback_id}")
+
     print()
     print("Add these to your GitHub Secrets (Settings → Secrets → Actions):")
     print(f"  NOTION_SUBSCRIBERS_DB_ID = {subs_id}")
@@ -143,6 +201,9 @@ def main() -> None:
     print("Also update your .env for local testing:")
     print(f"  NOTION_SUBSCRIBERS_DB_ID={subs_id}")
     print(f"  NOTION_SENT_LOG_DB_ID={log_id}")
+    print()
+    print("The Feedback DB id goes into the Cloudflare worker (not the app):")
+    print(f"  feedback-worker/wrangler.jsonc  ->  FEEDBACK_DB_ID = {feedback_id}")
 
 
 if __name__ == "__main__":

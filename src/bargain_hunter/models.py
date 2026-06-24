@@ -1,5 +1,6 @@
 """Core domain models shared across sources, scoring, matching and notifications."""
 
+import hashlib
 from datetime import datetime
 from typing import Literal
 
@@ -42,6 +43,7 @@ class DealSnapshot(BaseModel):
     votes_pos: int
     votes_neg: int
     comment_count: int
+    click_count: int = 0
 
 
 class Subscriber(BaseModel):
@@ -57,6 +59,17 @@ class Subscriber(BaseModel):
     min_discount_percent: float | None = None
     categories: list[str] = Field(default_factory=list)
     max_alerts_per_day: int = 10
+
+    @property
+    def ref(self) -> str:
+        """Non-PII, stable handle for logs.
+
+        Public-repo Actions logs must never print subscriber identifiers
+        (email / name / telegram id). This hashed reference stays correlatable
+        across log lines without leaking who the person is.
+        """
+        seed = self.email or self.telegram_chat_id or self.name or "?"
+        return "sub-" + hashlib.sha256(seed.encode("utf-8")).hexdigest()[:8]
 
 
 class Notification(BaseModel):
