@@ -54,6 +54,7 @@ jobs:
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           MAINTAINER_EMAIL: ${{ secrets.MAINTAINER_EMAIL }}
           FEEDBACK_BASE_URL: ${{ vars.FEEDBACK_BASE_URL }}   # public worker URL (repo variable)
+          FEEDBACK_HMAC_SECRET: ${{ secrets.FEEDBACK_HMAC_SECRET }}
           HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL }}    # dead-man's-switch ping
         run: python -m bargain_hunter.main
 
