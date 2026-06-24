@@ -4,18 +4,16 @@ Keyword syntax (all parts optional, order matters):
   PHRASE [<=PRICE] [@HH:MM | @YYYY-MM-DDTHH:MM]
 
 Examples:
-  iPhone 17 Pro <=1800
+  iPhone 17 Pro
   BWS @19:00                   (active today until 19:00 AET)
   Sony WH <=300 @2026-07-01T23:59
-  Dyson                        (plain keyword, noise guard applies)
+  Dyson <=499
 
 A deal matches when:
   - the keyword phrase appears in the title or description (case-insensitive), AND
   - the keyword has not expired, AND
-  - at least one price condition is met:
-      * discount_percent >= subscriber's min_discount_percent, OR
-      * price <= target price (if specified), OR
-      * noise guard: no discount/target → require min votes
+  - votes_pos >= cfg.min_votes (noise guard — confirms it's a real deal), AND
+  - if <=PRICE is specified: deal.price is known and at or below that target
 """
 
 from __future__ import annotations
@@ -90,36 +88,37 @@ def match_watch(
     """
     now = now or datetime.now(UTC)
     search_text = deal.title + " " + (deal.description or "")
-    min_discount = subscriber.min_discount_percent or cfg.default_min_discount_percent
 
     for raw_kw in subscriber.watch_keywords:
         keyword, target_price, expiry = _parse_keyword(raw_kw)
         if not keyword:
             continue
 
-        # Skip expired keywords
         if expiry is not None and now >= expiry:
             continue
 
         if not _keyword_hits(keyword, search_text):
             continue
 
-        # Keyword matched — evaluate price conditions.
-        has_discount = deal.discount_percent is not None
-        has_price = deal.price is not None
+        # Noise guard: votes (community deals) OR discount (price-tracker deals like CCC).
+        passes_votes = deal.votes_pos >= cfg.min_votes
+        passes_discount = (
+            cfg.min_discount_percent is not None
+            and deal.discount_percent is not None
+            and deal.discount_percent >= cfg.min_discount_percent
+        )
+        if not (passes_votes or passes_discount):
+            continue
 
-        # Condition 1: explicit % discount met
-        if has_discount and deal.discount_percent >= min_discount:
-            return True, f'"{keyword}" matched, {deal.discount_percent:.0f}% off'
-
-        # Condition 2: price at or below target
-        if target_price is not None and has_price and deal.price <= target_price:
+        # Optional price ceiling — if specified, deal price must be known and within target.
+        if target_price is not None:
+            if deal.price is None or deal.price > target_price:
+                continue
             return True, f'"{keyword}" matched, ${deal.price:.2f} ≤ ${target_price:.2f}'
 
-        # Condition 3: no price signal → noise guard (min votes required)
-        no_price_verdict = not has_discount and target_price is None
-        if no_price_verdict and deal.votes_pos >= cfg.unpriced_min_votes:
+        if passes_votes:
             return True, f'"{keyword}" matched ({deal.votes_pos} votes)'
+        return True, f'"{keyword}" matched, {deal.discount_percent:.0f}% off'
 
     return False, ""
 

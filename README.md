@@ -1,15 +1,22 @@
 # Bargain Hunter
 
-Runs every 5 minutes via an external cron trigger → GitHub Actions. Fetches deals from OzBargain, scores them for velocity (爆款/Hot) and matches against personal watch lists (盯货/Watch), then sends email digests to subscribers managed in Notion.
+Runs every 5 minutes via GitHub Actions. Fetches deals from OzBargain and CamelCamelCamel AU, scores them for velocity (爆款/Hot) and matches against personal watch lists (盯货/Watch), then sends email digests to subscribers managed in Notion.
 
 Full design: [`docs/PRD.md`](docs/PRD.md)
 
 ## Two tracks
 
 - **Hot (爆款):** vote velocity + absolute votes + age decay. Passes a threshold → notifies all opt-in subscribers. Low frequency, high precision.
-- **Watch (盯货):** keyword hits your Notion watch list and meets a discount or target price condition. Only notifies the subscriber who listed that keyword.
+- **Watch (盯货):** keyword appears in a deal title → notifies the subscriber who listed that keyword. Noise guard: ≥5 votes (OzBargain) or ≥10% discount (CamelCamelCamel). Optional price ceiling to filter further.
 
 A deal that qualifies on both tracks is merged into one notification.
+
+## Sources
+
+| Source | Type | Signal |
+|---|---|---|
+| OzBargain | Community deals | Vote velocity, comments |
+| CamelCamelCamel AU | Amazon price drops | Discount % |
 
 ## Watch keyword syntax
 
@@ -23,12 +30,12 @@ Examples:
 
 | Keyword | Meaning |
 |---|---|
-| `iPhone 17 Pro` | Any iPhone 17 Pro deal (noise guard: ≥5 votes required) |
+| `iPhone 17 Pro` | Any iPhone 17 Pro deal (noise guard applies) |
 | `Dyson <=499` | Dyson deal at or under $499 |
 | `Sony WH <=300 @2026-07-01T23:59` | Sony WH under $300, expires 1 July 2026 |
 | `BWS @19:00` | BWS deal, expires today at 19:00 AEST |
 
-Bare `@HH:MM` means today in `Australia/Sydney`. Expired keywords are silently skipped.
+Bare `@HH:MM` means today in `Australia/Sydney`. Expired keywords are silently skipped. Price ceiling is optional — bare keywords match on votes/discount alone.
 
 ## Quick start (local dev)
 
@@ -52,7 +59,7 @@ bargain-hunter --dry-run
 1. Create a Notion integration at <https://www.notion.so/my-integrations> with
    **Insert content** + **Read content** + **Update content** permissions.
 2. Share a Notion page with the integration. Copy the page ID from its URL (32 hex chars after the last `/`).
-3. Run the setup script — it creates both databases and prints the IDs:
+3. Run the setup script — it creates all databases and prints the IDs:
 
    ```bash
    export NOTION_TOKEN=ntn_xxx
@@ -80,7 +87,7 @@ In Notion, open the **Bargain Hunter — Subscribers** database and create a new
 
 Copy `.env.example` → `.env` and fill in credentials. `.env` is git-ignored.
 
-Tunable thresholds (velocity window, hot score, discount %, quiet hours, etc.) are in `config/settings.yaml` — edit and push, no code change needed.
+Tunable thresholds (velocity window, hot score, vote gates, alerting cooldowns, etc.) are in `config/settings.yaml` — edit and push, no code change needed.
 
 ## GitHub Actions setup
 
@@ -99,10 +106,24 @@ Add these to Settings → Secrets and variables → Actions:
 | `SMTP_PASSWORD` | Gmail app password (not your login password) |
 | `EMAIL_FROM` | e.g. `Bargain Hunter Bot <you@gmail.com>` |
 | `MAINTAINER_EMAIL` | Where to send failure alerts |
+| `FEEDBACK_HMAC_SECRET` | Random hex string; signs 👍/👎 links to prevent spam writes |
+| `R2_ACCESS_KEY_ID` | Cloudflare R2 S3 API access key (for Terraform state) |
+| `R2_SECRET_ACCESS_KEY` | Cloudflare R2 S3 API secret |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API token scoped to Workers Scripts: Edit |
 
-### Reliable scheduling via external trigger
+### Variables
 
-GitHub Actions cron is unreliable for high-frequency schedules (`*/5`) on low-activity repos — runs can be delayed 30-60 minutes or skipped entirely. The recommended setup is to use an external scheduler to trigger `workflow_dispatch` precisely.
+| Variable | Description |
+|---|---|
+| `FEEDBACK_BASE_URL` | Public URL of the deployed feedback worker |
+| `CLOUDFLARE_ACCOUNT_ID` | 32-char Cloudflare account ID |
+| `NOTION_FEEDBACK_DB_ID` | From `setup_notion.py` output |
+| `TF_STATE_BUCKET` | R2 bucket name for Terraform state |
+| `TF_STATE_R2_ENDPOINT` | `https://<account-id>.r2.cloudflarestorage.com` |
+
+### Scheduling
+
+GitHub Actions cron is unreliable for high-frequency schedules (`*/5`) on low-activity repos — runs can be delayed 30–60 minutes or skipped. The recommended setup is an external scheduler triggering `workflow_dispatch` precisely.
 
 **Setup with [cron-job.org](https://cron-job.org) (free):**
 
@@ -125,8 +146,26 @@ The built-in `*/5` cron in the workflow file remains as a fallback.
 
 The first run is always a **cold start** — it records a baseline but sends nothing. From the second run onwards, hot deals and watch matches generate notifications.
 
+## Feedback worker (Cloudflare Workers)
+
+Each digest email includes per-deal 👍/👎 links. Clicks hit a Cloudflare Worker that writes to a Notion Feedback database for calibration. Links are HMAC-signed — unsigned requests are rejected (403).
+
+The worker is deployed automatically via Terraform on every push to `main` that touches `terraform/**` or `feedback-worker/src/**`. State is stored in a Cloudflare R2 bucket.
+
+To deploy manually:
+```bash
+cd terraform
+terraform init -backend-config=backend.hcl
+terraform apply
+```
+
+## Alerting
+
+Maintainer alert emails are throttled: only sent after 3 consecutive failures, then at most once per hour while failures persist. A clean run resets the counter.
+
 ## Privacy
 
 - `data/deals_state.json` stores vote snapshots only (no personal data). It is committed once per day (AET midnight) as a calibration seed; hot-path state travels via GitHub Actions Cache between runs.
 - Subscriber info, watch lists, and sent records live only in your private Notion workspace.
 - Public repo logs never print subscriber identifiers — only aggregate counts.
+- Feedback links are HMAC-signed; the worker never returns subscriber data.

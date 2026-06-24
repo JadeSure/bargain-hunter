@@ -64,6 +64,10 @@
       {% if deal.merchant_url %}
       <a href="{{ deal.merchant_url }}">Go to deal ↗</a>
       {% endif %}
+      {% if item.feedback_up_url %}
+      <a href="{{ item.feedback_up_url }}">👍 Good</a>
+      <a href="{{ item.feedback_down_url }}">👎 Meh</a>
+      {% endif %}
     </div>
   </div>
   {% endfor %}

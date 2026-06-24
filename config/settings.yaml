@@ -10,8 +10,8 @@ sources:
     enabled: true
     feed_url: "https://www.ozbargain.com.au/deals/feed"
   camelcamelcamel:
-    enabled: false                 # 第二来源,增量接入,默认关闭
-    top_drops_url: "https://au.camelcamelcamel.com/top_drops"
+    enabled: true
+    feed_url: "https://au.camelcamelcamel.com/top_drops/feed"
 
 scoring:
   window_minutes: 60               # velocity 计算窗口
@@ -25,8 +25,8 @@ scoring:
     age_penalty_half_life_hours: 12  # 年龄衰减半衰期
     min_votes_for_percentile: 5    # 低于该票数不参与 top-percentile 候选,防低样本噪声
   watch:
-    default_min_discount_percent: 15
-    unpriced_min_votes: 5          # 无法解析价格时,纯关键词提醒所需最低正票数
+    min_votes: 5                   # 关键词命中后,需要至少这么多正票才推送
+    min_discount_percent: 10       # 没有票数时(如 CCC)的折扣门槛
 
 dedup:
   lookback_days: 7                 # 每轮读取近窗 Sent Log 做本地去重
@@ -36,3 +36,7 @@ dedup:
 
 cold_start:
   ignore_deals_older_than_hours: 6  # 首次见到时,早于该时长的旧 deal 不推
+
+alerting:
+  min_consecutive_failures: 3      # 连续失败这么多次才发报警（过滤偶发性失败）
+  cooldown_hours: 1.0              # 发完后静默 1 小时再考虑下一封

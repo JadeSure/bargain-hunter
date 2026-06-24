@@ -12,7 +12,7 @@ def _cfg(**kw) -> WatchConfig:
 
 
 def _sub(**kw) -> Subscriber:
-    defaults = dict(name="Alice", watch_keywords=[], min_discount_percent=None)
+    defaults = dict(name="Alice", watch_keywords=[])
     defaults.update(kw)
     return Subscriber(**defaults)
 
@@ -39,9 +39,8 @@ def _deal(**kw) -> Deal:
 def test_keyword_match_case_insensitive():
     deal = _deal(title="Apple iPhone 17 Pro Max 256GB $1,599")
     sub = _sub(watch_keywords=["iphone 17 pro"])
+    # votes_pos=10 >= min_votes=5 → should match
     matched, reason = match_watch(deal, sub, _cfg())
-    # No price condition met (no discount / target price) — falls to noise guard
-    # votes_pos=10 >= unpriced_min_votes=5 → should match
     assert matched
     assert "iphone 17 pro" in reason.lower()
 
@@ -54,13 +53,14 @@ def test_keyword_no_match():
 
 
 def test_keyword_with_discount():
+    # Discount no longer drives matching — votes noise guard is the gate.
     deal = _deal(
-        title="Sony WH-1000XM5 $249 (was $449) 44% off", discount_percent=44.0, price=249.0
+        title="Sony WH-1000XM5 $249 (was $449) 44% off", discount_percent=44.0, price=249.0, votes_pos=10
     )
-    sub = _sub(watch_keywords=["Sony WH"], min_discount_percent=20.0)
+    sub = _sub(watch_keywords=["Sony WH"])
     matched, reason = match_watch(deal, sub, _cfg())
     assert matched
-    assert "44" in reason
+    assert "Sony WH" in reason
 
 
 def test_keyword_with_target_price():
@@ -79,21 +79,29 @@ def test_target_price_not_met():
 
 
 # ---------------------------------------------------------------------------
-# Unpriced noise guard
+# Votes noise guard (applies to all keyword matches)
 # ---------------------------------------------------------------------------
 
 
-def test_unpriced_passes_with_enough_votes():
+def test_keyword_passes_with_enough_votes():
     deal = _deal(title="SSD deal", votes_pos=10)
     sub = _sub(watch_keywords=["SSD"])
-    matched, _ = match_watch(deal, sub, _cfg(unpriced_min_votes=5))
+    matched, _ = match_watch(deal, sub, _cfg(min_votes=5))
     assert matched
 
 
-def test_unpriced_blocked_by_low_votes():
+def test_keyword_blocked_by_low_votes():
     deal = _deal(title="SSD deal", votes_pos=2)
     sub = _sub(watch_keywords=["SSD"])
-    matched, _ = match_watch(deal, sub, _cfg(unpriced_min_votes=5))
+    matched, _ = match_watch(deal, sub, _cfg(min_votes=5))
+    assert not matched
+
+
+def test_keyword_with_price_target_also_requires_votes():
+    # Price ceiling met but votes too low — should not match.
+    deal = _deal(title="Dyson V15 $499", price=499.0, votes_pos=2)
+    sub = _sub(watch_keywords=["Dyson V15 <=600"])
+    matched, _ = match_watch(deal, sub, _cfg(min_votes=5))
     assert not matched
 
 
@@ -185,7 +193,7 @@ def test_not_yet_expired_keyword_matches():
     """A keyword with a future expiry should still match normally."""
     future_kw = "BWS @2099-12-31T23:59"
     deal = _deal(title="BWS 20% off beer", price=15.0, discount_percent=20.0)
-    sub = _sub(watch_keywords=[future_kw], min_discount_percent=10.0)
+    sub = _sub(watch_keywords=[future_kw])
     now = datetime(2026, 6, 18, 12, 0, 0, tzinfo=UTC)
     matched, reason = match_watch(deal, sub, _cfg(), now=now)
     assert matched
@@ -209,7 +217,7 @@ def test_expiry_at_exact_boundary_is_expired():
     sub = _sub(watch_keywords=[kw])
     # now == expiry exactly
     expiry_utc = datetime(2026, 6, 18, 9, 0, 0, tzinfo=UTC)
-    matched, _ = match_watch(deal, sub, _cfg(unpriced_min_votes=5), now=expiry_utc)
+    matched, _ = match_watch(deal, sub, _cfg(min_votes=5), now=expiry_utc)
     assert not matched
 
 
@@ -223,6 +231,6 @@ def test_one_expired_one_valid_keyword():
         ]
     )
     now = datetime(2026, 6, 18, 12, 0, 0, tzinfo=UTC)
-    matched, reason = match_watch(deal, sub, _cfg(unpriced_min_votes=5), now=now)
+    matched, reason = match_watch(deal, sub, _cfg(min_votes=5), now=now)
     assert matched
     assert "Dan Murphy" in reason

@@ -16,13 +16,18 @@ import traceback
 from datetime import UTC, datetime
 from pathlib import Path
 
+import httpx
+
+from .alert_throttle import AlertThrottle
 from .config import Settings, load_dotenv, load_settings
 from .dedup import DedupStore
 from .matching import filter_watch_matches
 from .models import Deal
 from .notify.email import EmailSender, send_maintainer_alert
 from .notify.render import DealItem
+from .observations import ObservationLog, build_observation
 from .scoring import enrich_deal, is_hot
+from .sources.camelcamelcamel import CamelCamelCamelSource
 from .sources.ozbargain import OzBargainSource
 from .state import StateStore
 from .subscribers import fetch_subscribers, make_notion_client
@@ -73,6 +78,19 @@ def run(settings: Settings, dry_run: bool = False) -> dict:
             log.error(msg)
             summary["errors"].append(msg)
 
+    ccc_cfg = settings.sources.get("camelcamelcamel")
+    if ccc_cfg and ccc_cfg.enabled:
+        feed_url = getattr(ccc_cfg, "feed_url", None)
+        try:
+            src = CamelCamelCamelSource(feed_url=feed_url) if feed_url else CamelCamelCamelSource()
+            raw_deals = src.fetch()
+            log.info("CamelCamelCamel: fetched %d deals.", len(raw_deals))
+            all_deals.extend(raw_deals)
+        except Exception as exc:
+            msg = f"CamelCamelCamel fetch failed: {exc}"
+            log.error(msg)
+            summary["errors"].append(msg)
+
     if not all_deals and not summary["errors"]:
         # Feed returned 0 deals without error — likely a format change.
         msg = "0 deals fetched — possible feed format change."
@@ -92,6 +110,9 @@ def run(settings: Settings, dry_run: bool = False) -> dict:
     # ------------------------------------------------------------------
     # 3. Record snapshots (always, even on cold start)
     # ------------------------------------------------------------------
+    # Capture first-sightings BEFORE recording: record() populates first-seen for
+    # every deal, which would otherwise defeat the staleness guard in should_notify.
+    first_sighting = {d.key for d in active_deals if state.is_new_to_system(d.key)}
     for deal in active_deals:
         state.record(deal, now=now)
 
@@ -104,12 +125,35 @@ def run(settings: Settings, dry_run: bool = False) -> dict:
     hot_deals: list[Deal] = []
     if not state.is_cold_start():
         for deal in active_deals:
-            if not state.should_notify(deal, settings.cold_start.ignore_deals_older_than_hours):
+            if not state.should_notify(
+                deal,
+                settings.cold_start.ignore_deals_older_than_hours,
+                deal.key in first_sighting,
+                now=now,
+            ):
                 continue
             if is_hot(deal, snaps_map[deal.key], settings.scoring, active_pairs, now=now):
                 hot_deals.append(deal)
         summary["hot_deals"] = len(hot_deals)
         log.info("Hot deals this run: %d", len(hot_deals))
+
+    # ------------------------------------------------------------------
+    # 4b. Log per-deal features for calibration (runs regardless of Notion).
+    #     Every active deal, not just hot ones, so tuning can see what we missed.
+    # ------------------------------------------------------------------
+    hot_keys = {d.key for d in hot_deals}
+    obs = ObservationLog()
+    for deal in active_deals:
+        obs.add(
+            build_observation(
+                deal,
+                snaps_map[deal.key],
+                settings.scoring,
+                is_hot=deal.key in hot_keys,
+                now=now,
+            )
+        )
+    obs.flush(now)
 
     # ------------------------------------------------------------------
     # 5. Notion: subscribers + dedup (skip if no token / dry-run mock)
@@ -140,7 +184,14 @@ def run(settings: Settings, dry_run: bool = False) -> dict:
     try:
         dedup.load(notion, sent_log_db)
     except Exception as exc:
-        log.warning("Dedup load failed (%s); proceeding without dedup.", exc)
+        # Fail CLOSED: without the sent-log we cannot dedup, and daily caps also
+        # read from it — proceeding would re-send every qualifying deal to everyone
+        # (up to each cap) on every run. Skipping sends is far cheaper than spam.
+        msg = f"Dedup load failed: {exc} — skipping all sends this run (fail-closed)."
+        log.error(msg)
+        summary["errors"].append(msg)
+        state.save()
+        return summary
 
     # ------------------------------------------------------------------
     # 6. Match + notify each subscriber
@@ -155,7 +206,7 @@ def run(settings: Settings, dry_run: bool = False) -> dict:
         daily_count = dedup.daily_count(sub, now=now)
         remaining_cap = sub.max_alerts_per_day - daily_count
         if remaining_cap <= 0:
-            log.info("Subscriber %s at daily cap; skipping.", sub.name)
+            log.info("Subscriber %s at daily cap; skipping.", sub.ref)
             continue
 
         items: list[DealItem] = []
@@ -183,7 +234,12 @@ def run(settings: Settings, dry_run: bool = False) -> dict:
                         item.track = "mixed"
                         item.reason = f"{item.reason} · {reason}"
                 continue
-            if not state.should_notify(deal, settings.cold_start.ignore_deals_older_than_hours):
+            if not state.should_notify(
+                deal,
+                settings.cold_start.ignore_deals_older_than_hours,
+                deal.key in first_sighting,
+                now=now,
+            ):
                 continue
             if dedup.already_sent(deal, sub):
                 continue
@@ -215,7 +271,7 @@ def run(settings: Settings, dry_run: bool = False) -> dict:
                     log.error(
                         "Sent Log write failed for %s / %s: %s",
                         item.deal.key,
-                        sub.email,
+                        sub.ref,
                         exc,
                     )
                     summary["errors"].append(f"Sent log write error: {exc}")
@@ -244,12 +300,27 @@ def _hot_reason(deal: Deal) -> str:
     return " · ".join(parts)
 
 
-def _alert_if_needed(summary: dict, settings: Settings) -> None:
-    """Send maintainer alert on failure or zero-deal anomaly (FR10)."""
-    if summary["errors"] or (summary["deals_fetched"] == 0 and not summary["cold_start"]):
-        subject = "Run failed or 0 deals fetched"
+def _alert_if_needed(summary: dict, settings: Settings, now: datetime) -> None:
+    """Send maintainer alert on failure or zero-deal anomaly, with throttling."""
+    throttle = AlertThrottle(
+        min_consecutive_failures=settings.alerting.min_consecutive_failures,
+        cooldown_hours=settings.alerting.cooldown_hours,
+    )
+    throttle.load()
+
+    has_error = bool(summary["errors"]) or (
+        summary["deals_fetched"] == 0 and not summary["cold_start"]
+    )
+
+    if has_error:
+        throttle.record_failure()
+    else:
+        throttle.record_success()
+
+    if has_error and throttle.should_alert(now):
+        subject = f"Run failed or 0 deals fetched ({throttle._failures} consecutive)"
         body = (
-            f"Bargain Hunter run completed with issues:\n\n"
+            f"Bargain Hunter has failed {throttle._failures} run(s) in a row.\n\n"
             f"  deals_fetched : {summary['deals_fetched']}\n"
             f"  hot_deals     : {summary['hot_deals']}\n"
             f"  sent          : {summary['notifications_sent']}\n"
@@ -257,6 +328,25 @@ def _alert_if_needed(summary: dict, settings: Settings) -> None:
             f"  errors:\n" + "\n".join(f"    - {e}" for e in summary["errors"])
         )
         send_maintainer_alert(subject, body)
+        throttle.record_sent(now)
+
+    throttle.save()
+
+
+def _heartbeat(summary: dict) -> None:
+    """Ping a dead-man's-switch URL on a clean run (FR10).
+
+    An external monitor (e.g. healthchecks.io) raises an alert if these pings
+    stop — the only way to catch the whole pipeline going silent (cron-job.org
+    down, Actions disabled, PAT expired), which in-process alerting cannot.
+    """
+    url = os.environ.get("HEALTHCHECK_URL")
+    if not url or summary["errors"]:
+        return
+    try:
+        httpx.get(url, timeout=10)
+    except Exception as exc:  # a failed heartbeat must never break the run
+        log.warning("Heartbeat ping failed: %s", exc)
 
 
 def main() -> None:
@@ -278,8 +368,11 @@ def main() -> None:
         log.info("=== DRY RUN MODE: no emails will be sent, Notion not written ===")
 
     try:
+        now = datetime.now(UTC)
         summary = run(settings, dry_run=dry_run)
-        _alert_if_needed(summary, settings)
+        _alert_if_needed(summary, settings, now)
+        if not dry_run:
+            _heartbeat(summary)
     except Exception:
         tb = traceback.format_exc()
         log.critical("Unhandled exception:\n%s", tb)

@@ -1,0 +1,13 @@
+{
+  // Cloudflare Worker config for the Bargain Hunter feedback collector.
+  // Deploy:  npx wrangler deploy   (after `npx wrangler login`)
+  // Secret:  npx wrangler secret put NOTION_TOKEN
+  "name": "bargain-feedback",
+  "main": "src/index.js",
+  "compatibility_date": "2026-01-01",
+  "observability": { "enabled": true },
+  "vars": {
+    // Non-secret. Paste the Feedback DB id printed by scripts/setup_notion.py.
+    "FEEDBACK_DB_ID": "389a2a0bfd0481328e01c06175dae735"
+  }
+}

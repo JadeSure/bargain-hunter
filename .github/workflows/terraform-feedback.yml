@@ -1,0 +1,73 @@
+name: terraform-feedback-worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - "feedback-worker/src/**"
+  pull_request:
+    paths:
+      - "terraform/**"
+      - "feedback-worker/src/**"
+  workflow_dispatch:
+
+# Serialize runs so two applies never touch the state at once (our lock strategy).
+concurrency:
+  group: terraform-feedback
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    env:
+      TF_IN_AUTOMATION: "true"
+      # R2 state backend (S3-compatible) credentials
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      # Worker resource inputs
+      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TF_VAR_notion_token: ${{ secrets.NOTION_TOKEN }}
+      TF_VAR_feedback_hmac_secret: ${{ secrets.FEEDBACK_HMAC_SECRET }}
+      TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      TF_VAR_feedback_db_id: ${{ vars.NOTION_FEEDBACK_DB_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+          terraform_wrapper: false
+
+      - name: Write R2 backend config
+        env:
+          TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+          TF_STATE_R2_ENDPOINT: ${{ vars.TF_STATE_R2_ENDPOINT }}
+        run: |
+          printf 'bucket    = "%s"\nendpoints = { s3 = "%s" }\n' \
+            "$TF_STATE_BUCKET" "$TF_STATE_R2_ENDPOINT" > backend.hcl
+          cat backend.hcl
+
+      - name: Terraform init
+        run: terraform init -input=false -backend-config=backend.hcl
+
+      - name: Terraform fmt check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform plan
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Terraform apply
+        if: github.event_name != 'pull_request'
+        run: terraform apply -input=false -auto-approve tfplan

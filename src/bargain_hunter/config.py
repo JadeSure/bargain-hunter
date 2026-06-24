@@ -46,8 +46,10 @@ class HotConfig(StrictConfigModel):
 
 
 class WatchConfig(StrictConfigModel):
-    default_min_discount_percent: float = 15.0
-    unpriced_min_votes: int = 5
+    min_votes: int = 5
+    # Fallback gate for sources with no vote system (e.g. CamelCamelCamel).
+    # When set, a deal with discount_percent >= this value passes even with 0 votes.
+    min_discount_percent: float | None = None
 
 
 class ScoringConfig(StrictConfigModel):
@@ -75,6 +77,11 @@ class ColdStartConfig(StrictConfigModel):
     ignore_deals_older_than_hours: float = 6.0
 
 
+class AlertConfig(StrictConfigModel):
+    min_consecutive_failures: int = 3
+    cooldown_hours: float = 1.0
+
+
 class RunConfig(StrictConfigModel):
     dry_run: bool = False
     max_alerts_per_user_per_day: int = 10
@@ -87,6 +94,7 @@ class Settings(StrictConfigModel):
     scoring: ScoringConfig = Field(default_factory=ScoringConfig)
     dedup: DedupConfig = Field(default_factory=DedupConfig)
     cold_start: ColdStartConfig = Field(default_factory=ColdStartConfig)
+    alerting: AlertConfig = Field(default_factory=AlertConfig)
 
 
 def load_settings(path: Path | None = None) -> Settings:

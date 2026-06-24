@@ -1,0 +1,2 @@
+bucket    = "bargain-hunter-tfstate"
+endpoints = { s3 = "https://<CLOUDFLARE_ACCOUNT_ID>.r2.cloudflarestorage.com" }
