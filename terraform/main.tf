@@ -6,7 +6,7 @@ locals {
   worker_source = "${path.module}/../feedback-worker/src/index.js"
 }
 
-# The feedback collector Worker. Single dependency-free ES module, so the source
+# The feedback collector Worker (HMAC-signed). Single dependency-free ES module, so the source
 # file is uploaded directly via content_file — no bundler/wrangler build step.
 # Using content_file (not inline content) keeps the JS out of Terraform state.
 resource "cloudflare_workers_script" "feedback" {
