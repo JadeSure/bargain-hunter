@@ -35,8 +35,8 @@ jobs:
       TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       TF_VAR_notion_token: ${{ secrets.NOTION_TOKEN }}
       TF_VAR_feedback_hmac_secret: ${{ secrets.FEEDBACK_HMAC_SECRET }}
-      TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-      TF_VAR_feedback_db_id: ${{ vars.NOTION_FEEDBACK_DB_ID }}
+      TF_VAR_cloudflare_account_id: d4f60d0edf9986427ad8e357eba453b6
+      TF_VAR_feedback_db_id: 389a2a0bfd0481328e01c06175dae735
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,12 +48,8 @@ jobs:
           terraform_wrapper: false
 
       - name: Write R2 backend config
-        env:
-          TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
-          TF_STATE_R2_ENDPOINT: ${{ vars.TF_STATE_R2_ENDPOINT }}
         run: |
-          printf 'bucket    = "%s"\nendpoints = { s3 = "%s" }\n' \
-            "$TF_STATE_BUCKET" "$TF_STATE_R2_ENDPOINT" > backend.hcl
+          printf 'bucket    = "bargain-hunter-tfstate"\nendpoints = { s3 = "https://d4f60d0edf9986427ad8e357eba453b6.r2.cloudflarestorage.com" }\n' > backend.hcl
           cat backend.hcl
 
       - name: Terraform init
