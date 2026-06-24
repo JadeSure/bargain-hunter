@@ -41,7 +41,7 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 
-def run(settings: Settings, dry_run: bool = False) -> dict:
+def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     """Execute one full run.  Returns a summary dict (counts only, no PII)."""
     summary: dict = {
         "deals_fetched": 0,
@@ -200,9 +200,12 @@ def run(settings: Settings, dry_run: bool = False) -> dict:
     # 6. Match + notify each subscriber
     # ------------------------------------------------------------------
     if _is_quiet_hours(settings, now):
-        log.info("Quiet hours — skipping notifications for this run.")
-        state.save()
-        return summary
+        if force:
+            log.info("Quiet hours active but --force set; proceeding with notifications.")
+        else:
+            log.info("Quiet hours — skipping notifications for this run.")
+            state.save()
+            return summary
 
     sender = EmailSender(dry_run=dry_run)
 
@@ -386,6 +389,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Bargain Hunter deal alerter.")
     parser.add_argument("--dry-run", action="store_true", help="Print actions without sending.")
     parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Bypass quiet hours and send immediately (still writes Sent Log).",
+    )
+    parser.add_argument(
         "--settings",
         type=Path,
         default=None,
@@ -401,7 +409,7 @@ def main() -> None:
 
     try:
         now = datetime.now(UTC)
-        summary = run(settings, dry_run=dry_run)
+        summary = run(settings, dry_run=dry_run, force=getattr(args, "force", False))
         _alert_if_needed(summary, settings, now)
         if not dry_run:
             _heartbeat(summary)

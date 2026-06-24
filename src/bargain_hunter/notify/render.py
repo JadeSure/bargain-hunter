@@ -40,9 +40,14 @@ def _sign(secret: str, deal_key: str, verdict: str, email: str) -> str:
     return hmac.new(secret.encode(), msg, hashlib.sha256).hexdigest()[:32]
 
 
-def _feedback_url(base: str, secret: str, deal_key: str, verdict: str, email: str) -> str:
+def _feedback_url(
+    base: str, secret: str, deal_key: str, verdict: str, email: str, title: str = ""
+) -> str:
     token = _sign(secret, deal_key, verdict, email)
-    return f"{base}?d={quote(deal_key)}&v={verdict}&e={quote(email)}&t={token}"
+    url = f"{base}?d={quote(deal_key)}&v={verdict}&e={quote(email)}&t={token}"
+    if title:
+        url += f"&n={quote(title[:120])}"
+    return url
 
 
 def render_email(
@@ -62,10 +67,10 @@ def render_email(
     if feedback_base and hmac_secret and subscriber.email:
         for item in items:
             item.feedback_up_url = _feedback_url(
-                feedback_base, hmac_secret, item.deal.key, "up", subscriber.email
+                feedback_base, hmac_secret, item.deal.key, "up", subscriber.email, item.deal.title
             )
             item.feedback_down_url = _feedback_url(
-                feedback_base, hmac_secret, item.deal.key, "down", subscriber.email
+                feedback_base, hmac_secret, item.deal.key, "down", subscriber.email, item.deal.title
             )
 
     return tmpl.render(
