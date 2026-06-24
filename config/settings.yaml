@@ -4,6 +4,8 @@ run:
   dry_run: false
   max_alerts_per_user_per_day: 10
   timezone: "Australia/Sydney"      # AET/AEDT,统一用于每日上限、quiet hours、每日落盘边界
+  quiet_hours_start: "22:00"        # AEST — 10pm 后不发送
+  quiet_hours_end: "07:00"          # AEST — 7am 前不发送（跨午夜窗口）
 
 sources:
   ozbargain:
@@ -16,17 +18,18 @@ sources:
 scoring:
   window_minutes: 60               # velocity 计算窗口
   hot:
-    min_votes_gain_per_window: 12  # 窗口内净增票阈值 (V1)
+    min_votes_gain_per_window: 20  # 窗口内净增票阈值 (V1)，提高以减少误报
     early_burst_age_hours: 2       # 早期爆发判定时长 (H)
-    early_burst_min_votes: 20      # 早期爆发票数 (V2)
+    early_burst_min_votes: 30      # 早期爆发票数 (V2)，提高门槛
     velocity_top_percent: 10       # 进入活跃 deal 前 P% 视为候选
-    hot_threshold: 0.8             # 加权热度分阈值
+    hot_threshold: 1.2             # 加权热度分阈值，提高以减少质量差的推送
     neg_vote_penalty_weight: 0.5   # 负票惩罚权重
     age_penalty_half_life_hours: 12  # 年龄衰减半衰期
-    min_votes_for_percentile: 5    # 低于该票数不参与 top-percentile 候选,防低样本噪声
+    min_votes_for_percentile: 10   # 低于该票数不参与 top-percentile 候选
   watch:
-    min_votes: 5                   # 关键词命中后,需要至少这么多正票才推送
-    min_discount_percent: 10       # 没有票数时(如 CCC)的折扣门槛
+    min_votes: 15                  # 关键词命中后,需要至少这么多正票才推送（提高到 15）
+    min_discount_percent: 15       # 没有票数时(如 CCC)的折扣门槛（提高到 15%）
+    max_deal_age_hours: 36         # 超过 36h 的旧 deal 不推送（防止旧帖占满每日上限）
 
 dedup:
   lookback_days: 7                 # 每轮读取近窗 Sent Log 做本地去重

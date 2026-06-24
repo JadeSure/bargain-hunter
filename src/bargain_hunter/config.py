@@ -50,6 +50,9 @@ class WatchConfig(StrictConfigModel):
     # Fallback gate for sources with no vote system (e.g. CamelCamelCamel).
     # When set, a deal with discount_percent >= this value passes even with 0 votes.
     min_discount_percent: float | None = None
+    # Skip watch matches for deals older than this (hours from posted_at).
+    # Prevents stale deals from consuming the daily cap. Deals with no posted_at are exempt.
+    max_deal_age_hours: float = 48.0
 
 
 class ScoringConfig(StrictConfigModel):
@@ -86,6 +89,10 @@ class RunConfig(StrictConfigModel):
     dry_run: bool = False
     max_alerts_per_user_per_day: int = 10
     timezone: str = "Australia/Sydney"
+    # Quiet hours: no sends outside this window (both in "HH:MM" local time).
+    # If start > end, the window wraps midnight (e.g. 22:00–07:00).
+    quiet_hours_start: str | None = None
+    quiet_hours_end: str | None = None
 
 
 class Settings(StrictConfigModel):

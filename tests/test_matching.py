@@ -55,7 +55,10 @@ def test_keyword_no_match():
 def test_keyword_with_discount():
     # Discount no longer drives matching — votes noise guard is the gate.
     deal = _deal(
-        title="Sony WH-1000XM5 $249 (was $449) 44% off", discount_percent=44.0, price=249.0, votes_pos=10
+        title="Sony WH-1000XM5 $249 (was $449) 44% off",
+        discount_percent=44.0,
+        price=249.0,
+        votes_pos=10,
     )
     sub = _sub(watch_keywords=["Sony WH"])
     matched, reason = match_watch(deal, sub, _cfg())
@@ -234,3 +237,37 @@ def test_one_expired_one_valid_keyword():
     matched, reason = match_watch(deal, sub, _cfg(min_votes=5), now=now)
     assert matched
     assert "Dan Murphy" in reason
+
+
+# ---------------------------------------------------------------------------
+# Deal age filter (max_deal_age_hours)
+# ---------------------------------------------------------------------------
+
+
+def test_fresh_deal_passes_age_filter():
+    """Deal posted 10h ago is within the 36h window — should match."""
+    now = datetime(2026, 6, 18, 12, 0, 0, tzinfo=UTC)
+    posted = now - timedelta(hours=10)
+    deal = _deal(title="BWS wine sale", votes_pos=20, posted_at=posted)
+    sub = _sub(watch_keywords=["BWS"])
+    matched, _ = match_watch(deal, sub, _cfg(min_votes=5, max_deal_age_hours=36), now=now)
+    assert matched
+
+
+def test_stale_deal_blocked_by_age_filter():
+    """Deal posted 48h ago is outside the 36h window — must not match."""
+    now = datetime(2026, 6, 18, 12, 0, 0, tzinfo=UTC)
+    posted = now - timedelta(hours=48)
+    deal = _deal(title="BWS wine sale", votes_pos=20, posted_at=posted)
+    sub = _sub(watch_keywords=["BWS"])
+    matched, _ = match_watch(deal, sub, _cfg(min_votes=5, max_deal_age_hours=36), now=now)
+    assert not matched
+
+
+def test_no_posted_at_skips_age_filter():
+    """Deals with no posted_at are not age-filtered (assume fresh)."""
+    now = datetime(2026, 6, 18, 12, 0, 0, tzinfo=UTC)
+    deal = _deal(title="iPhone deal", votes_pos=20)  # no posted_at
+    sub = _sub(watch_keywords=["iPhone"])
+    matched, _ = match_watch(deal, sub, _cfg(min_votes=5, max_deal_age_hours=1), now=now)
+    assert matched

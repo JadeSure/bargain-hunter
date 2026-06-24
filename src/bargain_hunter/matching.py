@@ -87,6 +87,13 @@ def match_watch(
     reason_string is a short human-readable note for notification text and logs.
     """
     now = now or datetime.now(UTC)
+
+    # Reject stale deals up-front — prevents old tracked deals from filling the daily cap.
+    if deal.posted_at is not None:
+        age_hours = (now - deal.posted_at).total_seconds() / 3600
+        if age_hours > cfg.max_deal_age_hours:
+            return False, ""
+
     search_text = deal.title + " " + (deal.description or "")
 
     for raw_kw in subscriber.watch_keywords:

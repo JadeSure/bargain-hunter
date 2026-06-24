@@ -102,8 +102,11 @@ def run(settings: Settings, dry_run: bool = False) -> dict:
     # Enrich with price/discount signals
     all_deals = [enrich_deal(d) for d in all_deals]
 
-    # Filter expired/out-of-stock
-    active_deals = [d for d in all_deals if not d.expired]
+    # Filter expired/out-of-stock (including deals whose expiry timestamp has passed).
+    active_deals = [
+        d for d in all_deals
+        if not d.expired and (d.expiry is None or d.expiry > now)
+    ]
     if d := len(all_deals) - len(active_deals):
         log.info("Filtered %d expired deals.", d)
 
@@ -196,6 +199,11 @@ def run(settings: Settings, dry_run: bool = False) -> dict:
     # ------------------------------------------------------------------
     # 6. Match + notify each subscriber
     # ------------------------------------------------------------------
+    if _is_quiet_hours(settings, now):
+        log.info("Quiet hours — skipping notifications for this run.")
+        state.save()
+        return summary
+
     sender = EmailSender(dry_run=dry_run)
 
     for sub in subscribers:
@@ -298,6 +306,30 @@ def _hot_reason(deal: Deal) -> str:
     if deal.discount_percent:
         parts.append(f"{deal.discount_percent:.0f}% off")
     return " · ".join(parts)
+
+
+def _is_quiet_hours(settings: Settings, now: datetime) -> bool:
+    """Return True if current local time falls within the configured quiet window.
+
+    Handles wrap-around midnight (e.g. 22:00–07:00).
+    Returns False when quiet hours are not configured.
+    """
+    start_str = settings.run.quiet_hours_start
+    end_str = settings.run.quiet_hours_end
+    if not start_str or not end_str:
+        return False
+    from zoneinfo import ZoneInfo
+
+    tz = ZoneInfo(settings.run.timezone)
+    local = now.astimezone(tz)
+    current = local.hour * 60 + local.minute
+    sh, sm = map(int, start_str.split(":"))
+    eh, em = map(int, end_str.split(":"))
+    start = sh * 60 + sm
+    end = eh * 60 + em
+    if start > end:  # window wraps midnight, e.g. 22:00–07:00
+        return current >= start or current < end
+    return start <= current < end
 
 
 def _alert_if_needed(summary: dict, settings: Settings, now: datetime) -> None:
