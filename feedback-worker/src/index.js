@@ -47,6 +47,7 @@ export default {
     const deal = url.searchParams.get("d");
     const verdict = url.searchParams.get("v"); // "up" | "down"
     const email = url.searchParams.get("e") || null;
+    const dealTitle = url.searchParams.get("n") || "";
 
     if (!deal || (verdict !== "up" && verdict !== "down")) {
       return new Response("bad request", { status: 400 });
@@ -68,6 +69,7 @@ export default {
         parent: { database_id: env.FEEDBACK_DB_ID },
         properties: {
           "Deal ID": { title: [{ text: { content: deal } }] },
+          "Deal Title": { rich_text: [{ text: { content: dealTitle } }] },
           Verdict: { select: { name: verdict } },
           "Subscriber Email": { email },
           At: { date: { start: new Date().toISOString() } },

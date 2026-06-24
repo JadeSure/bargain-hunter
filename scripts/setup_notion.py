@@ -130,6 +130,7 @@ FEEDBACK_TITLE = "Bargain Hunter — Feedback"
 
 FEEDBACK_PROPS: dict = {
     "Deal ID": {"title": {}},
+    "Deal Title": {"rich_text": {}},
     "Subscriber Email": {"email": {}},
     "Verdict": {
         "select": {
