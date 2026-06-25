@@ -64,6 +64,13 @@ def render_email(
     feedback_base = (os.environ.get("FEEDBACK_BASE_URL") or "").strip() or None
     hmac_secret = (os.environ.get("FEEDBACK_HMAC_SECRET") or "").strip() or None
 
+    import logging as _logging
+    _logging.getLogger(__name__).info(
+        "Feedback config: base=%s hmac_secret=%s",
+        "set" if feedback_base else "MISSING",
+        "set" if hmac_secret else "MISSING",
+    )
+
     if feedback_base and hmac_secret and subscriber.email:
         for item in items:
             item.feedback_up_url = _feedback_url(
