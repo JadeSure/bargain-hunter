@@ -60,6 +60,7 @@ class Subscriber(BaseModel):
     categories: list[str] = Field(default_factory=list)
     max_alerts_per_day: int = 10        # hot track daily cap
     max_watch_alerts_per_day: int = 10  # watch track daily cap (independent)
+    block_keywords: list[str] = Field(default_factory=list)
 
     @property
     def ref(self) -> str:

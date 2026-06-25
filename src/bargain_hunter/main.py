@@ -238,6 +238,9 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 if len(hot_items) >= remaining_hot:
                     log.info("[%s] hot skip %s: daily cap", sub.ref, deal.key)
                     break
+                if _is_blocked(deal, sub.block_keywords):
+                    log.info("[%s] hot skip %s: blocked keyword", sub.ref, deal.key)
+                    continue
                 if dedup.already_sent(deal, sub):
                     log.info("[%s] hot skip %s: already sent", sub.ref, deal.key)
                     continue
@@ -262,6 +265,8 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                     if item.deal.key == deal.key:
                         item.track = "mixed"
                         item.reason = f"{item.reason} · {reason}"
+                continue
+            if _is_blocked(deal, sub.block_keywords):
                 continue
             if len(watch_items) >= remaining_watch:
                 break
@@ -323,6 +328,15 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         summary["cold_start"],
     )
     return summary
+
+
+def _is_blocked(deal: Deal, block_keywords: list[str]) -> bool:
+    """Return True if any block keyword appears in the deal title or description."""
+    if not block_keywords:
+        return False
+    import re
+    text = deal.title + " " + (deal.description or "")
+    return any(re.search(re.escape(kw), text, re.IGNORECASE) for kw in block_keywords)
 
 
 def _passes_quality_gate(deal: Deal, hot_cfg, vote_velocity: float = 0.0) -> bool:
