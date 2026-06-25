@@ -230,6 +230,8 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                     break
                 if dedup.already_sent(deal, sub):
                     continue
+                if not _passes_quality_gate(deal, settings.scoring.hot):
+                    continue
                 items.append(DealItem(deal, track="hot", reason=_hot_reason(deal)))
                 notified_keys.add(deal.key)
 
@@ -302,6 +304,22 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         summary["cold_start"],
     )
     return summary
+
+
+def _passes_quality_gate(deal: Deal, hot_cfg) -> bool:
+    """Data-backed quality filter: low-vote deals must have a meaningful discount.
+
+    Derived from 2 days of observations: promo/food/membership deals cluster at
+    18-38 votes with no extractable discount_percent. Genuine product discounts
+    (game sales, electronics) have discount_percent present even at lower vote counts.
+    Deals with >= quality_high_votes_threshold votes are exempt (strongly community-validated).
+    """
+    min_disc = hot_cfg.quality_min_discount_pct
+    if min_disc is None:
+        return True
+    if deal.votes_pos >= hot_cfg.quality_high_votes_threshold:
+        return True
+    return deal.discount_percent is not None and deal.discount_percent >= min_disc
 
 
 def _hot_reason(deal: Deal) -> str:

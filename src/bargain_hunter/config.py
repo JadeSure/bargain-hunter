@@ -44,11 +44,16 @@ class HotConfig(StrictConfigModel):
     age_penalty_half_life_hours: float = 12.0
     min_votes_for_percentile: int = 5
     # Absolute minimum votes before a deal is even considered for hot candidacy.
-    # Prevents very new posts with 2-3 votes (but high comment velocity) from inflating scores.
     min_votes_to_candidate: int = 10
     # Weight applied to comment velocity in the hot score formula.
-    # Comments are noisy early on; 0.1 prevents comment bursts from dominating.
     comment_velocity_weight: float = 0.25
+    # Quality gate: deals with fewer votes than quality_high_votes_threshold must have
+    # a discount_percent >= quality_min_discount_pct to be sent.
+    # Data-backed: promo/food/membership deals (~22-38 votes, no discount) are filtered
+    # while genuine discounted products (8+ votes, 20%+ off) still get through.
+    # Set to None to disable.
+    quality_min_discount_pct: float | None = None
+    quality_high_votes_threshold: int = 40
 
 
 class WatchConfig(StrictConfigModel):

@@ -35,6 +35,12 @@ scoring:
     # Data finding: comment velocity at 0.25 weight dominated scores (e.g. 10+ pts from comments alone).
     # 0.1 still rewards comment engagement without letting it override vote signal.
     comment_velocity_weight: 0.1   # 评分公式中 comment velocity 的权重（降低以减少噪声）
+    # Quality gate (data-backed, 2026-06-24/25 observations):
+    # Deals with votes < quality_high_votes_threshold MUST have discount >= quality_min_discount_pct.
+    # Eliminates promo/food/membership deals (22-38 votes, no extractable discount)
+    # while keeping genuine product discounts (e.g. 13 votes, 50% off).
+    quality_min_discount_pct: 20.0  # deals below threshold need ≥20% discount
+    quality_high_votes_threshold: 40  # deals with ≥40 votes skip the discount requirement
   watch:
     min_votes: 15                  # 关键词命中后,需要至少这么多正票才推送（提高到 15）
     min_discount_percent: 15       # 没有票数时(如 CCC)的折扣门槛（提高到 15%）
