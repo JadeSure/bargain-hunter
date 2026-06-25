@@ -213,43 +213,58 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         if not sub.active:
             continue
 
-        # Daily cap
-        daily_count = dedup.daily_count(sub, now=now)
-        remaining_cap = sub.max_alerts_per_day - daily_count
-        if remaining_cap <= 0:
-            log.info("Subscriber %s at daily cap; skipping.", sub.ref)
+        # Daily caps — hot and watch are independent quotas.
+        # "mixed" deals (hot-qualified + watch keyword hit) count against hot cap only.
+        hot_daily = dedup.daily_count(sub, now=now, tracks={"hot", "mixed"})
+        watch_daily = dedup.daily_count(sub, now=now, tracks={"watch"})
+        remaining_hot = sub.max_alerts_per_day - hot_daily
+        remaining_watch = sub.max_watch_alerts_per_day - watch_daily
+
+        if remaining_hot <= 0 and remaining_watch <= 0:
+            log.info(
+                "Subscriber %s at daily caps (hot=%d/%d watch=%d/%d); skipping.",
+                sub.ref, hot_daily, sub.max_alerts_per_day,
+                watch_daily, sub.max_watch_alerts_per_day,
+            )
             continue
 
-        items: list[DealItem] = []
+        hot_items: list[DealItem] = []
+        watch_items: list[DealItem] = []
         notified_keys: set[str] = set()
 
         # Hot track
-        if sub.subscribe_hot and hot_deals:
+        if sub.subscribe_hot and hot_deals and remaining_hot > 0:
             for deal in hot_deals:
-                if len(items) >= remaining_cap:
+                if len(hot_items) >= remaining_hot:
+                    log.info("[%s] hot skip %s: daily cap", sub.ref, deal.key)
                     break
                 if dedup.already_sent(deal, sub):
+                    log.info("[%s] hot skip %s: already sent", sub.ref, deal.key)
                     continue
                 vel, _ = compute_vote_velocity(
                     snaps_map.get(deal.key, []), settings.scoring.window_minutes, now
                 )
                 if not _passes_quality_gate(deal, settings.scoring.hot, vote_velocity=vel):
+                    log.info(
+                        "[%s] hot skip %s: quality gate (votes=%d disc=%s vel=%.1f)",
+                        sub.ref, deal.key, deal.votes_pos, deal.discount_percent, vel,
+                    )
                     continue
-                items.append(DealItem(deal, track="hot", reason=_hot_reason(deal)))
+                hot_items.append(DealItem(deal, track="hot", reason=_hot_reason(deal)))
                 notified_keys.add(deal.key)
 
-        # Watch track
+        # Watch track (independent cap — does not share quota with hot)
         watch_hits = filter_watch_matches(active_deals, sub, settings.scoring.watch, now=now)
         for deal, reason in watch_hits:
-            if len(items) >= remaining_cap:
-                break
             if deal.key in notified_keys:
-                # Already queued via hot — annotate as mixed
-                for item in items:
+                # Already queued via hot — annotate as mixed (no watch cap cost)
+                for item in hot_items:
                     if item.deal.key == deal.key:
                         item.track = "mixed"
                         item.reason = f"{item.reason} · {reason}"
                 continue
+            if len(watch_items) >= remaining_watch:
+                break
             if not state.should_notify(
                 deal,
                 settings.cold_start.ignore_deals_older_than_hours,
@@ -259,13 +274,14 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 continue
             if dedup.already_sent(deal, sub):
                 continue
-            items.append(DealItem(deal, track="watch", reason=reason))
+            watch_items.append(DealItem(deal, track="watch", reason=reason))
             notified_keys.add(deal.key)
 
+        items = hot_items + watch_items
         if not items:
             continue
 
-        summary["watch_matches"] += sum(1 for i in items if i.track in ("watch", "mixed"))
+        summary["watch_matches"] += len(watch_items)
 
         # Send
         ok = sender.send_digest(sub, items)

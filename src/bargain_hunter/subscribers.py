@@ -22,6 +22,7 @@ _P_KEYWORDS = "Watch Keywords"
 _P_MIN_DISCOUNT = "Min Discount %"
 _P_CATEGORIES = "Categories"
 _P_MAX_ALERTS = "Max Alerts/Day"
+_P_MAX_WATCH_ALERTS = "Max Watch Alerts/Day"
 
 
 def _text(prop: dict) -> str:
@@ -91,6 +92,7 @@ def _parse_subscriber(props: dict) -> Subscriber:
     min_discount = _number(props.get(_P_MIN_DISCOUNT, {}))
     categories = _multiselect(props.get(_P_CATEGORIES, {}))
     max_alerts = int(_number(props.get(_P_MAX_ALERTS, {}), default=10) or 10)
+    max_watch_alerts = int(_number(props.get(_P_MAX_WATCH_ALERTS, {}), default=10) or 10)
 
     return Subscriber(
         name=name or "Unknown",
@@ -103,6 +105,7 @@ def _parse_subscriber(props: dict) -> Subscriber:
         min_discount_percent=min_discount,
         categories=categories,
         max_alerts_per_day=max_alerts,
+        max_watch_alerts_per_day=max_watch_alerts,
     )
 
 
