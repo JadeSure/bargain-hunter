@@ -48,9 +48,9 @@ scoring:
 
 dedup:
   lookback_days: 7                 # 每轮读取近窗 Sent Log 做本地去重
-  max_realerts_per_deal: 1         # 同一 deal 对同一人最多再提醒次数
+  max_realerts_per_deal: 0         # 0 = 关闭重推，每个 deal 对每人只发一次
   significant_price_drop_percent: 5.0
-  heat_band_size_votes: 50         # 票数每跨一个档位可视为实质变好
+  heat_band_size_votes: 50
 
 cold_start:
   ignore_deals_older_than_hours: 6  # 首次见到时,早于该时长的旧 deal 不推
