@@ -131,8 +131,19 @@ class DedupStore:
         current_band = _heat_band(deal.votes_pos, self.cfg.heat_band_size_votes)
         return not current_band > latest.heat_band
 
-    def daily_count(self, subscriber: Subscriber, now: datetime | None = None) -> int:
-        """Count deals already sent to this subscriber today (AET calendar day)."""
+    def daily_count(
+        self,
+        subscriber: Subscriber,
+        now: datetime | None = None,
+        tracks: set[str] | None = None,
+    ) -> int:
+        """Count deals already sent to this subscriber today (AET calendar day).
+
+        tracks: if set, only count entries whose track is in this set.
+        For hot cap, pass tracks={"hot", "mixed"} ("mixed" deals were hot-qualified).
+        For watch cap, pass tracks={"watch"}.
+        Pass None (default) to count all tracks.
+        """
         from zoneinfo import ZoneInfo
 
         now = now or datetime.now(UTC)
@@ -145,6 +156,8 @@ class DedupStore:
             if sub_email != email:
                 continue
             for e in entries:
+                if tracks is not None and e.track not in tracks:
+                    continue
                 if e.sent_at.astimezone(tz).date() == today and deal_key not in seen_deals:
                     seen_deals.add(deal_key)
                     count += 1
