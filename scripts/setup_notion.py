@@ -85,6 +85,7 @@ SUBSCRIBERS_PROPS: dict = {
     },
     "Max Alerts/Day": {"number": {"format": "number"}},
     "Max Watch Alerts/Day": {"number": {"format": "number"}},
+    "Block Keywords": {"rich_text": {}},
     "Quiet Hours": {"rich_text": {}},
 }
 

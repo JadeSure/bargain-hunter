@@ -23,6 +23,7 @@ _P_MIN_DISCOUNT = "Min Discount %"
 _P_CATEGORIES = "Categories"
 _P_MAX_ALERTS = "Max Alerts/Day"
 _P_MAX_WATCH_ALERTS = "Max Watch Alerts/Day"
+_P_BLOCK_KEYWORDS = "Block Keywords"
 
 
 def _text(prop: dict) -> str:
@@ -93,6 +94,8 @@ def _parse_subscriber(props: dict) -> Subscriber:
     categories = _multiselect(props.get(_P_CATEGORIES, {}))
     max_alerts = int(_number(props.get(_P_MAX_ALERTS, {}), default=10) or 10)
     max_watch_alerts = int(_number(props.get(_P_MAX_WATCH_ALERTS, {}), default=10) or 10)
+    block_keywords_raw = _text(props.get(_P_BLOCK_KEYWORDS, {}))
+    block_keywords = _parse_keywords(block_keywords_raw)
 
     return Subscriber(
         name=name or "Unknown",
@@ -102,6 +105,7 @@ def _parse_subscriber(props: dict) -> Subscriber:
         channels=channels,
         subscribe_hot=subscribe_hot,
         watch_keywords=watch_keywords,
+        block_keywords=block_keywords,
         min_discount_percent=min_discount,
         categories=categories,
         max_alerts_per_day=max_alerts,
