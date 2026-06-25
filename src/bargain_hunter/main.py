@@ -26,7 +26,7 @@ from .models import Deal
 from .notify.email import EmailSender, send_maintainer_alert
 from .notify.render import DealItem
 from .observations import ObservationLog, build_observation
-from .scoring import enrich_deal, is_hot
+from .scoring import compute_vote_velocity, enrich_deal, is_hot
 from .sources.camelcamelcamel import CamelCamelCamelSource
 from .sources.ozbargain import OzBargainSource
 from .state import StateStore
@@ -230,7 +230,10 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                     break
                 if dedup.already_sent(deal, sub):
                     continue
-                if not _passes_quality_gate(deal, settings.scoring.hot):
+                vel, _ = compute_vote_velocity(
+                    snaps_map.get(deal.key, []), settings.scoring.window_minutes, now
+                )
+                if not _passes_quality_gate(deal, settings.scoring.hot, vote_velocity=vel):
                     continue
                 items.append(DealItem(deal, track="hot", reason=_hot_reason(deal)))
                 notified_keys.add(deal.key)
@@ -306,16 +309,22 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     return summary
 
 
-def _passes_quality_gate(deal: Deal, hot_cfg) -> bool:
-    """Data-backed quality filter: low-vote deals must have a meaningful discount.
+def _passes_quality_gate(deal: Deal, hot_cfg, vote_velocity: float = 0.0) -> bool:
+    """Data-backed quality filter for hot deals.
 
-    Derived from 2 days of observations: promo/food/membership deals cluster at
-    18-38 votes with no extractable discount_percent. Genuine product discounts
-    (game sales, electronics) have discount_percent present even at lower vote counts.
-    Deals with >= quality_high_votes_threshold votes are exempt (strongly community-validated).
+    High velocity (>=20 votes/h) is itself a quality signal — data shows these
+    deals reach 50-120 votes regardless of extractable discount. Bypass the
+    discount check so fast-moving deals (GTA VI, Dell monitors, etc.) aren't
+    delayed until they accumulate 40+ votes.
+
+    For lower-velocity deals: promo/food/membership deals cluster at 18-38 votes
+    with no discount signal, so require discount >= quality_min_discount_pct unless
+    they've already accumulated quality_high_votes_threshold votes.
     """
     min_disc = hot_cfg.quality_min_discount_pct
     if min_disc is None:
+        return True
+    if vote_velocity >= 20.0:
         return True
     if deal.votes_pos >= hot_cfg.quality_high_votes_threshold:
         return True

@@ -16,10 +16,10 @@ sources:
     feed_url: "https://au.camelcamelcamel.com/top_drops/feed"
 
 scoring:
-  window_minutes: 60               # velocity 计算窗口
+  window_minutes: 15               # 15-min window: accurate current momentum, 2-run detection
   hot:
-    # V1=20: p95 of 60-min velocity in observed data (73 active deals, p95=22/h)
-    min_votes_gain_per_window: 20  # 窗口内净增票阈值 (V1)
+    # V1 gate: 5 votes in 15 min = 20 votes/h — same velocity bar, shorter window
+    min_votes_gain_per_window: 5   # 窗口内净增票阈值 (V1)
     early_burst_age_hours: 2       # 早期爆发判定时长 (H)
     # V2=30: p90 of votes_pos in observed data is 44; 30 targets top ~25%
     early_burst_min_votes: 30      # 早期爆发票数 (V2)
