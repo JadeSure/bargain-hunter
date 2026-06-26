@@ -58,3 +58,39 @@ cold_start:
 alerting:
   min_consecutive_failures: 3      # 连续失败这么多次才发报警（过滤偶发性失败）
   cooldown_hours: 1.0              # 发完后静默 1 小时再考虑下一封
+
+# ---------------------------------------------------------------------------
+# 薅羊毛攻略采集 (strategy_hunter)。每天 GitHub Actions 抓取,本地模型再提纯。
+# ---------------------------------------------------------------------------
+strategy:
+  enabled: true
+  min_relevance: 1                 # 标题+正文里至少命中这么多省钱信号词才保留
+  request_delay_seconds: 1.0       # 抓取帖子正文时的礼貌间隔
+  retention_days: 60               # 原始语料保留天数,超期自动清理 (0 = 不清理)
+  alert_on_failure: true           # 采集出错或零产出时给维护者发告警邮件
+  sources:
+    reddit:
+      enabled: true
+      subreddits: ["AusFinance", "AusFrugal", "fiaustralia"]
+      listing: "hot"              # hot | new | top
+      limit: 25
+    ozbargain_forum:
+      enabled: true
+      board_urls:
+        - "https://www.ozbargain.com.au/forum/1341"   # Find Me A Bargain
+        - "https://www.ozbargain.com.au/forum/38183"  # Financial
+      max_threads_per_board: 25
+      fetch_body: true
+    ozbargain_comments:
+      enabled: true
+      feed_url: "https://www.ozbargain.com.au/deals/feed"
+      min_comments: 10             # 只挖评论数 >= 此值的热门 deal（讨论富集）
+      max_deals: 15                # 每次最多抓取的 deal node 页数
+    whirlpool:
+      enabled: true
+      board_urls:
+        - "https://forums.whirlpool.net.au/forum/153" # Shopping
+        - "https://forums.whirlpool.net.au/forum/150" # Finance
+        - "https://forums.whirlpool.net.au/forum/149" # Travel
+      max_threads_per_board: 25
+      fetch_body: true

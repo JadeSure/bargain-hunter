@@ -1,0 +1,46 @@
+name: collect-strategies
+
+on:
+  schedule:
+    - cron: "0 19 * * *"   # ~05:00 AET daily (19:00 UTC); time is approximate
+  workflow_dispatch:        # manual trigger for testing
+
+concurrency:
+  group: collect-strategies
+  cancel-in-progress: false
+
+permissions:
+  contents: write           # to commit the harvested corpus + digest
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -e . --quiet
+
+      - name: Collect strategy material
+        run: python -m strategy_hunter collect
+
+      - name: Commit corpus + digest
+        if: success()
+        run: |
+          if [ -z "$(git status --porcelain data/strategies 2>/dev/null)" ]; then
+            echo "No new strategy material."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/strategies/
+          git commit -m "chore: strategy corpus [skip ci]"
+          git push

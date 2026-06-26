@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xml:base="https://www.ozbargain.com.au" xmlns:ozb="https://www.ozbargain.com.au">
+<channel>
+ <title>OzBargain | New Deals</title>
+ <link>https://www.ozbargain.com.au/deals/feed</link>
+ <item>
+  <title>50% off Apple Gift Cards @ Coles</title>
+  <link>https://www.ozbargain.com.au/node/111111</link>
+  <comments>https://www.ozbargain.com.au/node/111111#comment</comments>
+  <ozb:meta comment-count="42" votes-pos="120" votes-neg="3" />
+ </item>
+ <item>
+  <title>$5 off Coffee @ Some Cafe</title>
+  <link>https://www.ozbargain.com.au/node/222222</link>
+  <comments>https://www.ozbargain.com.au/node/222222#comment</comments>
+  <ozb:meta comment-count="2" votes-pos="4" votes-neg="0" />
+ </item>
+ <item>
+  <title>No Node Link Item</title>
+  <link>https://www.ozbargain.com.au/something/else</link>
+  <ozb:meta comment-count="99" />
+ </item>
+</channel>
+</rss>

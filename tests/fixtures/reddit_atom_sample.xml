@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
+  <category term="AusFinance" label="r/AusFinance"/>
+  <updated>2026-06-26T13:26:55+00:00</updated>
+  <id>/r/AusFinance/hot.rss</id>
+  <title>AusFinance</title>
+  <entry>
+    <author><name>/u/saver</name></author>
+    <category term="AusFinance" label="r/AusFinance"/>
+    <content type="html">&lt;p&gt;What is the cheapest way to buy a MacBook with a student discount and cashback?&lt;/p&gt;</content>
+    <id>t3_abc123</id>
+    <link href="https://www.reddit.com/r/AusFinance/comments/abc123/cheapest_macbook/" />
+    <updated>2026-06-25T10:00:00+00:00</updated>
+    <published>2026-06-25T09:00:00+00:00</published>
+    <title>Cheapest way to buy a MacBook?</title>
+  </entry>
+  <entry>
+    <author><name>/u/churner</name></author>
+    <category term="AusFinance" label="r/AusFinance"/>
+    <content type="html">&lt;p&gt;Best card for a sign-up bonus and frequent flyer points right now?&lt;/p&gt;</content>
+    <id>t3_def456</id>
+    <link href="https://www.reddit.com/r/AusFinance/comments/def456/best_card/" />
+    <updated>2026-06-25T08:00:00+00:00</updated>
+    <published>2026-06-25T07:30:00+00:00</published>
+    <title>Best card for sign-up bonus?</title>
+  </entry>
+</feed>

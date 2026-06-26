@@ -22,6 +22,43 @@ A deal that qualifies on both tracks is merged into one notification.
 | OzBargain | Community deals | Vote velocity, comments |
 | CamelCamelCamel AU | Amazon price drops | Discount % |
 
+## Strategy guides (薅羊毛攻略)
+
+A separate daily pipeline (`strategy_hunter`) harvests money-saving *discussion* —
+where people share combinations of techniques to buy things cheaply (e.g. "cheapest
+way to get a MacBook in AU") — and turns it into structured guides for the website.
+
+Three stages:
+
+1. **Collect** (GitHub Actions, daily, fully automated): scrapes forum threads/posts,
+   filters by relevance, and stores a corpus + an LLM-ready digest in the repo.
+2. **Extract** (local, your own LLM): feed `data/strategies/digest/<date>.md` plus
+   `src/strategy_hunter/prompts/extract_guide.md` to a model to produce structured
+   guide JSON in `data/strategies/guides/`.
+3. **Publish** (website): render guides at `/guides` in the `frontend/` Next.js app.
+
+Sources (configurable in `config/settings.yaml` under `strategy:`):
+
+| Source | What | How |
+|---|---|---|
+| OzBargain forums | "Find Me A Bargain" / "Financial" boards | HTML scrape of board + thread OP |
+| OzBargain deal comments | busy deal threads (stacking tips) | HTML scrape of deal node comments |
+| Reddit | r/AusFinance, r/AusFrugal, r/fiaustralia | Atom RSS feed |
+| Whirlpool | Shopping / Finance / Travel boards | HTML scrape of board + thread OP |
+
+```bash
+strategy-hunter collect          # fetch sources, store corpus, write digest, prune old
+strategy-hunter digest           # rebuild the digest from the stored corpus
+strategy-hunter validate-guides  # validate Stage 2 guide JSON against the schema
+```
+
+The corpus is pruned to `strategy.retention_days` (default 60) on every run, and a
+maintainer alert is emailed if a collection run errors or harvests nothing
+(`strategy.alert_on_failure`). Stage 3 renders guides at `/guides` in the
+`frontend/` Next.js app (statically generated from `data/strategies/guides/*.json`).
+
+Full design: [`docs/STRATEGY_PLAN.md`](docs/STRATEGY_PLAN.md).
+
 ## Watch keyword syntax
 
 Keywords are stored in the Notion Subscribers database, one per line in the **Watch Keywords** field:
