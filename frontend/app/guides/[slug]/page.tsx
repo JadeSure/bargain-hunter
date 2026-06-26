@@ -1,9 +1,14 @@
-export const runtime = 'edge'
-
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getGuide, techniqueLabel } from '@/lib/guides'
+import { getGuide, getGuides, techniqueLabel } from '@/lib/guides'
+
+export const dynamicParams = false
+
+export async function generateStaticParams() {
+  const guides = await getGuides()
+  return guides.map((g) => ({ slug: g.id }))
+}
 
 export async function generateMetadata({
   params,
