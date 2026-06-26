@@ -78,6 +78,30 @@ def test_fetch_skips_rate_limited_subreddit(monkeypatch):
         return httpx.Response(429)
 
     monkeypatch.setattr(reddit_mod.httpx, "request", fake_request)
-    src = RedditSource(subreddits=["AusFinance", "AusFrugal"], max_retries=0)
+    src = RedditSource(
+        subreddits=["AusFinance", "AusFrugal"], max_retries=0, request_delay_seconds=0
+    )
     # No credentials -> RSS path; both subs 429 -> skipped, no raise, empty result.
     assert src.fetch() == []
+
+
+def test_fetch_retries_then_succeeds(monkeypatch):
+    import httpx
+
+    from strategy_hunter.sources import reddit as reddit_mod
+
+    xml = FIXTURE.read_text(encoding="utf-8")
+    calls = {"n": 0}
+
+    def fake_request(method, url, **kwargs):
+        calls["n"] += 1
+        req = httpx.Request(method, url)
+        if calls["n"] == 1:                      # first hit is rate limited
+            return httpx.Response(429, headers={"Retry-After": "0"}, request=req)
+        return httpx.Response(200, text=xml, request=req)  # retry succeeds
+
+    monkeypatch.setattr(reddit_mod.httpx, "request", fake_request)
+    src = RedditSource(subreddits=["AusFinance"], max_retries=2, request_delay_seconds=0)
+    posts = src.fetch()
+    assert calls["n"] == 2                        # retried exactly once
+    assert len(posts) == 2                        # parsed the fixture feed
