@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+from typing import Any
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
@@ -113,6 +114,9 @@ class Settings(StrictConfigModel):
     dedup: DedupConfig = Field(default_factory=DedupConfig)
     cold_start: ColdStartConfig = Field(default_factory=ColdStartConfig)
     alerting: AlertConfig = Field(default_factory=AlertConfig)
+    # Consumed by the separate strategy_hunter pipeline (it has its own loader);
+    # accepted here so the shared settings.yaml validates under this strict model.
+    strategy: dict[str, Any] | None = None
 
 
 def load_settings(path: Path | None = None) -> Settings:
