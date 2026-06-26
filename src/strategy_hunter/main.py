@@ -59,7 +59,7 @@ def _maybe_alert(summary: dict) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Strategy (薅羊毛) guide collector.")
+    parser = argparse.ArgumentParser(description="Strategy guide collector.")
     parser.add_argument(
         "command",
         nargs="?",

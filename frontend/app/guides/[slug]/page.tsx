@@ -1,12 +1,9 @@
+export const runtime = 'edge'
+
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getGuide, getGuides, techniqueLabel } from '@/lib/guides'
-
-export async function generateStaticParams() {
-  const guides = await getGuides()
-  return guides.map((g) => ({ slug: g.id }))
-}
+import { getGuide, techniqueLabel } from '@/lib/guides'
 
 export async function generateMetadata({
   params,
@@ -15,9 +12,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params
   const guide = await getGuide(slug)
-  if (!guide) return { title: '攻略未找到 · Bargain Hunter' }
+  if (!guide) return { title: 'Guide not found · Bargain Hunter' }
   return {
-    title: `${guide.goal} · 薅羊毛攻略`,
+    title: `${guide.goal} · Saving Guides`,
     description: guide.summary,
   }
 }
@@ -43,20 +40,16 @@ export default async function GuideDetailPage({
     <main className="guide-detail">
       <header className="guides-header">
         <Link href="/guides" className="guides-brand">
-          ← 攻略库
+          ← Guides
         </Link>
       </header>
 
       <article className="guide-article">
         <div className="guide-detail-techniques">
           {guide.techniques.map((t) => (
-            <Link
-              key={t}
-              href={`/guides?technique=${encodeURIComponent(t)}`}
-              className="guide-chip"
-            >
+            <span key={t} className="guide-chip">
               {techniqueLabel(t)}
-            </Link>
+            </span>
           ))}
         </div>
 
@@ -66,23 +59,23 @@ export default async function GuideDetailPage({
         <div className="guide-detail-facts">
           {guide.total_est_saving && (
             <div className="guide-fact">
-              <span className="guide-fact-label">预计可省</span>
+              <span className="guide-fact-label">Est. saving</span>
               <span className="guide-fact-value guide-saving">{guide.total_est_saving}</span>
             </div>
           )}
           {guide.difficulty && (
             <div className="guide-fact">
-              <span className="guide-fact-label">难度</span>
+              <span className="guide-fact-label">Difficulty</span>
               <span className="guide-fact-value">{guide.difficulty}</span>
             </div>
           )}
           <div className="guide-fact">
-            <span className="guide-fact-label">地区</span>
+            <span className="guide-fact-label">Region</span>
             <span className="guide-fact-value">{guide.region}</span>
           </div>
           {guide.valid_until && (
             <div className="guide-fact">
-              <span className="guide-fact-label">有效期至</span>
+              <span className="guide-fact-label">Valid until</span>
               <span className="guide-fact-value">{guide.valid_until.slice(0, 10)}</span>
             </div>
           )}
@@ -90,7 +83,7 @@ export default async function GuideDetailPage({
 
         {guide.prerequisites.length > 0 && (
           <section className="guide-section">
-            <h2 className="guide-section-title">开始前你需要</h2>
+            <h2 className="guide-section-title">Before you start</h2>
             <ul className="guide-list">
               {guide.prerequisites.map((p, i) => (
                 <li key={i}>{p}</li>
@@ -100,7 +93,7 @@ export default async function GuideDetailPage({
         )}
 
         <section className="guide-section">
-          <h2 className="guide-section-title">操作步骤</h2>
+          <h2 className="guide-section-title">Steps</h2>
           <ol className="guide-steps">
             {[...guide.steps]
               .sort((a, b) => a.order - b.order)
@@ -115,7 +108,7 @@ export default async function GuideDetailPage({
                         <span className="guide-step-tag">{techniqueLabel(step.technique)}</span>
                       )}
                       {step.est_saving && (
-                        <span className="guide-step-tag guide-saving">省 {step.est_saving}</span>
+                        <span className="guide-step-tag guide-saving">Save {step.est_saving}</span>
                       )}
                     </div>
                   </div>
@@ -126,7 +119,7 @@ export default async function GuideDetailPage({
 
         {guide.risks.length > 0 && (
           <section className="guide-section">
-            <h2 className="guide-section-title">风险提示</h2>
+            <h2 className="guide-section-title">Risks</h2>
             <ul className="guide-list guide-list-risk">
               {guide.risks.map((r, i) => (
                 <li key={i}>{r}</li>
@@ -137,7 +130,7 @@ export default async function GuideDetailPage({
 
         {guide.sources.length > 0 && (
           <section className="guide-section">
-            <h2 className="guide-section-title">来源</h2>
+            <h2 className="guide-section-title">Sources</h2>
             <ul className="guide-sources">
               {guide.sources.map((url, i) => (
                 <li key={i}>
@@ -152,7 +145,7 @@ export default async function GuideDetailPage({
 
         <footer className="guide-footer">
           <p className="guide-disclaimer">
-            攻略由社区讨论自动提炼,价格与玩法可能随时变化,请以商家实际条款为准。
+            Guides are generated automatically from community discussions. Prices and mechanics can change — always check the retailer&apos;s current terms.
           </p>
         </footer>
       </article>

@@ -25,8 +25,6 @@ _SIGNAL_PHRASES = [
     "cheapest way", "cheapest place", "how to get", "best way to", "best card",
     "under $", "save money", "save on", "deal on", "get it cheaper",
     "good deal", "worth it", "recommend", "alternative to",
-    # Chinese (sources are mostly EN, but keep a few)
-    "薅羊毛", "优惠", "折扣", "返现", "礼品卡", "攻略",
 ]
 
 _PATTERNS = [re.compile(re.escape(p), re.IGNORECASE) for p in _SIGNAL_PHRASES]

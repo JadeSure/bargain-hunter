@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { getGuides, getAllTechniques, techniqueLabel, type Guide } from '@/lib/guides'
+import { getGuides, getAllTechniques } from '@/lib/guides'
+import { GuidesFilter } from './GuidesFilter'
 
 export const metadata: Metadata = {
-  title: '薅羊毛攻略 · Bargain Hunter',
-  description: '把澳洲论坛里散落的组合省钱玩法,提炼成可照做的攻略——返现、折扣礼品卡、教育优惠等技巧的组合拳。',
+  title: 'Saving Guides · Bargain Hunter',
+  description: 'Practical saving playbooks for Australian shoppers — cashback stacking, discounted gift cards, education stores, and more.',
 }
 
 function BrandLogo({ size = 24 }: { size?: number }) {
@@ -16,39 +17,8 @@ function BrandLogo({ size = 24 }: { size?: number }) {
   )
 }
 
-function GuideCard({ guide }: { guide: Guide }) {
-  return (
-    <Link href={`/guides/${guide.id}`} className="guide-card">
-      <div className="guide-card-goal">{guide.goal}</div>
-      <p className="guide-card-summary">{guide.summary}</p>
-      <div className="guide-card-techniques">
-        {guide.techniques.slice(0, 5).map((t) => (
-          <span key={t} className="guide-chip">
-            {techniqueLabel(t)}
-          </span>
-        ))}
-      </div>
-      <div className="guide-card-meta">
-        {guide.total_est_saving && (
-          <span className="guide-saving">省 {guide.total_est_saving}</span>
-        )}
-        {guide.difficulty && <span className="guide-meta-item">难度 {guide.difficulty}</span>}
-        <span className="guide-meta-item">{guide.steps.length} 步</span>
-      </div>
-    </Link>
-  )
-}
-
-export default async function GuidesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ technique?: string }>
-}) {
-  const { technique } = await searchParams
+export default async function GuidesPage() {
   const [guides, techniques] = await Promise.all([getGuides(), getAllTechniques()])
-  const filtered = technique
-    ? guides.filter((g) => g.techniques.includes(technique))
-    : guides
 
   return (
     <main className="guides-page">
@@ -57,56 +27,17 @@ export default async function GuidesPage({
           <BrandLogo />
           <span>Bargain Hunter</span>
         </Link>
-        <Link href="/" className="guides-back">← 返回首页</Link>
+        <Link href="/" className="guides-back">← Back to home</Link>
       </header>
 
       <section className="guides-hero">
-        <h1 className="guides-hero-title">薅羊毛攻略库</h1>
+        <h1 className="guides-hero-title">Saving Guides</h1>
         <p className="guides-hero-sub">
-          把澳洲论坛里散落的组合省钱玩法,提炼成照着做就行的攻略。
+          Practical playbooks for Australian shoppers — cashback stacking, discounted gift cards, education stores, and more.
         </p>
       </section>
 
-      {techniques.length > 0 && (
-        <nav className="guides-filter" aria-label="按技巧筛选">
-          <Link
-            href="/guides"
-            className={`guide-filter-chip${!technique ? ' guide-filter-chip-active' : ''}`}
-          >
-            全部
-          </Link>
-          {techniques.map((t) => (
-            <Link
-              key={t}
-              href={`/guides?technique=${encodeURIComponent(t)}`}
-              className={`guide-filter-chip${technique === t ? ' guide-filter-chip-active' : ''}`}
-            >
-              {techniqueLabel(t)}
-            </Link>
-          ))}
-        </nav>
-      )}
-
-      {filtered.length === 0 ? (
-        <div className="guides-empty">
-          {guides.length === 0 ? (
-            <>
-              <p>攻略正在路上 🐑</p>
-              <p className="guides-empty-sub">
-                采集器每天从 OzBargain / Reddit / Whirlpool 抓取讨论,提炼后的攻略会陆续出现在这里。
-              </p>
-            </>
-          ) : (
-            <p>该技巧下暂时没有攻略,换一个试试。</p>
-          )}
-        </div>
-      ) : (
-        <div className="guides-grid">
-          {filtered.map((g) => (
-            <GuideCard key={g.id} guide={g} />
-          ))}
-        </div>
-      )}
+      <GuidesFilter guides={guides} techniques={techniques} />
     </main>
   )
 }

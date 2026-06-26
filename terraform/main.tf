@@ -107,3 +107,12 @@ resource "cloudflare_workers_script_subdomain" "portal" {
   enabled          = true
   previews_enabled = false
 }
+
+# --- Frontend (Cloudflare Pages) ---
+
+# The project is created here; deploys are pushed via `wrangler pages deploy` in CI.
+resource "cloudflare_pages_project" "frontend" {
+  account_id        = var.cloudflare_account_id
+  name              = var.pages_project_name
+  production_branch = "main"
+}

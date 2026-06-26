@@ -5,22 +5,26 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:cf": "next build && npx @cloudflare/next-on-pages",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "pages:dev": "wrangler pages dev"
   },
   "dependencies": {
-    "next": "16.2.9",
+    "next": "15.5.2",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.16",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.9",
+    "eslint-config-next": "^15.5.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.105.0"
   }
 }

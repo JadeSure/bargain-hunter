@@ -1,6 +1,6 @@
 # Bargain Hunter
 
-Runs every 5 minutes via GitHub Actions. Fetches deals from OzBargain and CamelCamelCamel AU, scores them for velocity (爆款/Hot) and matches against personal watch lists (盯货/Watch), then sends email digests to subscribers managed in Notion.
+Runs every 5 minutes via GitHub Actions. Fetches deals from OzBargain and CamelCamelCamel AU, scores them for velocity (Hot) and matches against personal watch lists (Watch), then sends email digests to subscribers managed in Notion.
 
 Full design: [`docs/PRD.md`](docs/PRD.md) · Implementation notes: [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md)
 
@@ -10,8 +10,8 @@ Full design: [`docs/PRD.md`](docs/PRD.md) · Implementation notes: [`docs/IMPLEM
 
 ## Two tracks
 
-- **Hot (爆款):** vote velocity + absolute votes + age decay. Passes a threshold → notifies all opt-in subscribers. Low frequency, high precision.
-- **Watch (盯货):** keyword appears in a deal title → notifies the subscriber who listed that keyword. Noise guard: ≥5 votes (OzBargain) or ≥10% discount (CamelCamelCamel). Optional price ceiling to filter further.
+- **Hot:** vote velocity + absolute votes + age decay. Passes a threshold → notifies all opt-in subscribers. Low frequency, high precision.
+- **Watch:** keyword appears in a deal title → notifies the subscriber who listed that keyword. Noise guard: ≥5 votes (OzBargain) or ≥10% discount (CamelCamelCamel). Optional price ceiling to filter further.
 
 A deal that qualifies on both tracks is merged into one notification.
 
@@ -22,7 +22,7 @@ A deal that qualifies on both tracks is merged into one notification.
 | OzBargain | Community deals | Vote velocity, comments |
 | CamelCamelCamel AU | Amazon price drops | Discount % |
 
-## Strategy guides (薅羊毛攻略)
+## Strategy guides
 
 A separate daily pipeline (`strategy_hunter`) harvests money-saving *discussion* —
 where people share combinations of techniques to buy things cheaply (e.g. "cheapest

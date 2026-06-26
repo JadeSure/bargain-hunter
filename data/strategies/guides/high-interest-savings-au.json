@@ -1,0 +1,61 @@
+{
+  "id": "high-interest-savings-au",
+  "goal": "Maximise savings account interest returns in Australia",
+  "category": "Savings & Finance",
+  "region": "AU",
+  "summary": "Australian high-interest savings accounts can reach 5.50–5.90% p.a., but typically come with monthly conditions. By taking advantage of new customer intro rates, using the account flip method to bypass growth requirements, and spreading deposits across multiple accounts, you can significantly increase interest earnings without sacrificing liquidity.",
+  "techniques": [
+    "signup_bonus",
+    "other"
+  ],
+  "steps": [
+    {
+      "order": 1,
+      "action": "New customers: open Rabobank HISA or ING Accelerator first to capture intro bonus rates",
+      "detail": "Rabobank HISA: 5.90% for first 4 months (up to $50K), drops to 3.75% after. ING Accelerator: 5.85% for first 4 months (up to $100K), drops to 4.80% after. Ubank Saver: 5.85% for first 4 months (new customers), then 5.10%.",
+      "est_saving": "Extra ~0.40–0.75% rate premium for the first 4 months",
+      "technique": "signup_bonus"
+    },
+    {
+      "order": 2,
+      "action": "After intro period, switch to an ongoing high-rate account such as ING Maximiser",
+      "detail": "ING Maximiser: 5.50% (up to $100K), conditions: deposit $1,000/month + 5 purchases on the Orange Everyday account. BOQ SmartSaver: 5.40% (up to $250K). Judo Bank Saver: 5.35% (up to $250K), $200/month deposit, no spending requirement.",
+      "est_saving": "~5.35–5.50% p.a.",
+      "technique": "other"
+    },
+    {
+      "order": 3,
+      "action": "Use the account flip method to bypass monthly balance growth requirements",
+      "detail": "Applicable to accounts like ING, BOQ, and MEB that check the previous month's balance growth: keep just the minimum growth amount at end of previous month (e.g. ING requires only $0.01), then freely withdraw in the current month without losing the bonus rate. St George Incentive Saver requires only $1 minimum growth.",
+      "est_saving": "Maintain full bonus rate all month; avoid losing interest due to withdrawals",
+      "technique": "other"
+    },
+    {
+      "order": 4,
+      "action": "Spread deposits across multiple accounts to exceed single-account rate caps",
+      "detail": "Most high-interest accounts cap the bonus rate at a maximum balance (e.g. ING $100K, Rabobank $50K). Open accounts at multiple banks simultaneously (e.g. ING + Rabobank + Judo) to keep more of your balance earning the top rate. Judo Bank supports multiple Saver accounts per customer, effectively expanding the usable cap.",
+      "est_saving": "Balances above a single account cap can continue earning the top rate",
+      "technique": "other"
+    }
+  ],
+  "total_est_saving": "Compared to a big-four standard savings account (~1% p.a.), earn an extra 4–5% per year; on $100K that's roughly $4,000–$5,000 in additional annual interest",
+  "difficulty": "Easy",
+  "risks": [
+    "Rates move with the RBA cash rate; all figures are as of June 2026 and should be reviewed regularly",
+    "The account flip must be completed before month-end or you lose that month's bonus rate",
+    "When intro rates expire you must actively switch accounts; otherwise the rate automatically drops to the lower ongoing rate",
+    "ING has announced a possible tiered subscription model for Australian accounts; future terms are subject to change"
+  ],
+  "prerequisites": [
+    "Australian resident (must pass bank KYC identity verification)",
+    "A valid Australian bank account for transferring funds in and out",
+    "(ING Maximiser) Deposit at least $1,000 per month and make 5 purchases on the Orange Everyday account"
+  ],
+  "sources": [
+    "https://www.ozbargain.com.au/node/916378",
+    "https://www.ozbargain.com.au/node/963761"
+  ],
+  "valid_until": null,
+  "confidence": 0.82,
+  "generated_at": "2026-06-26T20:51:45Z"
+}

@@ -7,12 +7,12 @@ from strategy_hunter.validate import validate_guides
 
 VALID_GUIDE = {
     "id": "buy-macbook-au-cheap",
-    "goal": "在澳洲低价购买 MacBook",
-    "summary": "组合礼品卡折扣 + 返现购买 MacBook。",
+    "goal": "Buy a MacBook cheaply in Australia",
+    "summary": "Stack discounted gift cards + cashback to save on a MacBook.",
     "techniques": ["discounted_giftcard", "cashback"],
     "steps": [
-        {"order": 1, "action": "买折扣 Apple 礼品卡", "technique": "discounted_giftcard"},
-        {"order": 2, "action": "通过返现网站下单", "technique": "cashback"},
+        {"order": 1, "action": "Buy discounted Apple gift cards", "technique": "discounted_giftcard"},
+        {"order": 2, "action": "Place the order via a cashback portal", "technique": "cashback"},
     ],
     "sources": ["https://www.ozbargain.com.au/node/111111"],
     "confidence": 0.8,

@@ -60,3 +60,9 @@ variable "owner_email" {
   description = "Email address that receives access requests from the landing page."
   type        = string
 }
+
+variable "pages_project_name" {
+  description = "Cloudflare Pages project name for the Next.js frontend."
+  type        = string
+  default     = "bargain-hunter"
+}

@@ -1,0 +1,74 @@
+{
+  "id": "buy-apple-products-au",
+  "goal": "Buy Apple products (MacBook / iPad) cheaply in Australia",
+  "category": "Electronics",
+  "region": "AU",
+  "summary": "Apple has recently increased prices significantly, making the official store no longer the best option. Combining the Officeworks price beat (5% off competitor price) + discounted gift cards (~10%) + TopCashback (8%), you can save approximately 15–22%. Prioritise comparing prices at authorised retailers like JB Hi-Fi and The Good Guys, then take the lowest price to Officeworks and request a price beat.",
+  "techniques": [
+    "price_match",
+    "discounted_giftcard",
+    "cashback",
+    "membership"
+  ],
+  "steps": [
+    {
+      "order": 1,
+      "action": "Compare prices at authorised retailers (JB Hi-Fi, The Good Guys, Mwave) to establish the lowest reference price",
+      "detail": "Apple's official store prices have risen sharply recently (some products up 20–25%); retailers like JB Hi-Fi often carry stock at prices well below Apple's new RRP. For example, the MacBook Neo 13\" A18 Pro was listed at $829 on Mwave while Apple's new RRP was $1,049.",
+      "est_saving": "10–20% vs Apple Online",
+      "technique": "price_match"
+    },
+    {
+      "order": 2,
+      "action": "Take the competitor's lowest price to Officeworks and request a price beat",
+      "detail": "Officeworks price beat: while the competitor has the item in stock, Officeworks will beat that price by 5%. Example: TGG iPad A16 $479 -> Officeworks ~$455.05; MacBook Neo has been beaten from a Bing Lee price down to $806. Note: the competitor must have stock available, and Officeworks must also have the item in stock.",
+      "est_saving": "Additional ~5%",
+      "technique": "price_match"
+    },
+    {
+      "order": 3,
+      "action": "Pay with discounted gift cards at Officeworks or JB Hi-Fi",
+      "detail": "Coles/Woolworths periodically run 10% off gift card promotions (including Officeworks and JB Hi-Fi gift cards). Community members have confirmed that both Officeworks and JB Hi-Fi accept their respective gift cards at checkout, and the gift card discount stacks on top of the price beat price.",
+      "est_saving": "~8–10%",
+      "technique": "discounted_giftcard"
+    },
+    {
+      "order": 4,
+      "action": "Go through TopCashback AU to Apple Education Store or Apple Online for cashback",
+      "detail": "TopCashback AU has offered 8% uncapped cashback on Apple Online and Apple Education Store. This approach cannot be combined with the retailer price beat route; evaluate each path independently to see which gives the lower total. The Apple Education Store itself is ~9–10% cheaper, and combined with 8% cashback that's ~17% saved.",
+      "est_saving": "~8% cashback",
+      "technique": "cashback"
+    },
+    {
+      "order": 5,
+      "action": "During EOFY, watch for Officeworks Flybuys bonus points promotions",
+      "detail": "During EOFY, Officeworks runs Flybuys 10x points promotions (some targeted to specific users). Purchasing a $995 item earns roughly 4,950 Flybuys points (worth ~$25), equivalent to an additional ~2.5% effective discount.",
+      "est_saving": "~$25 per $995 spent",
+      "technique": "membership"
+    }
+  ],
+  "total_est_saving": "~15–22% (depending on which combination of channels and timing applies)",
+  "difficulty": "Medium",
+  "risks": [
+    "Apple's official prices have risen significantly; always check current retail prices rather than relying on historical figures",
+    "Officeworks price beat requires the competitor to have stock available, and Officeworks must also have stock",
+    "Discounted gift cards must be purchased from trusted sources (e.g. Coles/Woolworths official promotions) to avoid third-party risk",
+    "TopCashback promotions are time-limited; read the exclusions carefully",
+    "Flybuys 10x points promotions are targeted offers; not available to all customers"
+  ],
+  "prerequisites": [
+    "Officeworks account (free to register)",
+    "(Optional) Flybuys membership card",
+    "(Optional) TopCashback AU account",
+    "(Optional) Student or teacher status (for Apple Education Store)"
+  ],
+  "sources": [
+    "https://www.ozbargain.com.au/node/965287",
+    "https://www.ozbargain.com.au/node/965277",
+    "https://www.ozbargain.com.au/node/965285",
+    "https://www.ozbargain.com.au/node/965263"
+  ],
+  "valid_until": null,
+  "confidence": 0.82,
+  "generated_at": "2026-06-26T20:51:45Z"
+}

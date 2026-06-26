@@ -57,14 +57,14 @@ class Guide(BaseModel):
     """A structured money-saving playbook — the Stage 2 LLM output schema."""
 
     id: str                           # kebab-case slug, e.g. "buy-macbook-au-cheap"
-    goal: str                         # e.g. "在澳洲低价购买 MacBook"
+    goal: str                         # e.g. "Buy a MacBook cheaply in AU"
     category: str | None = None
     region: str = "AU"
     summary: str
     techniques: list[str] = Field(default_factory=list)
     steps: list[GuideStep] = Field(default_factory=list)
     total_est_saving: str | None = None
-    difficulty: str | None = None     # 易 | 中 | 难
+    difficulty: str | None = None     # Easy | Medium | Hard
     risks: list[str] = Field(default_factory=list)
     prerequisites: list[str] = Field(default_factory=list)
     sources: list[str] = Field(default_factory=list)   # source URLs

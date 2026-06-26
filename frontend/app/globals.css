@@ -583,7 +583,7 @@ html, body {
 /* ── Check-email page ────────────────────────────────────── */
 .check-email-icon { display: flex; justify-content: center; margin-bottom: 28px; }
 
-/* ── Strategy guides (薅羊毛攻略) ──────────────────────────── */
+/* ── Strategy guides ──────────────────────────────────────── */
 .guides-page, .guide-detail {
   max-width: 1000px; margin: 0 auto; padding: 0 24px 96px;
 }

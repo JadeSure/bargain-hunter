@@ -24,9 +24,9 @@ _BODY_EXCERPT = 1500
 def build_digest_markdown(posts: list[CapturedPost], date_label: str) -> str:
     """Render captured posts into a single Markdown digest string."""
     lines: list[str] = [
-        f"# 薅羊毛攻略素材 digest — {date_label}",
+        f"# Strategy guide material digest — {date_label}",
         "",
-        f"共 {len(posts)} 条新素材。用 `prompts/extract_guide.md` 的 schema 提炼成结构化攻略。",
+        f"{len(posts)} new posts. Use the schema in `prompts/extract_guide.md` to extract structured guides.",
         "",
     ]
 
@@ -40,7 +40,7 @@ def build_digest_markdown(posts: list[CapturedPost], date_label: str) -> str:
         lines.append("")
         for p in items:
             lines.append(f"### {p.title}")
-            meta = f"- 来源: {p.source} · 相关度 {p.relevance} · <{p.url}>"
+            meta = f"- source: {p.source} · relevance {p.relevance} · <{p.url}>"
             if p.created_at:
                 meta += f" · {p.created_at.date()}"
             lines.append(meta)

@@ -1,0 +1,61 @@
+{
+  "id": "discounted-giftcard-price-match-stack-au",
+  "goal": "Stack discounted supermarket gift cards with Officeworks price beat to save on electronics",
+  "category": "Shopping",
+  "region": "AU",
+  "summary": "Combine a Coles/Woolworths gift card promotion (~10% off) with Officeworks Price Beat (an additional ~5%), saving roughly 10-15% in two steps. Community members have verified this on the Nintendo Switch 2: paying ~$540 for a $600 console bundle.",
+  "techniques": [
+    "discounted_giftcard",
+    "price_match"
+  ],
+  "steps": [
+    {
+      "order": 1,
+      "action": "Buy Officeworks gift cards during a Coles/Woolworths 10% gift card promotion",
+      "detail": "Coles and Woolworths run periodic 10% off gift card promotions. During these events, purchase Officeworks gift cards — e.g. spend $540 to get $600 in Officeworks credit. Per-transaction limits apply; split across multiple transactions if needed.",
+      "est_saving": "~10%",
+      "technique": "discounted_giftcard"
+    },
+    {
+      "order": 2,
+      "action": "Find a lower in-stock price from a competitor for the same product",
+      "detail": "Check EB Games, Amazon AU, Big W, JB Hi-Fi, and others. Officeworks Price Beat requires the competitor to have the identical item in stock and available for immediate purchase.",
+      "est_saving": null,
+      "technique": "price_match"
+    },
+    {
+      "order": 3,
+      "action": "Show the competitor price at Officeworks to claim Price Beat",
+      "detail": "Officeworks beats the competitor's in-stock price by a further 5%. Example: Switch 2 competitor price ~$596 → Price Beat to ~$566; add ~$34 in accessories to reach $600, then pay with the $540 gift card.",
+      "est_saving": "~5% off competitor price",
+      "technique": "price_match"
+    },
+    {
+      "order": 4,
+      "action": "Pay with your discounted gift cards to complete the double saving",
+      "detail": "Officeworks accepts its own gift cards at checkout. Verified example: $600 Nintendo Switch 2 + pen paid with $540 in gift cards (saving ~$60, ~10%).",
+      "est_saving": "~$60 / ~10% on a $600 bundle",
+      "technique": "discounted_giftcard"
+    }
+  ],
+  "total_est_saving": "~10-15% (10% gift card discount + ~5% price beat)",
+  "difficulty": "Medium",
+  "risks": [
+    "Coles/Woolworths 10% gift card promotions are time-limited; you need to wait for an active window",
+    "Officeworks Price Beat requires the competitor to have genuine in-stock availability and an identical spec",
+    "Some brands (e.g. Weber) exclude Price Beat — confirm the brand policy before attempting",
+    "Agency-supplied products are typically excluded from retailer discounts"
+  ],
+  "prerequisites": [
+    "Wait for a Coles/Woolworths gift card promotion (typically monthly or around EOFY)",
+    "Target item must be in stock at both Officeworks and at least one competitor"
+  ],
+  "sources": [
+    "https://www.ozbargain.com.au/node/964314",
+    "https://www.ozbargain.com.au/node/963304",
+    "https://www.ozbargain.com.au/node/963769"
+  ],
+  "valid_until": null,
+  "confidence": 0.8,
+  "generated_at": "2026-06-26T20:51:45Z"
+}

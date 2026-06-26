@@ -1,9 +1,8 @@
-import { promises as fs } from 'fs'
-import path from 'path'
-
 // Mirrors the Python `Guide` pydantic model (src/strategy_hunter/models.py).
-// Guides are produced in Stage 2 and stored as JSON in the repo; this module
-// reads them at build time so the /guides pages can be statically generated.
+// Guides are produced by strategy_hunter and stored as JSON; this module reads
+// them at build time so /guides pages can be statically generated.
+// Dynamic imports for `fs` and `path` keep this module loadable on the edge runtime
+// (where those modules are unavailable); all guide data reads return [] gracefully.
 
 export interface GuideStep {
   order: number
@@ -31,31 +30,43 @@ export interface Guide {
   generated_at?: string | null
 }
 
-// Human-readable labels for the stable technique enum used across guides.
 export const TECHNIQUE_LABELS: Record<string, string> = {
-  cashback: '返现 Cashback',
-  discounted_giftcard: '折扣礼品卡',
-  education_store: '教育商店',
-  credit_card_points: '信用卡积分',
-  signup_bonus: '开户奖励',
-  trade_in: '以旧换新',
-  price_match: '价格匹配',
-  coupon: '优惠券',
-  sale_timing: '大促时机',
-  membership: '会员权益',
-  other: '其他',
+  cashback: 'Cashback',
+  discounted_giftcard: 'Discounted Gift Cards',
+  education_store: 'Education Store',
+  credit_card_points: 'Credit Card Points',
+  signup_bonus: 'Sign-up Bonus',
+  trade_in: 'Trade-in',
+  price_match: 'Price Match',
+  coupon: 'Coupon',
+  sale_timing: 'Sale Timing',
+  membership: 'Membership',
+  other: 'Other',
 }
 
 export function techniqueLabel(technique: string): string {
   return TECHNIQUE_LABELS[technique] ?? technique
 }
 
-// The guides corpus lives at the repo root, one level above the frontend app.
-const GUIDES_DIR = path.join(process.cwd(), '..', 'data', 'strategies', 'guides')
+async function guidesDir(): Promise<string> {
+  const { join } = await import('path')
+  const { default: process } = await import('process')
+  return join(process.cwd(), '..', 'data', 'strategies', 'guides')
+}
 
-async function readGuideFile(file: string): Promise<Guide | null> {
+async function readdir(dir: string): Promise<string[]> {
   try {
-    const raw = await fs.readFile(path.join(GUIDES_DIR, file), 'utf-8')
+    const { promises: fs } = await import('fs')
+    return await fs.readdir(dir)
+  } catch {
+    return []
+  }
+}
+
+async function readGuideFile(filePath: string): Promise<Guide | null> {
+  try {
+    const { promises: fs } = await import('fs')
+    const raw = await fs.readFile(filePath, 'utf-8')
     return JSON.parse(raw) as Guide
   } catch {
     return null
@@ -63,20 +74,17 @@ async function readGuideFile(file: string): Promise<Guide | null> {
 }
 
 export async function getGuides(): Promise<Guide[]> {
-  let files: string[]
-  try {
-    files = await fs.readdir(GUIDES_DIR)
-  } catch {
-    return [] // corpus not generated yet — render an empty state
-  }
+  const dir = await guidesDir()
+  const files = await readdir(dir)
   const jsonFiles = files.filter((f) => f.endsWith('.json'))
-  const guides = await Promise.all(jsonFiles.map(readGuideFile))
+  const { join } = await import('path')
+  const guides = await Promise.all(jsonFiles.map((f) => readGuideFile(join(dir, f))))
   return guides
     .filter((g): g is Guide => g !== null)
     .sort((a, b) => {
       const at = a.generated_at ?? ''
       const bt = b.generated_at ?? ''
-      if (at !== bt) return bt.localeCompare(at) // newest first
+      if (at !== bt) return bt.localeCompare(at)
       return a.goal.localeCompare(b.goal)
     })
 }
