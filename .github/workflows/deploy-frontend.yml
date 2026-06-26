@@ -39,7 +39,7 @@ jobs:
 
       - name: Build for Cloudflare Pages
         run: |
-          next build
+          npx next build
           npx @cloudflare/next-on-pages
 
       - name: Deploy to Cloudflare Pages
