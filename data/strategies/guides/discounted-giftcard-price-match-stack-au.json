@@ -26,7 +26,7 @@
     {
       "order": 3,
       "action": "Show the competitor price at Officeworks to claim Price Beat",
-      "detail": "Officeworks beats the competitor's in-stock price by a further 5%. Example: Switch 2 competitor price ~$596 → Price Beat to ~$566; add ~$34 in accessories to reach $600, then pay with the $540 gift card.",
+      "detail": "Officeworks beats the competitor's in-stock price by a further 5%. Verified Switch 2 example: the Price Beat brought it to ~$596 at Officeworks; add a small ~$4 item (e.g. a pen) to round the bill to $600, then pay the whole $600 with $540 of Coles-bought gift cards.",
       "est_saving": "~5% off competitor price",
       "technique": "price_match"
     },
