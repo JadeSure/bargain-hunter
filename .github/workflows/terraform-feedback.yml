@@ -6,10 +6,14 @@ on:
     paths:
       - "terraform/**"
       - "feedback-worker/src/**"
+      - "portal-worker/src/**"
+      - "portal-worker/package.json"
   pull_request:
     paths:
       - "terraform/**"
       - "feedback-worker/src/**"
+      - "portal-worker/src/**"
+      - "portal-worker/package.json"
   workflow_dispatch:
 
 # Serialize runs so two applies never touch the state at once (our lock strategy).
@@ -31,15 +35,33 @@ jobs:
       # R2 state backend (S3-compatible) credentials
       AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-      # Worker resource inputs
+      # Worker resource inputs — feedback worker
       TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       TF_VAR_notion_token: ${{ secrets.NOTION_TOKEN }}
       TF_VAR_feedback_hmac_secret: ${{ secrets.FEEDBACK_HMAC_SECRET }}
       TF_VAR_cloudflare_account_id: d4f60d0edf9986427ad8e357eba453b6
       TF_VAR_feedback_db_id: 389a2a0bfd0481328e01c06175dae735
+      # Worker resource inputs — portal API worker
+      TF_VAR_subscribers_db_id: ${{ secrets.TF_VAR_SUBSCRIBERS_DB_ID }}
+      TF_VAR_resend_api_key: ${{ secrets.TF_VAR_RESEND_API_KEY }}
+      TF_VAR_frontend_url: ${{ secrets.TF_VAR_FRONTEND_URL }}
+      TF_VAR_owner_email: ${{ secrets.TF_VAR_OWNER_EMAIL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: portal-worker/package-lock.json
+
+      - name: Build portal worker
+        working-directory: portal-worker
+        run: |
+          npm ci
+          npx wrangler deploy --dry-run --outdir dist
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3

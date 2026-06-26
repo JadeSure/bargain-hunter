@@ -1,0 +1,32 @@
+{
+  // Bargain Hunter Portal API — Hono on Cloudflare Workers
+  // Deploy:  npx wrangler deploy
+  // Dev:     npx wrangler dev
+  // Secrets: npx wrangler secret put NOTION_TOKEN
+  //          npx wrangler secret put RESEND_API_KEY
+  //          npx wrangler secret put GOOGLE_CLIENT_SECRET
+  "name": "bargain-portal-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-01-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "kv_namespaces": [
+    {
+      "binding": "PORTAL_KV",
+      // Replace with real KV namespace ID from `wrangler kv namespace create portal-sessions`
+      // or from Terraform output after apply.
+      "id": "REPLACE_WITH_KV_NAMESPACE_ID",
+      "preview_id": "REPLACE_WITH_KV_NAMESPACE_PREVIEW_ID"
+    }
+  ],
+  "vars": {
+    "SUBSCRIBERS_DB_ID": "",
+    // Public URL of this worker — used in magic link verification URL.
+    // Format: https://bargain-portal-api.<your-subdomain>.workers.dev
+    "WORKER_URL": "",
+    // Public URL of the Next.js frontend — used for post-auth redirects and CORS.
+    "FRONTEND_URL": "",
+    // Email address that receives access requests.
+    "OWNER_EMAIL": ""
+  }
+}
