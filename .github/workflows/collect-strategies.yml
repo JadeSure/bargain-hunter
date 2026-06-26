@@ -32,6 +32,12 @@ jobs:
         run: pip install -e . --quiet
 
       - name: Collect strategy material
+        env:
+          # Optional: set these repo secrets to collect Reddit via OAuth, which
+          # works from GitHub Actions IPs (the public RSS feed is 429'd there).
+          # Without them the run still succeeds; Reddit subs are skipped.
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
         run: python -m strategy_hunter collect
 
       - name: Commit corpus + digest

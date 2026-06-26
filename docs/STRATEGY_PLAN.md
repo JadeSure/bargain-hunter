@@ -66,7 +66,12 @@ kebab-case id、id 唯一、步骤/来源非空、confidence ∈ 0..1)。
 
 ## 已验证的源结构 (2026-06-26)
 
-- Reddit:`/r/<sub>/<listing>.rss`(JSON 端点 403,RSS 可用,需 browser UA)
+- Reddit:`/r/<sub>/<listing>.rss`(JSON 端点 403,RSS 可用,需 browser UA)。
+  注意:Reddit 对**数据中心 IP**(如 GitHub Actions)的公共 RSS 反复返回 `429`。
+  本地住宅 IP 一般没问题。要在 CI 稳定采集 Reddit,配置 **OAuth(app-only)**:
+  在 reddit.com/prefs/apps 建一个 *script* 应用,把 `client_id` / `secret` 存为
+  仓库 secrets `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET`,workflow 已自动透传。
+  没配凭据时该源会在限流时**优雅跳过**(WARNING,不报错、不误触发告警)。
 - OzBargain:板块 `/forum/<id>` 列 `/node/<id>` 主题;主题页首个 `div.content` = OP 正文
 - Whirlpool:板块 `/forum/<id>` 列 `a.title[href^=/thread/]`;主题页首个 `div.replytext` = OP
 
