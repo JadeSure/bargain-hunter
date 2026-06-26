@@ -132,7 +132,7 @@ export default function LandingPage() {
           <span className="lp-nav-logo-text">Bargain Hunter</span>
         </div>
         <div className="lp-nav-right">
-          <a className="lp-nav-link" href="/guides">薅羊毛攻略</a>
+          <a className="lp-nav-link" href="/guides">Saving Guides</a>
           <span className="lp-nav-tagline">Invite-only · Australia</span>
           <button className="btn-orange" onClick={openModal} aria-haspopup="dialog">
             Request Access

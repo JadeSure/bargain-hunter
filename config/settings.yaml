@@ -1,11 +1,11 @@
-# Bargain Hunter 可调参数。改完即生效,无需改代码。
+# Bargain Hunter — tunable parameters. Edit and push; no code change needed.
 
 run:
   dry_run: false
   max_alerts_per_user_per_day: 10
-  timezone: "Australia/Sydney"      # AET/AEDT,统一用于每日上限、quiet hours、每日落盘边界
-  quiet_hours_start: "22:00"        # AEST — 10pm 后不发送
-  quiet_hours_end: "07:00"          # AEST — 7am 前不发送（跨午夜窗口）
+  timezone: "Australia/Sydney"      # AET/AEDT — used for daily caps, quiet hours, and midnight boundary
+  quiet_hours_start: "22:00"        # AEST — no alerts after 10pm
+  quiet_hours_end: "07:00"          # AEST — no alerts before 7am (overnight window)
 
 sources:
   ozbargain:
@@ -19,22 +19,22 @@ scoring:
   window_minutes: 15               # 15-min window: accurate current momentum, 2-run detection
   hot:
     # V1 gate: 5 votes in 15 min = 20 votes/h — same velocity bar, shorter window
-    min_votes_gain_per_window: 5   # 窗口内净增票阈值 (V1)
-    early_burst_age_hours: 2       # 早期爆发判定时长 (H)
+    min_votes_gain_per_window: 5   # net votes gained in window (V1)
+    early_burst_age_hours: 2       # age threshold for early-burst detection (H)
     # V2=30: p90 of votes_pos in observed data is 44; 30 targets top ~25%
-    early_burst_min_votes: 30      # 早期爆发票数 (V2)
-    velocity_top_percent: 10       # 进入活跃 deal 前 P% 视为候选
+    early_burst_min_votes: 30      # early-burst absolute vote count (V2)
+    velocity_top_percent: 10       # top P% of active deals enter candidate pool
     # threshold=1.5: calibrated on 143 observed deals → ~7% fire rate (10/143)
-    hot_threshold: 1.5             # 加权热度分阈值
-    neg_vote_penalty_weight: 0.5   # 负票惩罚权重
-    age_penalty_half_life_hours: 12  # 年龄衰减半衰期
-    min_votes_for_percentile: 10   # 低于该票数不参与 top-percentile 候选
+    hot_threshold: 1.5             # weighted heat score threshold
+    neg_vote_penalty_weight: 0.5   # negative-vote penalty weight
+    age_penalty_half_life_hours: 12  # age decay half-life
+    min_votes_for_percentile: 10   # deals below this vote count skip the percentile gate
     # Data finding: deals with <10 votes but high comment velocity scored 12.4 (false positives).
     # Floor gates out these noise cases before scoring.
-    min_votes_to_candidate: 10     # 进入热度候选所需的最低票数（数据校准）
+    min_votes_to_candidate: 10     # minimum votes to enter hot candidate pool (data-calibrated)
     # Data finding: comment velocity at 0.25 weight dominated scores (e.g. 10+ pts from comments alone).
     # 0.1 still rewards comment engagement without letting it override vote signal.
-    comment_velocity_weight: 0.1   # 评分公式中 comment velocity 的权重（降低以减少噪声）
+    comment_velocity_weight: 0.1   # comment velocity weight in scoring formula (reduced to reduce noise)
     # Quality gate (data-backed, 2026-06-24/25 observations):
     # Deals with votes < quality_high_votes_threshold MUST have discount >= quality_min_discount_pct.
     # Eliminates promo/food/membership deals (22-38 votes, no extractable discount)
@@ -42,32 +42,33 @@ scoring:
     quality_min_discount_pct: 20.0  # deals below threshold need ≥20% discount
     quality_high_votes_threshold: 40  # deals with ≥40 votes skip the discount requirement
   watch:
-    min_votes: 15                  # 关键词命中后,需要至少这么多正票才推送（提高到 15）
-    min_discount_percent: 15       # 没有票数时(如 CCC)的折扣门槛（提高到 15%）
-    max_deal_age_hours: 36         # 超过 36h 的旧 deal 不推送（防止旧帖占满每日上限）
+    min_votes: 15                  # minimum positive votes after keyword match (raised to 15)
+    min_discount_percent: 15       # discount threshold when no votes available (e.g. CCC) — raised to 15%
+    max_deal_age_hours: 36         # skip deals older than 36h to avoid backlog filling daily cap
 
 dedup:
-  lookback_days: 7                 # 每轮读取近窗 Sent Log 做本地去重
-  max_realerts_per_deal: 0         # 0 = 关闭重推，每个 deal 对每人只发一次
+  lookback_days: 7                 # read recent Sent Log window for local dedup
+  max_realerts_per_deal: 0         # 0 = no re-alerts; each deal notifies each subscriber once
   significant_price_drop_percent: 5.0
   heat_band_size_votes: 50
 
 cold_start:
-  ignore_deals_older_than_hours: 6  # 首次见到时,早于该时长的旧 deal 不推
+  ignore_deals_older_than_hours: 6  # on first sight, skip deals older than this
 
 alerting:
-  min_consecutive_failures: 3      # 连续失败这么多次才发报警（过滤偶发性失败）
-  cooldown_hours: 1.0              # 发完后静默 1 小时再考虑下一封
+  min_consecutive_failures: 3      # send maintainer alert only after this many consecutive failures
+  cooldown_hours: 1.0              # silence period after an alert fires
 
 # ---------------------------------------------------------------------------
-# 薅羊毛攻略采集 (strategy_hunter)。每天 GitHub Actions 抓取,本地模型再提纯。
+# Strategy guide collection (strategy_hunter). GitHub Actions harvests daily;
+# use the local extraction skill (strategy-extract) to distil into guides.
 # ---------------------------------------------------------------------------
 strategy:
   enabled: true
-  min_relevance: 1                 # 标题+正文里至少命中这么多省钱信号词才保留
-  request_delay_seconds: 1.0       # 抓取帖子正文时的礼貌间隔
-  retention_days: 60               # 原始语料保留天数,超期自动清理 (0 = 不清理)
-  alert_on_failure: true           # 采集出错或零产出时给维护者发告警邮件
+  min_relevance: 1                 # minimum money-saving signal words in title+body to keep a post
+  request_delay_seconds: 1.0       # polite crawl delay when fetching thread bodies
+  retention_days: 60               # raw corpus retention in days; pruned on each run (0 = keep forever)
+  alert_on_failure: true           # email maintainer if a collection run errors or harvests nothing
   sources:
     reddit:
       enabled: true
@@ -84,8 +85,8 @@ strategy:
     ozbargain_comments:
       enabled: true
       feed_url: "https://www.ozbargain.com.au/deals/feed"
-      min_comments: 10             # 只挖评论数 >= 此值的热门 deal（讨论富集）
-      max_deals: 15                # 每次最多抓取的 deal node 页数
+      min_comments: 10             # only dig into deals with >= this many comments (discussion-rich)
+      max_deals: 15                # max deal node pages to scrape per run
     whirlpool:
       enabled: true
       board_urls:

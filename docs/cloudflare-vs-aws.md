@@ -1,144 +1,144 @@
-# Cloudflare vs AWS 服务对比
+# Cloudflare vs AWS Service Comparison
 
-以 AWS 为基准对照 Cloudflare 的完整服务列表，重点标注免费额度差异。
-
----
-
-## Serverless 计算
-
-| 类别 | Cloudflare | AWS | 免费胜出 |
-|------|-----------|-----|---------|
-| 边缘 Serverless | **Workers** — 永久免费：100,000 请求/天，10ms CPU/请求，运行于 300+ PoP 全球边缘，JS/TS/WASM（V8 隔离） | **Lambda** — 永久免费：1,000,000 请求/月，400,000 GB-秒，单 Region，支持更多语言运行时 | 各有所长（CF 更快/边缘，AWS 语言更多） |
-| CDN 边缘函数 | **Workers** — 永久免费，本身就运行在边缘，无额外计费 | **Lambda@Edge**（无免费额度）/ **CloudFront Functions**（2M 次/月免费）— Lambda@Edge 按调用 + 时长额外计费 | **CF 胜出** |
+A full Cloudflare service list benchmarked against AWS equivalents, with particular attention to free tier differences.
 
 ---
 
-## 对象存储
+## Serverless Compute
 
-| 类别 | Cloudflare | AWS | 免费胜出 |
+| Category | Cloudflare | AWS | Free tier winner |
 |------|-----------|-----|---------|
-| 对象存储 | **R2** — 永久免费：10 GB 存储，100 万次 A 类操作（PUT/DELETE），1000 万次 B 类操作（GET），**出流量完全免费 ✓**，兼容 S3 API | **S3** — 12 个月免费：5 GB 存储，20,000 次 GET，2,000 次 PUT，**出流量 $0.09/GB ✗**，期满后全面收费 | **CF 显著胜出（出流量免费是核心差距）** |
+| Edge Serverless | **Workers** — always free: 100,000 requests/day, 10ms CPU/request, runs at 300+ PoPs worldwide, JS/TS/WASM (V8 isolates) | **Lambda** — always free: 1,000,000 requests/month, 400,000 GB-seconds, single region, more language runtimes | Each has its strengths (CF faster/edge, AWS more languages) |
+| CDN edge functions | **Workers** — always free, runs on the edge by design, no extra charges | **Lambda@Edge** (no free tier) / **CloudFront Functions** (2M invocations/month free) — Lambda@Edge billed extra per invocation + duration | **CF wins** |
 
 ---
 
-## 数据库 & KV 存储
+## Object Storage
 
-| 类别 | Cloudflare | AWS | 免费胜出 |
+| Category | Cloudflare | AWS | Free tier winner |
 |------|-----------|-----|---------|
-| 键值存储 | **Workers KV** — 永久免费：100,000 次读取/天，1,000 次写入/天，1 GB 存储，全球边缘读取（最终一致） | **DynamoDB** — 永久免费：25 GB 存储，25 WCU + 25 RCU/秒，约 200 万次写/月，强一致可选 | **AWS 胜出（DynamoDB 写入额度更高）** |
-| 关系型数据库 | **D1** — 永久免费：5 GB 存储，2500 万行读取/天，10 万行写入/天，基于 SQLite（无法替代生产级 PG） | **RDS** — 12 个月免费：t3.micro 750 小时/月，20 GB 存储，MySQL/PostgreSQL/MariaDB，期满后约 $15–30/月 | **CF 胜出（D1 永久免费，但仅 SQLite）** |
-| 有状态边缘对象 | **Durable Objects** — 永久免费（有限）：400,000 GB-秒/月，100 万次请求/月，适合实时协作/聊天/游戏 | 无直接对标（类似 DynamoDB + Lambda 组合，但非边缘） | **CF 独有** |
-| 数据库连接池 | **Hyperdrive** — 永久免费，让 Workers 高效连接外部 PostgreSQL，连接池 + 全局查询缓存 | **RDS Proxy** — 无免费额度，约 $0.015/vCPU-小时 | **CF 胜出** |
+| Object storage | **R2** — always free: 10 GB storage, 1M Class A operations (PUT/DELETE), 10M Class B operations (GET), **egress completely free ✓**, S3-compatible API | **S3** — 12-month free tier: 5 GB storage, 20,000 GET requests, 2,000 PUT requests, **egress $0.09/GB ✗**, then full price | **CF wins decisively (free egress is the core difference)** |
 
 ---
 
-## CDN & 网络
+## Database & KV Storage
 
-| 类别 | Cloudflare | AWS | 免费胜出 |
+| Category | Cloudflare | AWS | Free tier winner |
 |------|-----------|-----|---------|
-| 内容分发网络 | **CDN** — 永久免费：**带宽无限制 ✓**，自动 HTTPS，HTTP/3 + QUIC，Brotli 压缩 | **CloudFront** — 永久免费（限量）：1 TB 流量/月 + 1000 万次请求，超出后 $0.0085–0.02/GB | **CF 显著胜出（无限带宽差距悬殊）** |
+| Key-value store | **Workers KV** — always free: 100,000 reads/day, 1,000 writes/day, 1 GB storage, globally distributed reads (eventually consistent) | **DynamoDB** — always free: 25 GB storage, 25 WCU + 25 RCU/second, ~2M writes/month, optional strong consistency | **AWS wins (DynamoDB write quota is higher)** |
+| Relational database | **D1** — always free: 5 GB storage, 25M row reads/day, 100K row writes/day, SQLite-based (no replacement for production-grade PG) | **RDS** — 12-month free tier: t3.micro 750 hours/month, 20 GB storage, MySQL/PostgreSQL/MariaDB, then ~$15–30/month | **CF wins (D1 always free, but SQLite only)** |
+| Stateful edge objects | **Durable Objects** — always free (limited): 400,000 GB-seconds/month, 1M requests/month, suited for real-time collaboration/chat/gaming | No direct equivalent (closest is DynamoDB + Lambda, but not edge-native) | **CF exclusive** |
+| Database connection pooling | **Hyperdrive** — always free, lets Workers efficiently connect to external PostgreSQL, connection pooling + global query caching | **RDS Proxy** — no free tier, ~$0.015/vCPU-hour | **CF wins** |
 
 ---
 
-## 静态站点 & 前端托管
+## CDN & Networking
 
-| 类别 | Cloudflare | AWS | 免费胜出 |
+| Category | Cloudflare | AWS | Free tier winner |
 |------|-----------|-----|---------|
-| 静态站点托管 | **Pages** — 永久免费：无限站点，500 次构建/月，**带宽无限制 ✓**，支持 Next.js / Astro / SvelteKit 等 | **Amplify Hosting** — 12 个月免费：15 GB 流量/月，1,000 构建分钟/月，5 GB 存储，期满后按量计费 | **CF 胜出** |
+| Content delivery network | **CDN** — always free: **unlimited bandwidth ✓**, automatic HTTPS, HTTP/3 + QUIC, Brotli compression | **CloudFront** — always free (capped): 1 TB traffic/month + 10M requests, then $0.0085–0.02/GB | **CF wins decisively (unlimited bandwidth is a massive gap)** |
+
+---
+
+## Static Sites & Frontend Hosting
+
+| Category | Cloudflare | AWS | Free tier winner |
+|------|-----------|-----|---------|
+| Static site hosting | **Pages** — always free: unlimited sites, 500 builds/month, **unlimited bandwidth ✓**, supports Next.js / Astro / SvelteKit etc. | **Amplify Hosting** — 12-month free tier: 15 GB traffic/month, 1,000 build minutes/month, 5 GB storage, then pay-per-use | **CF wins** |
 
 ---
 
 ## DNS
 
-| 类别 | Cloudflare | AWS | 免费胜出 |
+| Category | Cloudflare | AWS | Free tier winner |
 |------|-----------|-----|---------|
-| 托管 DNS | **DNS** — 永久免费：无限域名，无限 DNS 查询，全球任播网络（极低延迟），DNSSEC 支持 | **Route 53** — **无免费额度**：$0.50/托管区域/月，$0.40/百万 DNS 查询，健康检查 $0.50/月起 | **CF 显著胜出（Route 53 完全不免费）** |
+| Managed DNS | **DNS** — always free: unlimited domains, unlimited DNS queries, global anycast network (very low latency), DNSSEC support | **Route 53** — **no free tier**: $0.50/hosted zone/month, $0.40/million DNS queries, health checks from $0.50/month | **CF wins decisively (Route 53 has zero free tier)** |
 
 ---
 
-## 安全
+## Security
 
-| 类别 | Cloudflare | AWS | 免费胜出 |
+| Category | Cloudflare | AWS | Free tier winner |
 |------|-----------|-----|---------|
-| Web 应用防火墙 | **WAF** — 永久免费（基础规则）：基础规则集 + 速率限制免费，托管规则集需付费计划 | **AWS WAF** — **无免费额度**：$5/月/WebACL，$1/百万次请求，托管规则集额外收费 | **CF 显著胜出** |
-| DDoS 防护 | **DDoS Protection** — 永久免费：**无限流量防护 ✓**，L3/L4/L7 全覆盖，默认开启 | **Shield Standard**（免费，仅基础 L3/L4）/ **Shield Advanced**（$3,000/月起，L7 还需额外配 WAF） | **CF 显著胜出** |
-| CAPTCHA / Bot 防护 | **Turnstile** — 永久免费：100 万次验证/月，无摩擦体验，替代 Google reCAPTCHA | 无直接对标（WAF Bot Control 需付费，通常集成第三方） | **CF 独有** |
-| SSL/TLS 证书 | **Universal SSL** — 永久免费：自动签发和续期，通配符证书需付费计划 | **ACM** — 永久免费：配合 CloudFront/ALB 完全免费，EC2 直接挂载需付费 | 基本持平 |
+| Web Application Firewall | **WAF** — always free (basic rules): basic ruleset + rate limiting free, managed rulesets require a paid plan | **AWS WAF** — **no free tier**: $5/month/WebACL, $1/million requests, managed rulesets billed separately | **CF wins decisively** |
+| DDoS protection | **DDoS Protection** — always free: **unlimited traffic mitigation ✓**, L3/L4/L7 coverage, enabled by default | **Shield Standard** (free, basic L3/L4 only) / **Shield Advanced** ($3,000/month+, L7 requires separate WAF configuration) | **CF wins decisively** |
+| CAPTCHA / Bot protection | **Turnstile** — always free: 1M validations/month, friction-free experience, replaces Google reCAPTCHA | No direct equivalent (WAF Bot Control requires payment; typically integrates third-party solutions) | **CF exclusive** |
+| SSL/TLS certificates | **Universal SSL** — always free: automatic issuance and renewal, wildcard certificates require a paid plan | **ACM** — always free: completely free when used with CloudFront/ALB; attaching directly to EC2 requires payment | Roughly equivalent |
 
 ---
 
-## 身份与零信任访问
+## Identity & Zero Trust Access
 
-| 类别 | Cloudflare | AWS | 免费胜出 |
+| Category | Cloudflare | AWS | Free tier winner |
 |------|-----------|-----|---------|
-| Zero Trust 访问控制 | **Access / ZTNA** — 永久免费：50 用户免费，SSO 集成（Google/GitHub/Okta），适合非 AWS 资源的零信任管控 | **IAM Identity Center** — 永久免费（主要面向 AWS 内部资源）/ **Cognito** 50,000 MAU 免费 | 场景不同（CF 适合非 AWS 资源） |
-| 内网穿透隧道 | **Tunnel** — 永久免费：加密隧道到 Cloudflare 边缘，类似 ngrok 但更稳定，无带宽限制 | **Site-to-Site VPN** — **无免费额度**：$0.05/小时/连接，约 $36/月，配置复杂 | **CF 显著胜出** |
+| Zero Trust access control | **Access / ZTNA** — always free: 50 users free, SSO integration (Google/GitHub/Okta), suited for zero-trust control of non-AWS resources | **IAM Identity Center** — always free (primarily for AWS-internal resources) / **Cognito** 50,000 MAU free | Different use cases (CF suited for non-AWS resources) |
+| Private network tunnelling | **Tunnel** — always free: encrypted tunnel to Cloudflare edge, like ngrok but more stable, no bandwidth limits | **Site-to-Site VPN** — **no free tier**: $0.05/hour/connection, ~$36/month, complex configuration | **CF wins decisively** |
 
 ---
 
-## 消息队列
+## Message Queuing
 
-| 类别 | Cloudflare | AWS | 免费胜出 |
+| Category | Cloudflare | AWS | Free tier winner |
 |------|-----------|-----|---------|
-| 消息队列 | **Queues** — 永久免费：100 万次消息操作/月，与 Workers 深度集成，自动重试 | **SQS** — 永久免费：100 万次请求/月，标准队列 + FIFO，成熟稳定，生态丰富 | 基本持平 |
+| Message queue | **Queues** — always free: 1M message operations/month, deep Workers integration, automatic retry | **SQS** — always free: 1M requests/month, standard + FIFO queues, mature and ecosystem-rich | Roughly equivalent |
 
 ---
 
-## AI 推理
+## AI Inference
 
-| 类别 | Cloudflare | AWS | 免费胜出 |
+| Category | Cloudflare | AWS | Free tier winner |
 |------|-----------|-----|---------|
-| 托管 AI 推理 | **Workers AI** — 永久免费（有限）：每日免费神经元额度，LLaMA/Whisper/Stable Diffusion 等，边缘运行低延迟 | **Bedrock** — **无免费额度**：按 Token 付费，Claude/Llama/Titan 等，模型选择更丰富 | **CF 有免费额度** |
+| Managed AI inference | **Workers AI** — always free (limited): daily free neuron quota, LLaMA/Whisper/Stable Diffusion etc., edge-run with low latency | **Bedrock** — **no free tier**: pay per token, Claude/Llama/Titan etc., broader model selection | **CF has a free quota** |
 
 ---
 
-## 媒体处理
+## Media Processing
 
-| 类别 | Cloudflare | AWS | 免费胜出 |
+| Category | Cloudflare | AWS | Free tier winner |
 |------|-----------|-----|---------|
-| 视频存储 & 流媒体 | **Stream** — 永久免费（有限）：1,000 分钟存储 + 1,000 分钟传输/月，超出 $5/1000 分钟 | **S3 + MediaConvert** — MediaConvert 无免费额度：$0.0075/分钟起，需多服务组合，功能更强但配置复杂 | **CF 有免费额度** |
-| 图片优化 | **Images** — 永久免费（有限）：5,000 张原始图存储，10 万次图片分发/月，自动 WebP/AVIF 转换 | 无托管图片优化服务（需自行搭建 Lambda + Sharp，或使用第三方图片 CDN） | **CF 独有** |
+| Video storage & streaming | **Stream** — always free (limited): 1,000 minutes storage + 1,000 minutes delivery/month, then $5/1,000 minutes | **S3 + MediaConvert** — MediaConvert has no free tier: from $0.0075/minute, requires multiple services, more powerful but complex to configure | **CF has a free quota** |
+| Image optimisation | **Images** — always free (limited): 5,000 original images stored, 100K image deliveries/month, automatic WebP/AVIF conversion | No managed image optimisation service (requires self-built Lambda + Sharp, or a third-party image CDN) | **CF exclusive** |
 
 ---
 
-## 邮件
+## Email
 
-| 类别 | Cloudflare | AWS | 免费胜出 |
+| Category | Cloudflare | AWS | Free tier winner |
 |------|-----------|-----|---------|
-| 邮件路由 / 收发 | **Email Routing** — 永久免费：无限路由规则，将 @yourdomain.com 转发到任意邮箱。⚠️ 仅路由，不能主动发送邮件 | **SES** — 永久免费（有限）：从 EC2 发送 62,000 封/月免费，其他 $0.10/1000 封，可接收 + 发送 | 场景不同（CF 路由，AWS 收发） |
+| Email routing / receiving | **Email Routing** — always free: unlimited routing rules, forwards @yourdomain.com to any mailbox. ⚠️ Routing only — cannot send outbound email | **SES** — always free (limited): 62,000 emails/month free when sent from EC2, otherwise $0.10/1,000 emails, can receive and send | Different use cases (CF routes, AWS sends and receives) |
 
 ---
 
-## 分析 & 监控
+## Analytics & Monitoring
 
-| 类别 | Cloudflare | AWS | 免费胜出 |
+| Category | Cloudflare | AWS | Free tier winner |
 |------|-----------|-----|---------|
-| 流量分析 | **Analytics** — 永久免费：无采样完整流量数据，无 Cookie（符合 GDPR），Workers Analytics Engine 支持自定义指标 | **CloudWatch** — 永久免费（有限）：10 个自定义指标，5 GB 日志摄取/月，主要面向基础设施监控 | 场景不同（CF 看流量，AWS 看基础设施） |
+| Traffic analytics | **Analytics** — always free: unsampled complete traffic data, no cookies (GDPR-compliant), Workers Analytics Engine supports custom metrics | **CloudWatch** — always free (limited): 10 custom metrics, 5 GB log ingestion/month, primarily for infrastructure monitoring | Different use cases (CF for traffic, AWS for infrastructure) |
 
 ---
 
-## Cloudflare 没有的服务（AWS 独有）
+## Services AWS Has That Cloudflare Doesn't
 
-| AWS 服务 | 说明 |
+| AWS Service | Notes |
 |---------|------|
-| EC2 / ECS / EKS | 通用虚拟机、容器运行时。CF 没有 VM，Workers 是 V8 隔离，限制较多。 |
-| RDS (PostgreSQL/MySQL) | 生产级托管关系型数据库。CF D1 是 SQLite，无法替代。 |
-| SageMaker / Bedrock | 完整的 ML 训练平台和丰富的模型选择。CF Workers AI 仅做轻量推理。 |
-| Kinesis / MSK | 实时数据流处理。CF Queues 是简单消息队列，不是流式计算。 |
-| ELB / ALB | 内部应用负载均衡器，面向 VPC 内服务路由。 |
-| X-Ray / CloudWatch APM | 分布式链路追踪、完整基础设施监控体系。 |
-| VPC / PrivateLink | 私有网络、子网隔离、内部服务安全互联。CF 没有 VPC 概念。 |
-| Step Functions | 复杂工作流编排，多步骤状态机。CF 暂无等效服务。 |
+| EC2 / ECS / EKS | General-purpose VMs, container runtimes. CF has no VMs; Workers are V8 isolates with significant constraints. |
+| RDS (PostgreSQL/MySQL) | Production-grade managed relational database. CF D1 is SQLite and cannot replace it. |
+| SageMaker / Bedrock | Full ML training platform and broad model selection. CF Workers AI handles lightweight inference only. |
+| Kinesis / MSK | Real-time data stream processing. CF Queues is a simple message queue, not a streaming compute engine. |
+| ELB / ALB | Internal application load balancers for VPC-internal service routing. |
+| X-Ray / CloudWatch APM | Distributed tracing, full infrastructure monitoring. |
+| VPC / PrivateLink | Private networks, subnet isolation, secure internal service interconnect. CF has no VPC concept. |
+| Step Functions | Complex workflow orchestration, multi-step state machines. CF has no equivalent. |
 
 ---
 
-## 总结
+## Summary
 
-Cloudflare 不是 AWS 的替代品，而是很好的**边缘层补充**。常见组合是：Cloudflare 做 CDN + DNS + WAF + DDoS（零额外成本），AWS 做后端计算 + 数据库 + 容器。
+Cloudflare is not a replacement for AWS — it's a strong **edge-layer complement**. A common combination is Cloudflare for CDN + DNS + WAF + DDoS (zero additional cost) with AWS for backend compute + database + containers.
 
-纯静态站点或轻量 API 可以完全跑在 Cloudflare 上，成本接近零。最值得关注的成本节省点：
+Pure static sites or lightweight APIs can run entirely on Cloudflare at near-zero cost. The most notable cost savings:
 
-- **R2 出流量免费**：对比 S3 的 $0.09/GB 差距显著
-- **CDN 带宽无限制**：CloudFront 超出 1TB 后开始计费
-- **WAF + DDoS 免费**：AWS 对应服务完全收费
-- **DNS 免费**：Route 53 没有免费层
+- **R2 egress free:** versus S3's $0.09/GB the difference is significant
+- **CDN unlimited bandwidth:** CloudFront starts billing after 1 TB
+- **WAF + DDoS free:** AWS equivalents are fully paid services
+- **DNS free:** Route 53 has no free tier

@@ -1,4 +1,4 @@
-"""Strategy Hunter: daily collection of money-saving ("薅羊毛") guide material.
+"""Strategy Hunter: daily collection of money-saving guide material.
 
 A separate pipeline from ``bargain_hunter``: instead of alerting on individual
 deals, it harvests free-text discussion (forum threads, Reddit posts) where

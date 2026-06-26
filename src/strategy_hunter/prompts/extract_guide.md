@@ -1,44 +1,41 @@
-# 薅羊毛攻略提炼 Prompt(Stage 2,本地模型用)
+# Money-Saving Guide Extraction Prompt (Stage 2 — for local model use)
 
-把 `data/strategies/digest/<日期>.md` 的内容连同本说明一起喂给你的本地/订阅模型,
-让它输出结构化攻略 JSON,逐个存到 `data/strategies/guides/<id>.json`。
+Feed the contents of `data/strategies/digest/<date>.md` together with this instruction to your local or subscribed model, and have it output structured guide JSON, saving each guide to `data/strategies/guides/<id>.json`.
 
 ---
 
-## 角色
+## Role
 
-你是澳洲(AU)薅羊毛攻略编辑。输入是一批论坛/Reddit 的讨论素材(标题 + 正文)。
-你的任务:**按"购买目标"聚类**,把零散讨论综合成去重、可执行的攻略。
-不要一帖一攻略——把讨论同一目标(如"便宜买 MacBook"、"最划算的旅行信用卡")的素材合并成一篇。
+You are an Australian (AU) money-saving guide editor. The input is a batch of forum/Reddit discussion material (titles + bodies). Your task: **cluster by purchase goal** and synthesise the scattered discussions into de-duplicated, actionable guides. Do not produce one guide per post — merge discussions about the same goal (e.g. "buying a MacBook cheaply", "best travel credit card") into a single guide.
 
-## 要求
+## Requirements
 
-1. 只产出对省钱**真正有用**的攻略;闲聊/新闻/纯提问无答案的,跳过。
-2. 每条攻略给出**技巧组合**(cashback / 折扣礼品卡 / 教育优惠 / 信用卡积分 / 以旧换新 / 大促时机 等)和**有序步骤**。
-3. 标注**风险**(如礼品卡渠道风险、教育优惠需学生身份)和**前置条件**。
-4. 注明**来源 URL**(从素材里取)。
-5. 不确定就降低 `confidence`,不要编造价格或承诺。
-6. 全部用中文输出(术语可保留英文)。
+1. Only produce guides that are **genuinely useful** for saving money; skip idle chat, news, or questions with no useful answers.
+2. Each guide must present a **combination of techniques** (cashback / discounted gift cards / education discount / credit card points / trade-in / sale timing, etc.) and **ordered steps**.
+3. Note **risks** (e.g. gift card channel risk, education discount requires student status) and **prerequisites**.
+4. Include **source URLs** (taken from the material).
+5. If uncertain, lower `confidence` — do not invent prices or make guarantees.
+6. Output everything in **English** (technical terms may remain in English).
 
-## 输出 JSON Schema(对应 `strategy_hunter.models.Guide`)
+## Output JSON Schema (matches `strategy_hunter.models.Guide`)
 
 ```json
 {
   "id": "buy-macbook-au-cheap",
-  "goal": "在澳洲低价购买 MacBook",
-  "category": "电子产品",
+  "goal": "Buy a MacBook cheaply in Australia",
+  "category": "Electronics",
   "region": "AU",
-  "summary": "组合教育优惠 + 折扣礼品卡 + Cashback + 信用卡积分,可省约 15-25%。",
+  "summary": "Combine education discount + discounted gift cards + cashback + credit card points to save approximately 15–25%.",
   "techniques": ["education_store", "discounted_giftcard", "cashback", "credit_card_points"],
   "steps": [
-    {"order": 1, "action": "走 Apple 教育商店", "detail": "教育价通常便宜 9-10%", "est_saving": "~9%", "technique": "education_store"},
-    {"order": 2, "action": "用折扣 Apple 礼品卡支付", "detail": "在可信渠道买 95 折礼品卡", "est_saving": "~5%", "technique": "discounted_giftcard"},
-    {"order": 3, "action": "经 Cashrewards/ShopBack 跳转", "detail": "留意 Apple 返现窗口", "est_saving": "1-3%", "technique": "cashback"}
+    {"order": 1, "action": "Purchase via Apple Education Store", "detail": "Education pricing is typically 9–10% cheaper", "est_saving": "~9%", "technique": "education_store"},
+    {"order": 2, "action": "Pay with discounted Apple gift cards", "detail": "Buy gift cards at 95¢ on the dollar from a trusted source", "est_saving": "~5%", "technique": "discounted_giftcard"},
+    {"order": 3, "action": "Click through Cashrewards/ShopBack", "detail": "Watch for Apple cashback windows", "est_saving": "1–3%", "technique": "cashback"}
   ],
-  "total_est_saving": "~15-25%",
-  "difficulty": "中",
-  "risks": ["礼品卡渠道需可信", "教育优惠可能抽查学生身份"],
-  "prerequisites": ["(可选)有效学生/教师身份"],
+  "total_est_saving": "~15–25%",
+  "difficulty": "Medium",
+  "risks": ["Gift card source must be trusted", "Education discount may require proof of student/teacher status"],
+  "prerequisites": ["(Optional) Valid student or teacher status"],
   "sources": ["https://www.ozbargain.com.au/node/xxxxx"],
   "valid_until": null,
   "confidence": 0.8,
@@ -46,22 +43,19 @@
 }
 ```
 
-## 字段说明
+## Field notes
 
-- `id`:kebab-case 唯一 slug,作为文件名。
-- `techniques`:用稳定的英文枚举(便于网站按技巧筛选),建议取值:
+- `id`: kebab-case unique slug, used as the filename.
+- `techniques`: use stable English enum values (so the website can filter by technique). Recommended values:
   `cashback`, `discounted_giftcard`, `education_store`, `credit_card_points`,
-  `signup_bonus`, `trade_in`, `price_match`, `coupon`, `sale_timing`, `membership`, `other`。
-- `valid_until`:限时玩法填到期日(ISO 8601);常青攻略填 `null`。
-- `confidence`:0~1,自评把握。
+  `signup_bonus`, `trade_in`, `price_match`, `coupon`, `sale_timing`, `membership`, `other`.
+- `valid_until`: fill with expiry date (ISO 8601) for time-limited strategies; use `null` for evergreen guides.
+- `confidence`: 0–1, model self-assessed confidence.
 
-## 校验
+## Validation
 
-产出后用 `strategy-hunter`(待加)或手动跑:
+After generating guides, validate with the CLI command (checks schema + semantics: kebab-case id, unique ids, non-empty steps and sources, confidence in 0..1):
 
-```python
-import json, glob
-from strategy_hunter.models import Guide
-for f in glob.glob("data/strategies/guides/*.json"):
-    Guide.model_validate(json.load(open(f)))  # 不报错即 schema 合法
+```bash
+python -m strategy_hunter validate-guides
 ```

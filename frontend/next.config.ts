@@ -1,7 +1,17 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  webpack(config, { nextRuntime }) {
+    if (nextRuntime === 'edge') {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        path: false,
+        fs: false,
+        process: false,
+      }
+    }
+    return config
+  },
+}
 
-export default nextConfig;
+export default nextConfig

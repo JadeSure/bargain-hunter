@@ -12,3 +12,8 @@ output "portal_kv_namespace_id" {
   value       = cloudflare_workers_kv_namespace.portal_sessions.id
   description = "KV namespace ID — paste into portal-worker/wrangler.jsonc."
 }
+
+output "pages_url" {
+  value       = "https://${var.pages_project_name}.pages.dev"
+  description = "Cloudflare Pages production URL. Set as TF_VAR_frontend_url in CI."
+}

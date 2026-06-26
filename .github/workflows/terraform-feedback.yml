@@ -8,12 +8,14 @@ on:
       - "feedback-worker/src/**"
       - "portal-worker/src/**"
       - "portal-worker/package.json"
+      - "frontend/wrangler.toml"
   pull_request:
     paths:
       - "terraform/**"
       - "feedback-worker/src/**"
       - "portal-worker/src/**"
       - "portal-worker/package.json"
+      - "frontend/wrangler.toml"
   workflow_dispatch:
 
 # Serialize runs so two applies never touch the state at once (our lock strategy).
@@ -44,8 +46,9 @@ jobs:
       # Worker resource inputs — portal API worker
       TF_VAR_subscribers_db_id: ${{ secrets.TF_VAR_SUBSCRIBERS_DB_ID }}
       TF_VAR_resend_api_key: ${{ secrets.TF_VAR_RESEND_API_KEY }}
-      TF_VAR_frontend_url: ${{ secrets.TF_VAR_FRONTEND_URL }}
+      TF_VAR_frontend_url: https://bargain-hunter.pages.dev
       TF_VAR_owner_email: ${{ secrets.TF_VAR_OWNER_EMAIL }}
+      TF_VAR_pages_project_name: bargain-hunter
     steps:
       - name: Checkout
         uses: actions/checkout@v4
