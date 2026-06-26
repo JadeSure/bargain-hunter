@@ -31,3 +31,32 @@ variable "feedback_hmac_secret" {
   type        = string
   sensitive   = true
 }
+
+# --- Portal API Worker ---
+
+variable "portal_worker_name" {
+  description = "Script name for the portal API Worker."
+  type        = string
+  default     = "bargain-portal-api"
+}
+
+variable "subscribers_db_id" {
+  description = "Notion Subscribers database ID (printed by scripts/setup_notion.py)."
+  type        = string
+}
+
+variable "resend_api_key" {
+  description = "Resend API key for sending magic link and access request emails."
+  type        = string
+  sensitive   = true
+}
+
+variable "frontend_url" {
+  description = "Public URL of the Next.js frontend (Cloudflare Pages). Used for post-auth redirects and CORS."
+  type        = string
+}
+
+variable "owner_email" {
+  description = "Email address that receives access requests from the landing page."
+  type        = string
+}
