@@ -55,12 +55,13 @@ resource "cloudflare_workers_kv_namespace" "portal_sessions" {
 # Portal API Worker — built via wrangler in CI, uploaded here as a bundled script.
 # The source path points to the compiled output; wrangler build runs before terraform apply.
 resource "cloudflare_workers_script" "portal" {
-  account_id         = var.cloudflare_account_id
-  script_name        = var.portal_worker_name
-  content_file       = "${path.module}/../portal-worker/dist/index.js"
-  content_sha256     = filesha256("${path.module}/../portal-worker/dist/index.js")
-  main_module        = "index.js"
-  compatibility_date = "2026-01-01"
+  account_id          = var.cloudflare_account_id
+  script_name         = var.portal_worker_name
+  content_file        = "${path.module}/../portal-worker/dist/index.js"
+  content_sha256      = filesha256("${path.module}/../portal-worker/dist/index.js")
+  main_module         = "index.js"
+  compatibility_date  = "2026-01-01"
+  compatibility_flags = ["nodejs_compat"]
 
   bindings = [
     {
