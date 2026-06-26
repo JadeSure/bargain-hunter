@@ -43,7 +43,7 @@ Sources (configurable in `config/settings.yaml` under `strategy:`):
 |---|---|---|
 | OzBargain forums | "Find Me A Bargain" / "Financial" boards | HTML scrape of board + thread OP |
 | OzBargain deal comments | busy deal threads (stacking tips) | HTML scrape of deal node comments |
-| Reddit | r/AusFinance, r/AusFrugal, r/fiaustralia | Atom RSS feed |
+| Reddit | r/AusFinance, r/AusFrugal, r/fiaustralia | OAuth API (preferred) or Atom RSS |
 | Whirlpool | Shopping / Finance / Travel boards | HTML scrape of board + thread OP |
 
 ```bash
@@ -56,6 +56,22 @@ The corpus is pruned to `strategy.retention_days` (default 60) on every run, and
 maintainer alert is emailed if a collection run errors or harvests nothing
 (`strategy.alert_on_failure`). Stage 3 renders guides at `/guides` in the
 `frontend/` Next.js app (statically generated from `data/strategies/guides/*.json`).
+
+### Reddit on CI (avoiding 429s)
+
+Reddit rate-limits its **public** RSS feed hard from datacenter IPs (GitHub
+Actions), so the source supports **app-only OAuth**, which works from CI:
+
+1. Create a **script** app at <https://www.reddit.com/prefs/apps> (any name;
+   `redirect uri` can be `http://localhost:8080`).
+2. Add the two values as repo **Actions secrets**:
+   `REDDIT_CLIENT_ID` (the id under the app name) and `REDDIT_CLIENT_SECRET`.
+
+When set, `collect` logs `reddit: using OAuth app-only API`; when unset it falls
+back to public RSS (logs `using public RSS …`) with patient retry/backoff, and
+skips a subreddit gracefully if still rate-limited. Pacing is tunable under
+`strategy.sources.reddit` in `config/settings.yaml`
+(`request_delay_seconds`, `max_retries`, `max_backoff_seconds`).
 
 Full design: [`docs/STRATEGY_PLAN.md`](docs/STRATEGY_PLAN.md).
 

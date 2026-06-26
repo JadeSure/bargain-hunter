@@ -153,6 +153,12 @@ class RedditSource(StrategySource):
         posts: list[CapturedPost] = []
         now = datetime.now(UTC)
         token = self._get_token()
+        log.info(
+            "reddit: using %s",
+            "OAuth app-only API (oauth.reddit.com)"
+            if token
+            else "public RSS (no credentials; may be rate-limited on CI IPs)",
+        )
         for i, sub in enumerate(self.subreddits):
             if i:
                 # Jittered pause between subs so we don't burst the rate limit.
