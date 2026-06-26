@@ -75,6 +75,9 @@ strategy:
       subreddits: ["AusFinance", "AusFrugal", "fiaustralia"]
       listing: "hot"              # hot | new | top
       limit: 25
+      request_delay_seconds: 8     # gentle gap between subs (nightly run, not urgent)
+      max_retries: 5               # patient retries on 429
+      max_backoff_seconds: 120     # allow long Retry-After waits before skipping
     ozbargain_forum:
       enabled: true
       board_urls:
