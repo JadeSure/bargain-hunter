@@ -49,17 +49,40 @@ jobs:
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # main moves often (the deal pipeline commits every ~2 min), so every
+          # push needs a rebase-and-retry. Conflicts are resolved with -X theirs;
+          # raw post files are uniquely named so they never actually conflict.
+          push_with_retry() {
+            for attempt in 1 2 3 4 5; do
+              if git push; then
+                echo "Pushed on attempt $attempt."
+                return 0
+              fi
+              echo "Push rejected (attempt $attempt); rebasing on latest main."
+              if ! git pull --rebase -X theirs origin main; then
+                git rebase --abort 2>/dev/null || true
+              fi
+            done
+            return 1
+          }
+
+          # 1) Commit the whole corpus first so the working tree is clean for
+          #    rebasing. Raw post files are uniquely named per post id and never
+          #    conflict; the only possible conflict is today's digest, which
+          #    -X theirs auto-resolves (and step 2 then rebuilds correctly).
           git add data/strategies/
-          git commit -m "chore: strategy corpus [skip ci]"
-          # main moves often (the deal pipeline commits frequently), so rebase
-          # and retry to avoid losing the push to a concurrent update.
-          for attempt in 1 2 3 4 5; do
-            if git push; then
-              echo "Pushed on attempt $attempt."
-              exit 0
-            fi
-            echo "Push rejected (attempt $attempt); rebasing on latest main."
-            git pull --rebase origin main
-          done
-          echo "Could not push after retries." >&2
-          exit 1
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: strategy corpus [skip ci]"
+            push_with_retry || { echo "Could not push corpus." >&2; exit 1; }
+          fi
+
+          # 2) Regenerate the digest from the now fully-merged corpus and commit
+          #    it. Regeneration is the conflict resolution for the per-day digest
+          #    file: it always reflects every post on disk after the rebase.
+          python -m strategy_hunter digest
+          git add data/strategies/digest/
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: strategy digest [skip ci]"
+            push_with_retry || { echo "Could not push digest." >&2; exit 1; }
+          fi
