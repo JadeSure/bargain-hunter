@@ -36,7 +36,11 @@ def build_sources(cfg: StrategyConfig) -> list[StrategySource]:
                 subreddits=s.reddit.subreddits,
                 listing=s.reddit.listing,
                 limit=s.reddit.limit,
-                request_delay_seconds=max(cfg.request_delay_seconds, 2.0),
+                request_delay_seconds=max(
+                    s.reddit.request_delay_seconds, cfg.request_delay_seconds
+                ),
+                max_retries=s.reddit.max_retries,
+                max_backoff_seconds=s.reddit.max_backoff_seconds,
             )
         )
     if s.ozbargain_forum.enabled:

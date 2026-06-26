@@ -60,9 +60,10 @@ class RedditSource(StrategySource):
         subreddits: list[str],
         listing: str = "hot",
         limit: int = 25,
-        request_delay_seconds: float = 2.0,
+        request_delay_seconds: float = 6.0,
         timeout: float = 20.0,
-        max_retries: int = 2,
+        max_retries: int = 4,
+        max_backoff_seconds: float = 90.0,
     ) -> None:
         self.subreddits = subreddits
         self.listing = listing
@@ -70,6 +71,7 @@ class RedditSource(StrategySource):
         self.request_delay_seconds = request_delay_seconds
         self.timeout = timeout
         self.max_retries = max_retries
+        self.max_backoff_seconds = max_backoff_seconds
         self._token: str | None = None
 
     # -- transport ------------------------------------------------------------
@@ -90,7 +92,15 @@ class RedditSource(StrategySource):
             if resp.status_code == 429:
                 if attempt >= self.max_retries:
                     raise RedditUnavailable("429 Too Many Requests (rate limited)")
-                time.sleep(min(self._retry_after(resp, attempt), 30.0))
+                wait = min(self._retry_after(resp, attempt), self.max_backoff_seconds)
+                log.info(
+                    "reddit: 429 on %s, waiting %.1fs before retry %d/%d",
+                    url,
+                    wait,
+                    attempt + 1,
+                    self.max_retries,
+                )
+                time.sleep(wait)
                 continue
             try:
                 resp.raise_for_status()
@@ -99,15 +109,14 @@ class RedditSource(StrategySource):
             return resp
         raise RedditUnavailable("exhausted retries")
 
-    @staticmethod
-    def _retry_after(resp: httpx.Response, attempt: int) -> float:
+    def _retry_after(self, resp: httpx.Response, attempt: int) -> float:
         header = resp.headers.get("Retry-After")
         if header:
             try:
-                return float(header)
+                return float(header)  # Reddit's header is authoritative
             except ValueError:
                 pass
-        return 2.0**attempt + random.uniform(0, 1)  # exponential backoff + jitter
+        return 5.0 * (2**attempt) + random.uniform(0, 2)  # exp backoff + jitter
 
     def _get_token(self) -> str | None:
         """Fetch an app-only OAuth token if credentials are configured."""
@@ -146,7 +155,8 @@ class RedditSource(StrategySource):
         token = self._get_token()
         for i, sub in enumerate(self.subreddits):
             if i:
-                time.sleep(self.request_delay_seconds)  # be polite between subs
+                # Jittered pause between subs so we don't burst the rate limit.
+                time.sleep(self.request_delay_seconds + random.uniform(0, 2))
             try:
                 if token:
                     posts.extend(self._fetch_oauth(sub, token, now))

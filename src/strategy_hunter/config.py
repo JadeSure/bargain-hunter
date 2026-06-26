@@ -44,6 +44,12 @@ class RedditConfig(StrictConfigModel):
     )
     listing: str = "hot"              # hot | new | top
     limit: int = 25
+    # Reddit rate-limits unauthenticated feed requests from datacenter IPs (CI).
+    # Pace requests and back off patiently so subsequent subreddits still get
+    # through. Tune these up if you still see 429s in Actions logs.
+    request_delay_seconds: float = 6.0   # gap between subreddit requests
+    max_retries: int = 4                 # retries on a 429 before giving up
+    max_backoff_seconds: float = 90.0    # cap on any single backoff/Retry-After wait
 
 
 class WhirlpoolConfig(StrictConfigModel):
