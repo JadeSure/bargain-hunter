@@ -187,3 +187,6 @@ class StateStore:
             self._data[key] = [s for s in self._data[key] if s.ts >= cutoff]
             if not self._data[key]:
                 del self._data[key]
+        for key, first_seen in list(self._first_seen.items()):
+            if key not in self._data and first_seen < cutoff:
+                del self._first_seen[key]
