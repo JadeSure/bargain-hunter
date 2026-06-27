@@ -1,16 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { requestAccess } from '@/lib/api'
-
-function BrandLogo({ size = 26 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 26 26" fill="none" aria-hidden="true">
-      <path d="M13 1C13 1 7 7 7 12.5C7 15.8 9.2 18.5 13 18.5C16.8 18.5 19 15.8 19 12.5C19 12.5 21.5 16 21.5 19C21.5 22.7 17.6 25.5 13 25.5C8.4 25.5 4.5 22.7 4.5 19C4.5 11 13 1 13 1Z" fill="#f97316" />
-      <path d="M13 14C13 14 11.2 15.8 11.2 17.5C11.2 18.7 12 19.6 13 19.6C14 19.6 14.8 18.7 14.8 17.5C14.8 15.8 13 14 13 14Z" fill="#fbbf24" />
-    </svg>
-  )
-}
+import { BrandMark } from './components/BrandMark'
 
 function ArrowRight() {
   return (
@@ -128,11 +121,11 @@ export default function LandingPage() {
       {/* NAV */}
       <nav className="lp-nav" role="banner">
         <div className="lp-nav-logo">
-          <BrandLogo />
+          <BrandMark />
           <span className="lp-nav-logo-text">Bargain Hunter</span>
         </div>
         <div className="lp-nav-right">
-          <a className="lp-nav-link" href="/guides">Saving Guides</a>
+          <Link className="lp-nav-link" href="/guides">Saving Guides</Link>
           <span className="lp-nav-tagline">Invite-only · Australia</span>
           <button className="btn-orange" onClick={openModal} aria-haspopup="dialog">
             Request Access
@@ -421,7 +414,7 @@ export default function LandingPage() {
       <section className="lp-cta">
         <div className="lp-cta-inner">
           <div className="lp-cta-icon" aria-hidden="true">
-            <BrandLogo />
+            <BrandMark />
           </div>
           <h2>Ready to stop<br />missing deals?</h2>
           <p>Bargain Hunter is invite-only. Request access and we&apos;ll reach out when a spot opens — it&apos;s completely free.</p>
@@ -436,9 +429,7 @@ export default function LandingPage() {
       <footer className="lp-footer">
         <div className="lp-footer-row">
           <div className="lp-footer-logo">
-            <svg width="18" height="18" viewBox="0 0 26 26" fill="none" aria-hidden="true">
-              <path d="M13 1C13 1 7 7 7 12.5C7 15.8 9.2 18.5 13 18.5C16.8 18.5 19 15.8 19 12.5C19 12.5 21.5 16 21.5 19C21.5 22.7 17.6 25.5 13 25.5C8.4 25.5 4.5 22.7 4.5 19C4.5 11 13 1 13 1Z" fill="#f97316" opacity="0.55" />
-            </svg>
+            <BrandMark size={18} style={{ opacity: 0.7 }} />
             <span className="lp-footer-logo-text">Bargain Hunter</span>
           </div>
           <div className="lp-footer-text">Built for Australian shoppers · 2026</div>

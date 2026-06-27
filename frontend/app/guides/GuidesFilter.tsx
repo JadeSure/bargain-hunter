@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import type { Guide } from '@/lib/guides'
-import { techniqueLabel } from '@/lib/guides'
+import { techniqueLabel } from '@/lib/guide-labels'
 
 function GuideCard({ guide }: { guide: Guide }) {
   return (

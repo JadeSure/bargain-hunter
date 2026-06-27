@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getGuide, getGuides, techniqueLabel } from '@/lib/guides'
+import { techniqueLabel } from '@/lib/guide-labels'
+import { getGuide, getGuides } from '@/lib/guides'
 
 export const dynamicParams = false
 
@@ -17,10 +18,25 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params
   const guide = await getGuide(slug)
-  if (!guide) return { title: 'Guide not found · Bargain Hunter' }
+  if (!guide) return { title: 'Guide not found' }
   return {
     title: `${guide.goal} · Saving Guides`,
     description: guide.summary,
+    alternates: {
+      canonical: `/guides/${guide.id}`,
+    },
+    openGraph: {
+      title: `${guide.goal} · Saving Guides`,
+      description: guide.summary,
+      url: `/guides/${guide.id}`,
+      type: 'article',
+      locale: 'en_AU',
+    },
+    twitter: {
+      card: 'summary',
+      title: `${guide.goal} · Saving Guides`,
+      description: guide.summary,
+    },
   }
 }
 
