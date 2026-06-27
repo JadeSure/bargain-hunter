@@ -28,8 +28,9 @@
     // Public URL of this worker — used in magic link verification URL.
     // Format: https://bargain-portal-api.<your-subdomain>.workers.dev
     "WORKER_URL": "https://bargain-portal-api.jadesure17.workers.dev",
-    // Public URL of the Next.js frontend — used for post-auth redirects and CORS.
-    "FRONTEND_URL": "https://bargain-hunter.pages.dev",
+    // Public URL(s) of the Next.js frontend — used for post-auth redirects and
+    // CORS. Comma-separated list of allowed origins (no trailing slash).
+    "FRONTEND_URL": "https://bargainhunter.app,https://bargain-hunter.pages.dev",
     // Email address that receives access requests.
     "OWNER_EMAIL": "jadesure17@gmail.com"
   }

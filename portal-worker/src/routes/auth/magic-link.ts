@@ -3,6 +3,7 @@ import { setCookie } from "hono/cookie";
 import { findSubscriberByEmail } from "../../lib/notion";
 import { createMagicToken, consumeMagicToken, createSession } from "../../lib/kv";
 import { sendMagicLink } from "../../lib/email";
+import { primaryFrontendUrl } from "../../lib/origins";
 import type { Env } from "../../types";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -41,18 +42,19 @@ app.post("/", async (c) => {
 
 // GET /auth/verify?token=xxx — validate token, create session, redirect to portal
 app.get("/verify", async (c) => {
+  const frontend = primaryFrontendUrl(c.env);
   const token = c.req.query("token");
-  if (!token) return c.redirect(`${c.env.FRONTEND_URL}/login?error=invalid`);
+  if (!token) return c.redirect(`${frontend}/login?error=invalid`);
 
   const email = await consumeMagicToken(c.env.PORTAL_KV, token);
-  if (!email) return c.redirect(`${c.env.FRONTEND_URL}/login?error=expired`);
+  if (!email) return c.redirect(`${frontend}/login?error=expired`);
 
   const found = await findSubscriberByEmail(
     c.env.NOTION_TOKEN,
     c.env.SUBSCRIBERS_DB_ID,
     email
   );
-  if (!found) return c.redirect(`${c.env.FRONTEND_URL}/login?error=not_found`);
+  if (!found) return c.redirect(`${frontend}/login?error=not_found`);
 
   const sessionId = await createSession(c.env.PORTAL_KV, {
     email: found.subscriber.email,
@@ -68,7 +70,7 @@ app.get("/verify", async (c) => {
     path: "/",
   });
 
-  return c.redirect(`${c.env.FRONTEND_URL}/portal`);
+  return c.redirect(`${frontend}/portal`);
 });
 
 export default app;
