@@ -21,6 +21,10 @@
   ],
   "vars": {
     "SUBSCRIBERS_DB_ID": "",
+    // Notion database (separate from Subscribers) that stores access requests.
+    // Share it with the integration; properties: Email (Title), Status (Select),
+    // Requested At (Date), Last Seen (Date), Count (Number), Source (Text).
+    "WAITLIST_DB_ID": "",
     // Public URL of this worker — used in magic link verification URL.
     // Format: https://bargain-portal-api.<your-subdomain>.workers.dev
     "WORKER_URL": "",

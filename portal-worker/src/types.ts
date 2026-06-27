@@ -2,6 +2,7 @@ export interface Env {
   PORTAL_KV: KVNamespace
   NOTION_TOKEN: string
   SUBSCRIBERS_DB_ID: string
+  WAITLIST_DB_ID: string
   RESEND_API_KEY: string
   WORKER_URL: string
   FRONTEND_URL: string
@@ -15,11 +16,12 @@ export interface SessionData {
 }
 
 export interface WaitlistEntry {
+  pageId: string
   email: string
-  status: "pending" | "approved" | "rejected"
+  status: string
   source: string
-  firstRequestedAt: string
-  lastRequestedAt: string
+  requestedAt: string | null
+  lastSeen: string | null
   count: number
 }
 

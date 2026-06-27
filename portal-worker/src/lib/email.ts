@@ -50,6 +50,7 @@ export async function sendAccessRequest(
     ownerEmail,
     `Access request: ${applicantEmail}`,
     `<p>${applicantEmail} has requested access to Bargain Hunter.</p>
+     <p>They've been added to the Waitlist (Notion) with status <b>pending</b>.</p>
      <p>To approve, add them to the Notion Subscribers DB and set Active = true.</p>
      <p>They can then log in at <a href="https://bargainhunter.app/login">bargainhunter.app/login</a> with their email.</p>`
   );

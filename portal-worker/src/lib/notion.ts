@@ -1,4 +1,4 @@
-import type { SubscriberData, SubscriberUpdate } from "../types";
+import type { SubscriberData, SubscriberUpdate, WaitlistEntry } from "../types";
 
 const NOTION_API = "https://api.notion.com/v1";
 const NOTION_VERSION = "2022-06-28";
@@ -195,4 +195,142 @@ export async function updateSubscriber(
   if (!resp.ok) {
     throw new Error(`Notion update failed: ${resp.status}`);
   }
+}
+
+// --- Access waitlist (separate Notion database) ---
+// Create a Notion database, share it with the integration, and put its id in
+// WAITLIST_DB_ID. It must expose these properties (exact names + types):
+//   Email (Title) | Status (Select: pending/approved/rejected) |
+//   Requested At (Date) | Last Seen (Date) | Count (Number) | Source (Text)
+const W = {
+  EMAIL: "Email",
+  STATUS: "Status",
+  REQUESTED_AT: "Requested At",
+  LAST_SEEN: "Last Seen",
+  COUNT: "Count",
+  SOURCE: "Source",
+} as const;
+
+function parseWaitlistEntry(page: Record<string, unknown>): WaitlistEntry {
+  const props = page.properties as Record<string, unknown>;
+  const titleProp = props[W.EMAIL] as { title?: Array<{ plain_text: string }> };
+  const email = (titleProp?.title ?? []).map((t) => t.plain_text).join("").trim();
+  const status =
+    (props[W.STATUS] as { select?: { name: string } | null })?.select?.name ?? "pending";
+  const requestedAt =
+    (props[W.REQUESTED_AT] as { date?: { start: string } | null })?.date?.start ?? null;
+  const lastSeen =
+    (props[W.LAST_SEEN] as { date?: { start: string } | null })?.date?.start ?? null;
+  const count = (props[W.COUNT] as { number?: number | null })?.number ?? 0;
+  const source = richText(props, W.SOURCE);
+  return {
+    pageId: page.id as string,
+    email,
+    status,
+    source,
+    requestedAt,
+    lastSeen,
+    count,
+  };
+}
+
+async function findWaitlistPage(
+  token: string,
+  dbId: string,
+  email: string
+): Promise<WaitlistEntry | null> {
+  const resp = await fetch(`${NOTION_API}/databases/${dbId}/query`, {
+    method: "POST",
+    headers: headers(token),
+    body: JSON.stringify({
+      filter: { property: W.EMAIL, title: { equals: email } },
+      page_size: 1,
+    }),
+  });
+
+  if (!resp.ok) {
+    throw new Error(`Notion waitlist query failed: ${resp.status}`);
+  }
+
+  const data = (await resp.json()) as { results: Array<Record<string, unknown>> };
+  return data.results.length ? parseWaitlistEntry(data.results[0]) : null;
+}
+
+// Persist an access request. De-dups by email: a repeat request bumps Count and
+// Last Seen on the existing row rather than creating a duplicate.
+export async function addToWaitlist(
+  token: string,
+  dbId: string,
+  email: string,
+  source = "modal"
+): Promise<void> {
+  const now = new Date().toISOString();
+  const existing = await findWaitlistPage(token, dbId, email);
+
+  if (existing) {
+    const resp = await fetch(`${NOTION_API}/pages/${existing.pageId}`, {
+      method: "PATCH",
+      headers: headers(token),
+      body: JSON.stringify({
+        properties: {
+          [W.COUNT]: { number: existing.count + 1 },
+          [W.LAST_SEEN]: { date: { start: now } },
+        },
+      }),
+    });
+    if (!resp.ok) {
+      throw new Error(`Notion waitlist update failed: ${resp.status}`);
+    }
+    return;
+  }
+
+  const resp = await fetch(`${NOTION_API}/pages`, {
+    method: "POST",
+    headers: headers(token),
+    body: JSON.stringify({
+      parent: { database_id: dbId },
+      properties: {
+        [W.EMAIL]: { title: [{ text: { content: email } }] },
+        [W.STATUS]: { select: { name: "pending" } },
+        [W.REQUESTED_AT]: { date: { start: now } },
+        [W.LAST_SEEN]: { date: { start: now } },
+        [W.COUNT]: { number: 1 },
+        [W.SOURCE]: { rich_text: [{ text: { content: source } }] },
+      },
+    }),
+  });
+  if (!resp.ok) {
+    throw new Error(`Notion waitlist create failed: ${resp.status}`);
+  }
+}
+
+export async function listWaitlist(
+  token: string,
+  dbId: string
+): Promise<WaitlistEntry[]> {
+  const entries: WaitlistEntry[] = [];
+  let cursor: string | undefined;
+  for (;;) {
+    const resp = await fetch(`${NOTION_API}/databases/${dbId}/query`, {
+      method: "POST",
+      headers: headers(token),
+      body: JSON.stringify({
+        sorts: [{ property: W.LAST_SEEN, direction: "descending" }],
+        page_size: 100,
+        ...(cursor ? { start_cursor: cursor } : {}),
+      }),
+    });
+    if (!resp.ok) {
+      throw new Error(`Notion waitlist list failed: ${resp.status}`);
+    }
+    const data = (await resp.json()) as {
+      results: Array<Record<string, unknown>>;
+      has_more: boolean;
+      next_cursor: string | null;
+    };
+    for (const page of data.results) entries.push(parseWaitlistEntry(page));
+    if (!data.has_more || !data.next_cursor) break;
+    cursor = data.next_cursor;
+  }
+  return entries;
 }
