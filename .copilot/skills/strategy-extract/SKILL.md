@@ -40,7 +40,7 @@ corpus doesn't contain, or invents a discount, is a defect — drop or fix it.
 - Guides: `data/strategies/guides/<id>.json` (one per purchase goal; matches
   `strategy_hunter.models.Guide`).
 - Social posts: `data/strategies/content/<id>.<platform>.md` where platform is
-  `tieba` or `xhs`. See `social_post_spec.md`.
+  `reddit` or `short`. See `social_post_spec.md`.
 
 ---
 
@@ -119,7 +119,7 @@ This is the point of the two-model split. Do all of it:
 ### 3. Generate share content (optional)
 
 For each **approved** guide, produce social posts per `social_post_spec.md`:
-`data/strategies/content/<id>.tieba.md` and/or `<id>.xhs.md`. The Sonnet 4.6
+`data/strategies/content/<id>.reddit.md` and/or `<id>.short.md`. The Sonnet 4.6
 subagent can draft these from the guide JSON; you review for accuracy (same
 no-fabrication bar) and tone before saving.
 

@@ -1,0 +1,47 @@
+{
+  "id": "shopback-receipt-scanning-au",
+  "goal": "Earn cashback by scanning purchase receipts in the ShopBack app",
+  "category": "Shopping",
+  "region": "AU",
+  "summary": "ShopBack's receipt-scanning feature pays milestone cashback bonuses for uploading eligible purchase receipts during active promotions. Scanning 5 receipts earns $2 (best effort-to-reward ratio at $0.40 per receipt), and 10 receipts earns $3 total. Digital PDF invoices from Amazon and Uber Eats provide an easy way to hit milestones without extra in-store spending.",
+  "techniques": ["receipt_scanning", "cashback"],
+  "steps": [
+    {
+      "order": 1,
+      "action": "Download the ShopBack app and opt in to the active Receipts promotion",
+      "detail": "Receipt-scanning bonuses are promotional and require opt-in — they are not automatic. Open the ShopBack app, navigate to the Receipts section, and activate the current promotion before submitting any receipts.",
+      "est_saving": null,
+      "technique": "receipt_scanning"
+    },
+    {
+      "order": 2,
+      "action": "Upload receipts from eligible retailers as PDF files (not screenshots)",
+      "detail": "Physical in-store receipts and digital PDF invoices from eligible brands both qualify. For digital receipts: Amazon (app: My Orders > View Receipt > Download PDF) and Uber Eats (order history > receipt > download PDF) work well. On Android: download the PDF and share it directly to the ShopBack app. On iOS: a known app bug may reject valid PDFs as screenshots — try downloading and importing from the Files app, or use an older app version if the issue persists.",
+      "est_saving": "$1 at 3 receipts, $2 at 5, $3 at 10",
+      "technique": "receipt_scanning"
+    },
+    {
+      "order": 3,
+      "action": "Aim for 5 receipts per promotion to maximise the reward-to-effort ratio",
+      "detail": "Community analysis: receipts 1–5 earn $2 total ($0.40 each), while receipts 6–10 earn only $0.20 each and may require splitting single purchases into separate transactions. Stopping at 5 is usually the most efficient target. Maximum of 3 receipts per store per day — spread across different retailers or across multiple days to reach 5.",
+      "est_saving": "$2 for 5 receipts (optimal rate)",
+      "technique": "cashback"
+    }
+  ],
+  "total_est_saving": "$2–3 per active promotional period",
+  "difficulty": "Easy",
+  "risks": [
+    "Receipt-scanning bonuses are time-limited promotions — availability and reward amounts change",
+    "iOS ShopBack app has a known bug where valid PDF invoices may be rejected as screenshots; Android is more reliable",
+    "Maximum 3 receipts per store per day",
+    "Dollar amounts are small — best treated as a low-effort supplement to other savings strategies rather than a primary cashback source"
+  ],
+  "prerequisites": [
+    "ShopBack account (free to create)",
+    "Active receipt-scanning promotion opted in via the ShopBack app"
+  ],
+  "sources": ["https://www.ozbargain.com.au/node/965259"],
+  "valid_until": null,
+  "confidence": 0.65,
+  "generated_at": "2026-06-27T03:12:10+00:00"
+}

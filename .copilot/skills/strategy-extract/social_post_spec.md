@@ -14,7 +14,8 @@ Output path: `data/strategies/content/<id>.<platform>.md`, where `platform` is `
 - Keep and naturally weave in the guide's **risks** and **prerequisites** — this is honest and
   stops readers getting burned.
 - End with a one-line disclaimer: mechanics/prices change anytime; check the retailer's current terms.
-- Cite 1–2 source links at the end (taken from the guide's `sources`).
+- **Do not include source/citation links.** Write the post from the guide content alone; never
+  paste the guide's `sources` URLs into the post.
 
 ## Reddit version (`*.reddit.md`)
 
