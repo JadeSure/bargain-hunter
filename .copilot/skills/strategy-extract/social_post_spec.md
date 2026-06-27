@@ -1,41 +1,43 @@
-# 社交内容生成规范(贴吧 / 小红书)
+# Social Content Generation Spec (Reddit / short-form)
 
-把已审核通过的攻略 JSON(`data/strategies/guides/<id>.json`)改写成可直接发布的
-中文社交帖。**只用攻略里已有的信息**,不得新增价格、折扣或来源。口吻可活泼,
-但事实必须与攻略一致;不确定的地方照搬攻略里的措辞或省略。
+Rewrite an **approved** guide JSON (`data/strategies/guides/<id>.json`) into ready-to-post
+English social content. **Use only information already in the guide** — never invent prices,
+discounts, or sources. Tone can be friendly, but every fact must match the guide; when unsure,
+reuse the guide's exact wording or omit it.
 
-输出路径:`data/strategies/content/<id>.<platform>.md`,`platform` 取 `tieba` 或 `xhs`。
+Output path: `data/strategies/content/<id>.<platform>.md`, where `platform` is `reddit` or `short`.
 
-## 通用规则
+## Common rules
 
-- 语言:简体中文(澳洲本地词/品牌名可保留英文,如 Cashrewards、Apple Store)。
-- 不得承诺收益;沿用攻略里的 `est_saving` / `total_est_saving` 措辞(如「约 15%」)。
-- 保留并自然融入攻略的**风险提示**和**前置条件**——这是对读者负责,也防止翻车。
-- 结尾加一句免责声明:玩法/价格随时变,以商家实际条款为准。
-- 文末附 1-2 条来源链接(取自攻略 `sources`)。
+- Language: English (AU spelling, e.g. "favourite", "maximise").
+- Never promise returns; reuse the guide's `est_saving` / `total_est_saving` wording (e.g. "~15%").
+- Keep and naturally weave in the guide's **risks** and **prerequisites** — this is honest and
+  stops readers getting burned.
+- End with a one-line disclaimer: mechanics/prices change anytime; check the retailer's current terms.
+- Cite 1–2 source links at the end (taken from the guide's `sources`).
 
-## 贴吧版(`*.tieba.md`)
+## Reddit version (`*.reddit.md`)
 
-偏「干货长贴」风格,适合论坛深度阅读:
+Long-form "value post" style, suited to community deep-reads (e.g. r/AusFinance, r/AusFrugal):
 
-- 标题:`【攻略】<goal> —— <一句话卖点>`。
-- 开头:1-2 句点出痛点 + 能省多少。
-- 主体:按攻略 `steps` 的顺序写成编号步骤,每步带 `detail` 和 `est_saving`。
-- 「避坑」小节:列出 `risks`。
-- 「前提」小节:列出 `prerequisites`(若有)。
-- 字数 400-800 中文字。
+- Title: `<goal> — <one-line hook>`.
+- Open: 1–2 sentences naming the pain point + how much you can save.
+- Body: numbered steps following the guide's `steps` order, each with its `detail` and `est_saving`.
+- "Watch out" section: list the `risks`.
+- "Before you start" section: list `prerequisites` (if any).
+- 250–500 words.
 
-## 小红书版(`*.xhs.md`)
+## Short-form version (`*.short.md`)
 
-偏「轻、短、可扫读」风格:
+Light, scannable style for X / Instagram / Threads captions:
 
-- 标题:≤ 20 字,带 1-2 个 emoji,点出省钱结果(如「澳洲买 Mac 省一千💻」)。
-- 正文:短句 + 适度 emoji + 换行留白;步骤用 ✅ / 1️⃣2️⃣3️⃣ 列出。
-- 结尾给 5-8 个话题标签:`#澳洲生活 #薅羊毛 #省钱攻略 #<品类>` 等。
-- 字数 150-300 中文字。
+- Hook: ≤ 120 chars, lead with the savings result (e.g. "Save ~$1k on a MacBook in AU 💻").
+- Body: short lines + light emoji + whitespace; steps as ✅ or 1️⃣2️⃣3️⃣.
+- Close with 5–8 hashtags: `#AusFinance #AusFrugal #Bargain #SaveMoney #<category>` etc.
+- 80–150 words.
 
-## 质量门槛(违反则不发)
+## Quality gates (do not post if any are true)
 
-- 出现攻略里没有的价格/折扣/来源。
-- 丢掉了风险提示却在推荐有风险的玩法。
-- 与攻略事实不一致(技巧、步骤顺序、适用地区)。
+- A price/discount/source appears that is not in the guide.
+- A risk was dropped while still recommending a risky play.
+- Anything is inconsistent with the guide (techniques, step order, applicable region).
