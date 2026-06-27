@@ -41,6 +41,7 @@ def build_observation(
     cfg: ScoringConfig,
     *,
     is_hot: bool,
+    level: str | None = None,
     now: datetime,
 ) -> dict:
     """Build one feature row for a deal at decision time."""
@@ -73,6 +74,7 @@ def build_observation(
         "discount_percent": deal.discount_percent,
         "hot_score": score,
         "is_hot": is_hot,
+        "hot_level": level,
     }
 
 

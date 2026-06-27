@@ -10,7 +10,7 @@ import math
 import re
 from datetime import UTC, datetime
 
-from .config import ScoringConfig
+from .config import ScoringConfig, effective_tiers
 from .models import Deal, DealSnapshot
 
 # ---------------------------------------------------------------------------
@@ -258,6 +258,37 @@ def is_hot_candidate(
     return False
 
 
+def classify_hot(
+    deal: Deal,
+    snapshots: list[DealSnapshot],
+    cfg: ScoringConfig,
+    all_active_deals: list[tuple[Deal, list[DealSnapshot]]] | None = None,
+    now: datetime | None = None,
+) -> str | None:
+    """Return the name of the highest hot tier the deal earns, or None.
+
+    The deal must first pass hot candidacy; then it earns the best tier whose
+    ``min_score`` is met and whose optional value gates (``min_votes`` /
+    ``min_discount_percent``) pass. A deal that clears a tier's score but fails
+    its value gate falls through to the next-best tier rather than being dropped.
+    """
+    if not is_hot_candidate(deal, snapshots, cfg, all_active_deals, now):
+        return None
+    score = compute_hot_score(deal, snapshots, cfg, now)
+    for tier in effective_tiers(cfg.hot):
+        if score < tier.min_score:
+            continue
+        if tier.min_votes is not None and deal.votes_pos < tier.min_votes:
+            continue
+        if (
+            tier.min_discount_percent is not None
+            and (deal.discount_percent or 0) < tier.min_discount_percent
+        ):
+            continue
+        return tier.name
+    return None
+
+
 def is_hot(
     deal: Deal,
     snapshots: list[DealSnapshot],
@@ -265,8 +296,5 @@ def is_hot(
     all_active_deals: list[tuple[Deal, list[DealSnapshot]]] | None = None,
     now: datetime | None = None,
 ) -> bool:
-    """Full hot check: must pass candidacy AND score threshold."""
-    if not is_hot_candidate(deal, snapshots, cfg, all_active_deals, now):
-        return False
-    score = compute_hot_score(deal, snapshots, cfg, now)
-    return score >= cfg.hot.hot_threshold
+    """Backward-compatible boolean: True if the deal earns any hot tier."""
+    return classify_hot(deal, snapshots, cfg, all_active_deals, now) is not None

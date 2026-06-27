@@ -41,6 +41,15 @@ scoring:
     # while keeping genuine product discounts (e.g. 13 votes, 50% off).
     quality_min_discount_pct: 20.0  # deals below threshold need ≥20% discount
     quality_high_votes_threshold: 40  # deals with ≥40 votes skip the discount requirement
+    # Hot ladder (calibrated on ObservationLog: among distinct hot deals ~57%
+    # reach 4.0 and ~36% reach 7.0). A deal earns the highest tier it qualifies
+    # for; below `good` (= the old hot_threshold) it is not hot. `top` adds a
+    # value gate (min_votes) so it captures genuinely strong deals, not just velocity.
+    universal_top: true              # top tier reaches every hot subscriber, bypassing category filter
+    tiers:
+      - {name: top,   min_score: 7.0, min_votes: 40}
+      - {name: great, min_score: 4.0}
+      - {name: good,  min_score: 1.5}   # = the original hot floor
   watch:
     min_votes: 15                  # minimum positive votes after keyword match (raised to 15)
     min_discount_percent: 15       # discount threshold when no votes available (e.g. CCC) — raised to 15%
@@ -58,6 +67,34 @@ cold_start:
 alerting:
   min_consecutive_failures: 3      # send maintainer alert only after this many consecutive failures
   cooldown_hours: 1.0              # silence period after an alert fires
+
+# ---------------------------------------------------------------------------
+# Category taxonomy: maps each subscriber interest bucket (the ids the portal
+# stores in Notion) to match terms. A deal belongs to a bucket when any term
+# matches (word-boundary, case-insensitive) the deal's own categories, falling
+# back to title/description when the deal carries no categories (e.g. CCC).
+# Used to route lower hot tiers to subscribers by interest.
+# ---------------------------------------------------------------------------
+categories:
+  electronics: ["Electrical & Electronics", "Computing", "Computer", "Laptop",
+                "Monitor", "Mobile", "Phone", "Headphone", "Earbuds", "Camera",
+                "Console", "PC", "GPU", "CPU", "SSD", "TV", "Tablet", "Router",
+                "Smart Home", "Audio", "Speaker", "Charger"]
+  home:        ["Home & Garden", "Home", "Kitchen", "Vacuum", "Microwave",
+                "Furniture", "Appliance", "Bedding", "Mattress", "Cookware",
+                "Cleaning", "Garden", "Tools", "Dyson"]
+  fashion:     ["Fashion", "Apparel", "Clothing", "Shoe", "Sneaker", "T-Shirt",
+                "Hoodie", "Jacket", "Watch", "Bag", "Sunglasses"]
+  sports:      ["Sport", "Outdoor", "Fitness", "Bike", "Bicycle", "Camping",
+                "Gym", "Running", "Hiking", "Golf"]
+  toys:        ["Toy", "Toys", "Lego", "Board Game", "Gaming", "Video Game",
+                "Nintendo", "PlayStation", "Xbox", "Switch"]
+  beauty:      ["Health & Beauty", "Beauty", "Skincare", "Cosmetic", "Makeup",
+                "Fragrance", "Perfume", "Haircare", "Supplement", "Vitamin"]
+  food:        ["Groceries", "Grocery", "Food", "Wine", "Alcohol", "Beer",
+                "Spirits", "Coffee", "Snack", "Chocolate", "Restaurant"]
+  travel:      ["Travel", "Flight", "Flights", "Hotel", "Accommodation",
+                "Theme Park", "Cruise", "Holiday", "Airline"]
 
 # ---------------------------------------------------------------------------
 # Strategy guide collection (strategy_hunter). GitHub Actions harvests daily;
