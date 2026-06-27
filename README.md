@@ -46,6 +46,21 @@ score = 0.5^(age_h / 12) × ( vote_vel/5  +  ln(1+votes)/ln(31)  +  0.1×comment
 A subscriber set to `good` also receives `great` and `top`; set to `top` they only get the
 very best. Roughly: **microscopically hot / very hot / once-a-day blockbuster**.
 
+Because the score blends velocity *and* vote count, there's no single votes/hour cutoff per
+level — but here's the rough hourly vote velocity each tier needs, depending on how many votes
+the deal has already banked (fresh deal, no comments/downvotes):
+
+| Total votes so far | good (≥1.5) | great (≥4.0) | top (≥7.0) |
+|---:|---:|---:|---:|
+| 10 | ~4/h | ~17/h | ~33/h |
+| 20 | ~3/h | ~16/h | ~32/h |
+| 40 | ~2/h | ~15/h | ~31/h |
+| 100 | ~1/h | ~14/h | ~29/h |
+
+Rule of thumb: **good ≈ a few votes/h, great ≈ ~15 votes/h, top ≈ ~30 votes/h** (and ≥40
+total votes). The more votes a deal has banked, the lower the velocity it needs — the
+`ln(1+votes)` term tops up the rest.
+
 ### Worked examples (real formula)
 
 | Deal | Votes | Last 15 min | Age | Calculation | Score → level |
