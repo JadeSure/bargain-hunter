@@ -5,6 +5,7 @@ import magicLinkRoutes from "./routes/auth/magic-link";
 import requestAccessRoute from "./routes/auth/request-access";
 import logoutRoute from "./routes/auth/logout";
 import subscriberRoutes from "./routes/subscriber";
+import { allowedOrigins } from "./lib/origins";
 import type { Env } from "./types";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -15,8 +16,8 @@ app.use(
   "*",
   cors({
     origin: (origin, c) => {
-      const allowed = c.env.FRONTEND_URL;
-      return origin === allowed ? origin : null;
+      const allowed = allowedOrigins(c.env);
+      return origin && allowed.includes(origin) ? origin : null;
     },
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type"],
