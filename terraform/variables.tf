@@ -48,7 +48,7 @@ variable "subscribers_db_id" {
 variable "waitlist_db_id" {
   description = "Notion Waitlist database ID for access requests."
   type        = string
-  default     = "f5effc1618af4447abef61e3a8dc28ff"
+  default     = "38ca2a0bfd0481a1b355ec2277c0f6a9"
 }
 
 variable "resend_api_key" {

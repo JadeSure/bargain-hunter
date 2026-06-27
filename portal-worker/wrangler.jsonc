@@ -24,7 +24,7 @@
     // Notion database (separate from Subscribers) that stores access requests.
     // Share it with the integration; properties: Email (Title), Status (Select),
     // Requested At (Date), Last Seen (Date), Count (Number), Source (Text).
-    "WAITLIST_DB_ID": "f5effc1618af4447abef61e3a8dc28ff",
+    "WAITLIST_DB_ID": "38ca2a0bfd0481a1b355ec2277c0f6a9",
     // Public URL of this worker — used in magic link verification URL.
     // Format: https://bargain-portal-api.<your-subdomain>.workers.dev
     "WORKER_URL": "https://bargain-portal-api.jadesure17.workers.dev",
