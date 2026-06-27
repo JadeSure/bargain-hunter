@@ -19,7 +19,7 @@ export async function GET(req: Request) {
 
   let upstream: Response
   try {
-    upstream = await fetch(`${WORKER}/auth/verify?token=${encodeURIComponent(token)}`, {
+    upstream = await fetch(`${WORKER}/auth/magic-link/verify?token=${encodeURIComponent(token)}`, {
       redirect: 'manual',
     })
   } catch {
