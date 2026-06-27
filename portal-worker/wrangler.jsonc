@@ -15,22 +15,22 @@
       "binding": "PORTAL_KV",
       // Replace with real KV namespace ID from `wrangler kv namespace create portal-sessions`
       // or from Terraform output after apply.
-      "id": "REPLACE_WITH_KV_NAMESPACE_ID",
-      "preview_id": "REPLACE_WITH_KV_NAMESPACE_PREVIEW_ID"
+      "id": "bb32cb9142e14ebbae4ce89b2f615483",
+      "preview_id": "bb32cb9142e14ebbae4ce89b2f615483"
     }
   ],
   "vars": {
-    "SUBSCRIBERS_DB_ID": "",
+    "SUBSCRIBERS_DB_ID": "d168c2a61b23465b9374bd59513eb77c",
     // Notion database (separate from Subscribers) that stores access requests.
     // Share it with the integration; properties: Email (Title), Status (Select),
     // Requested At (Date), Last Seen (Date), Count (Number), Source (Text).
-    "WAITLIST_DB_ID": "",
+    "WAITLIST_DB_ID": "f5effc1618af4447abef61e3a8dc28ff",
     // Public URL of this worker — used in magic link verification URL.
     // Format: https://bargain-portal-api.<your-subdomain>.workers.dev
-    "WORKER_URL": "",
+    "WORKER_URL": "https://bargain-portal-api.jadesure17.workers.dev",
     // Public URL of the Next.js frontend — used for post-auth redirects and CORS.
-    "FRONTEND_URL": "",
+    "FRONTEND_URL": "https://bargain-hunter.pages.dev",
     // Email address that receives access requests.
-    "OWNER_EMAIL": ""
+    "OWNER_EMAIL": "jadesure17@gmail.com"
   }
 }
