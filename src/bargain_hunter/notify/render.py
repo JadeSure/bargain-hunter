@@ -26,10 +26,11 @@ _env = Environment(
 class DealItem:
     """Bundles a deal with its track + reason string for template rendering."""
 
-    def __init__(self, deal: Deal, track: str, reason: str = "") -> None:
+    def __init__(self, deal: Deal, track: str, reason: str = "", level: str | None = None) -> None:
         self.deal = deal
         self.track = track
         self.reason = reason
+        self.level = level
         self.feedback_up_url: str | None = None
         self.feedback_down_url: str | None = None
 

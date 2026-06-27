@@ -21,6 +21,7 @@ _P_HOT = "Subscribe Hot Deals"
 _P_KEYWORDS = "Watch Keywords"
 _P_MIN_DISCOUNT = "Min Discount %"
 _P_CATEGORIES = "Categories"
+_P_HOT_LEVEL = "Hot Level"
 _P_MAX_ALERTS = "Max Alerts/Day"
 _P_MAX_WATCH_ALERTS = "Max Watch Alerts/Day"
 _P_BLOCK_KEYWORDS = "Block Keywords"
@@ -42,6 +43,11 @@ def _checkbox(prop: dict) -> bool:
 
 def _multiselect(prop: dict) -> list[str]:
     return [o["name"] for o in prop.get("multi_select", [])]
+
+
+def _select(prop: dict) -> str | None:
+    sel = prop.get("select")
+    return sel.get("name") if sel else None
 
 
 def _number(prop: dict, default: float | None = None) -> float | None:
@@ -92,6 +98,7 @@ def _parse_subscriber(props: dict) -> Subscriber:
     watch_keywords = _parse_keywords(keywords_raw)
     min_discount = _number(props.get(_P_MIN_DISCOUNT, {}))
     categories = _multiselect(props.get(_P_CATEGORIES, {}))
+    min_hot_level = (_select(props.get(_P_HOT_LEVEL, {})) or "").strip().lower() or None
     max_alerts = int(_number(props.get(_P_MAX_ALERTS, {}), default=10) or 10)
     max_watch_alerts = int(_number(props.get(_P_MAX_WATCH_ALERTS, {}), default=10) or 10)
     block_keywords_raw = _text(props.get(_P_BLOCK_KEYWORDS, {}))
@@ -108,6 +115,7 @@ def _parse_subscriber(props: dict) -> Subscriber:
         block_keywords=block_keywords,
         min_discount_percent=min_discount,
         categories=categories,
+        min_hot_level=min_hot_level,
         max_alerts_per_day=max_alerts,
         max_watch_alerts_per_day=max_watch_alerts,
     )

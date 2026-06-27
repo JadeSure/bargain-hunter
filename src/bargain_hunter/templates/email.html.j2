@@ -21,6 +21,8 @@
   .badge.hot { background: #fff3e0; color: #e65100; }
   .badge.watch { background: #e3f2fd; color: #1565c0; }
   .badge.discount { background: #fce4ec; color: #c62828; font-weight: 600; }
+  .badge.level { background: #ede7f6; color: #4527a0; font-weight: 600; text-transform: uppercase; }
+  .badge.level-top { background: #4527a0; color: #fff; }
   .reason { font-size: 12px; color: #888; margin-top: 6px; }
   .links { margin-top: 10px; font-size: 13px; }
   .links a { color: #ff6600; text-decoration: none; margin-right: 12px; }
@@ -48,6 +50,9 @@
       <span class="badge discount">{{ "%.0f"|format(deal.discount_percent) }}% off</span>
       {% endif %}
       <span class="badge {{ item.track }}">{{ item.track|upper }}</span>
+      {% if item.level %}
+      <span class="badge level{{ ' level-top' if item.level == 'top' else '' }}">{{ item.level }}</span>
+      {% endif %}
       <span class="badge">▲ {{ deal.votes_pos }}</span>
       {% if deal.comment_count %}
       <span class="badge">💬 {{ deal.comment_count }}</span>

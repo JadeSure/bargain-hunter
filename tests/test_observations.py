@@ -45,6 +45,17 @@ def test_build_observation_has_expected_fields():
     assert 0 <= row["neg_ratio"] <= 1
 
 
+def test_build_observation_records_hot_level():
+    now = datetime.now(UTC)
+    row = build_observation(
+        _deal(), _snaps(now), ScoringConfig(), is_hot=True, level="great", now=now
+    )
+    assert row["hot_level"] == "great"
+    # Level is optional; absent when not provided.
+    row2 = build_observation(_deal(), _snaps(now), ScoringConfig(), is_hot=False, now=now)
+    assert row2["hot_level"] is None
+
+
 def test_observation_log_writes_jsonl(tmp_path):
     now = datetime.now(UTC)
     obs = ObservationLog(obs_dir=tmp_path)

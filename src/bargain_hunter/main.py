@@ -19,14 +19,15 @@ from pathlib import Path
 import httpx
 
 from .alert_throttle import AlertThrottle
-from .config import Settings, load_dotenv, load_settings
+from .categories import deal_matches_categories
+from .config import Settings, effective_tiers, load_dotenv, load_settings
 from .dedup import DedupStore
 from .matching import filter_watch_matches
-from .models import Deal
+from .models import Deal, Subscriber
 from .notify.email import EmailSender, send_maintainer_alert
 from .notify.render import DealItem
 from .observations import ObservationLog, build_observation
-from .scoring import compute_vote_velocity, enrich_deal, is_hot
+from .scoring import classify_hot, compute_vote_velocity, enrich_deal
 from .sources.camelcamelcamel import CamelCamelCamelSource
 from .sources.ozbargain import OzBargainSource
 from .state import StateStore
@@ -126,6 +127,13 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     active_pairs = [(d, snaps_map[d.key]) for d in active_deals]
 
     hot_deals: list[Deal] = []
+    # Hot ladder + routing inputs, computed once for the whole run.
+    tiers = effective_tiers(settings.scoring.hot)
+    top_name = tiers[0].name
+    # Rank tiers so a higher rank = a more valuable deal (e.g. good=0, great=1, top=2).
+    tier_rank = {tier.name: i for i, tier in enumerate(reversed(tiers))}
+    taxonomy = settings.categories
+    hot_levels: dict[str, str] = {}
     if not state.is_cold_start():
         for deal in active_deals:
             if not state.should_notify(
@@ -135,8 +143,17 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 now=now,
             ):
                 continue
-            if is_hot(deal, snaps_map[deal.key], settings.scoring, active_pairs, now=now):
-                hot_deals.append(deal)
+            level = classify_hot(
+                deal, snaps_map[deal.key], settings.scoring, active_pairs, now=now
+            )
+            if level is not None:
+                hot_levels[deal.key] = level
+        # Best tiers first so the per-subscriber daily cap favours the top deals.
+        hot_deals = sorted(
+            (d for d in active_deals if d.key in hot_levels),
+            key=lambda d: tier_rank.get(hot_levels[d.key], 0),
+            reverse=True,
+        )
         summary["hot_deals"] = len(hot_deals)
         log.info("Hot deals this run: %d", len(hot_deals))
 
@@ -153,6 +170,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 snaps_map[deal.key],
                 settings.scoring,
                 is_hot=deal.key in hot_keys,
+                level=hot_levels.get(deal.key),
                 now=now,
             )
         )
@@ -244,6 +262,18 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 if dedup.already_sent(deal, sub):
                     log.info("[%s] hot skip %s: already sent", sub.ref, deal.key)
                     continue
+                level = hot_levels.get(deal.key, top_name)
+                if not _hot_level_eligible(
+                    deal,
+                    level,
+                    sub,
+                    tier_rank=tier_rank,
+                    top_name=top_name,
+                    taxonomy=taxonomy,
+                    universal_top=settings.scoring.hot.universal_top,
+                ):
+                    log.info("[%s] hot skip %s: level/category (%s)", sub.ref, deal.key, level)
+                    continue
                 vel, _ = compute_vote_velocity(
                     snaps_map.get(deal.key, []), settings.scoring.window_minutes, now
                 )
@@ -253,7 +283,9 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                         sub.ref, deal.key, deal.votes_pos, deal.discount_percent, vel,
                     )
                     continue
-                hot_items.append(DealItem(deal, track="hot", reason=_hot_reason(deal)))
+                hot_items.append(
+                    DealItem(deal, track="hot", reason=_hot_reason(deal), level=level)
+                )
                 notified_keys.add(deal.key)
 
         # Watch track (independent cap — does not share quota with hot)
@@ -328,6 +360,36 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         summary["cold_start"],
     )
     return summary
+
+
+def _hot_level_eligible(
+    deal: Deal,
+    level: str,
+    sub: Subscriber,
+    *,
+    tier_rank: dict[str, int],
+    top_name: str,
+    taxonomy: dict[str, list[str]] | None,
+    universal_top: bool,
+) -> bool:
+    """Whether a classified hot deal should reach this subscriber.
+
+    Two gates, both must pass:
+      1. Level floor — the deal's tier must rank at or above the subscriber's
+         chosen minimum hot level (no choice = no floor).
+      2. Category — subscribers with no categories receive everything; otherwise
+         in-category deals pass, and out-of-category deals pass only when the deal
+         is ``top`` and ``universal_top`` is enabled (the universal best-of-best).
+    """
+    floor = sub.min_hot_level
+    if floor in tier_rank and tier_rank.get(level, -1) < tier_rank[floor]:
+        return False
+
+    if not sub.categories:
+        return True
+    if deal_matches_categories(deal, sub.categories, taxonomy):
+        return True
+    return universal_top and level == top_name
 
 
 def _is_blocked(deal: Deal, block_keywords: list[str]) -> bool:

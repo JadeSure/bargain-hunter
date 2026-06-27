@@ -4,9 +4,10 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from bargain_hunter.config import ScoringConfig
+from bargain_hunter.config import HotConfig, HotTier, ScoringConfig, effective_tiers
 from bargain_hunter.models import Deal, DealSnapshot
 from bargain_hunter.scoring import (
+    classify_hot,
     compute_click_velocity,
     compute_hot_score,
     compute_vote_velocity,
@@ -158,6 +159,63 @@ def test_is_hot_end_to_end():
     # Velocity: went from 0 to 30 in 30 min = 60 v/hr >> V1=15
     snaps = _snaps(0, 15, 30, spacing_minutes=15)
     assert is_hot(d, snaps, cfg)
+
+
+# ---------------------------------------------------------------------------
+# Hot ladder (tiers) and classify_hot
+# ---------------------------------------------------------------------------
+
+
+def test_effective_tiers_sorted_best_first():
+    cfg = HotConfig(
+        tiers=[
+            HotTier(name="good", min_score=1.5),
+            HotTier(name="top", min_score=7.0),
+            HotTier(name="great", min_score=4.0),
+        ]
+    )
+    assert [t.name for t in effective_tiers(cfg)] == ["top", "great", "good"]
+
+
+def test_effective_tiers_fallback_to_single_hot():
+    tiers = effective_tiers(HotConfig(hot_threshold=2.0))
+    assert len(tiers) == 1
+    assert tiers[0].name == "hot"
+    assert tiers[0].min_score == 2.0
+
+
+def test_classify_hot_none_for_non_candidate():
+    d = _deal(votes_pos=3, posted_at=datetime.now(UTC) - timedelta(hours=48))
+    assert classify_hot(d, _snaps(3), _cfg()) is None
+
+
+def test_classify_hot_value_gate_demotes_to_lower_tier():
+    # Both tiers clear on score; top's min_votes gate (1000) fails → demoted to good.
+    cfg = ScoringConfig(
+        hot=HotConfig(
+            tiers=[
+                HotTier(name="top", min_score=0.0, min_votes=1000),
+                HotTier(name="good", min_score=0.0),
+            ]
+        )
+    )
+    d = _deal(votes_pos=30, posted_at=datetime.now(UTC) - timedelta(minutes=30))
+    snaps = _snaps(0, 15, 30, spacing_minutes=15)
+    assert classify_hot(d, snaps, cfg) == "good"
+
+
+def test_classify_hot_top_when_value_gate_met():
+    cfg = ScoringConfig(
+        hot=HotConfig(
+            tiers=[
+                HotTier(name="top", min_score=0.0, min_votes=10),
+                HotTier(name="good", min_score=0.0),
+            ]
+        )
+    )
+    d = _deal(votes_pos=30, posted_at=datetime.now(UTC) - timedelta(minutes=30))
+    snaps = _snaps(0, 15, 30, spacing_minutes=15)
+    assert classify_hot(d, snaps, cfg) == "top"
 
 
 # ---------------------------------------------------------------------------

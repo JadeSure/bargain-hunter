@@ -35,6 +35,21 @@ class StrictConfigModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class HotTier(StrictConfigModel):
+    """One rung of the hot ladder.
+
+    A deal earns the highest tier whose ``min_score`` it meets and whose optional
+    value gates (``min_votes`` / ``min_discount_percent``) it passes. ``min_score``
+    is the weighted hot velocity score; the value gates let a tier (e.g. ``top``)
+    demand genuine savings rather than velocity alone.
+    """
+
+    name: str
+    min_score: float
+    min_discount_percent: float | None = None
+    min_votes: int | None = None
+
+
 class HotConfig(StrictConfigModel):
     min_votes_gain_per_window: int = 15
     early_burst_age_hours: float = 2.0
@@ -55,6 +70,25 @@ class HotConfig(StrictConfigModel):
     # Set to None to disable.
     quality_min_discount_pct: float | None = None
     quality_high_votes_threshold: int = 40
+    # Hot ladder: ordered tiers (sorted best-first by effective_tiers()). When
+    # empty, a single "hot" tier is synthesised from hot_threshold so existing
+    # single-threshold behaviour is preserved.
+    tiers: list[HotTier] = Field(default_factory=list)
+    # When True, the top tier bypasses category filtering and reaches every hot
+    # subscriber (the universal best-of-best). When False, every tier — including
+    # top — is restricted to a subscriber's chosen categories.
+    universal_top: bool = True
+
+
+def effective_tiers(hot: HotConfig) -> list[HotTier]:
+    """Return the hot ladder sorted best-first (highest ``min_score`` first).
+
+    Falls back to a single ``"hot"`` tier derived from ``hot_threshold`` when no
+    tiers are configured, so callers can treat the ladder uniformly.
+    """
+    if hot.tiers:
+        return sorted(hot.tiers, key=lambda t: t.min_score, reverse=True)
+    return [HotTier(name="hot", min_score=hot.hot_threshold)]
 
 
 class WatchConfig(StrictConfigModel):
@@ -117,6 +151,9 @@ class Settings(StrictConfigModel):
     # Consumed by the separate strategy_hunter pipeline (it has its own loader);
     # accepted here so the shared settings.yaml validates under this strict model.
     strategy: dict[str, Any] | None = None
+    # Category taxonomy: bucket id -> match terms. Routes hot deals to subscribers
+    # by their chosen interest buckets. Optional; absent = no category routing.
+    categories: dict[str, list[str]] | None = None
 
 
 def load_settings(path: Path | None = None) -> Settings:

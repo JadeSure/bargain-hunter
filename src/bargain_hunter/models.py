@@ -58,6 +58,9 @@ class Subscriber(BaseModel):
     watch_keywords: list[str] = Field(default_factory=list)
     min_discount_percent: float | None = None
     categories: list[str] = Field(default_factory=list)
+    # Minimum hot tier the subscriber wants (e.g. "top" | "great" | "good").
+    # None = no floor (receive every tier). Compared via the configured tier rank.
+    min_hot_level: str | None = None
     max_alerts_per_day: int = 10        # hot track daily cap
     max_watch_alerts_per_day: int = 10  # watch track daily cap (independent)
     block_keywords: list[str] = Field(default_factory=list)
