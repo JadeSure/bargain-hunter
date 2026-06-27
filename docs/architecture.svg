@@ -242,7 +242,9 @@
   <!-- Pages ↔ worker -->
   <line x1="224" y1="812" x2="264" y2="812" stroke="#58a6ff" stroke-width="1.4" marker-end="url(#arr-b)"/>
   <line x1="264" y1="832" x2="224" y2="832" stroke="#58a6ff" stroke-width="1.4" marker-end="url(#arr-b)"/>
-  <text x="244" y="804" text-anchor="middle" fill="#6e7681" font-size="9">API</text>
+  <text x="244" y="804" text-anchor="middle" fill="#6e7681" font-size="9">proxy</text>
+  <text x="124" y="872" text-anchor="middle" fill="#6e7681" font-size="9">same-origin /api + /auth/verify proxy</text>
+  <text x="124" y="883" text-anchor="middle" fill="#6e7681" font-size="9">(session cookie lands on Pages origin)</text>
 
   <!-- worker → Notion -->
   <line x1="476" y1="820" x2="516" y2="820" stroke="#58a6ff" stroke-width="1.4" marker-end="url(#arr-b)"/>

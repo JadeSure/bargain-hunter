@@ -44,7 +44,13 @@ bargain-hunter/
         page.tsx               <- Strategy guide index
         [slug]/page.tsx        <- Individual guide
         GuidesFilter.tsx       <- Client-side filter
-    lib/api.ts                 <- Frontend wrapper for portal-worker calls
+      auth/verify/route.ts     <- Edge proxy: re-emits the worker's Set-Cookie on the
+                                  Pages origin so the session lands on *.pages.dev
+      api/[...path]/route.ts   <- Edge proxy: same-origin /api/* → portal-worker
+                                  (forwards the Pages cookie; used by client calls)
+    lib/api.ts                 <- Frontend wrapper for portal-worker calls (server-side
+                                  uses absolute worker URL + forwarded cookie; client-side
+                                  updateMe uses the relative /api/me proxy)
     middleware.ts              <- Protect /portal/* routes
     next.config.ts
     wrangler.toml              <- Cloudflare Pages config
@@ -103,7 +109,8 @@ bargain-hunter/
 - [x] KV wrapper: session + magic-token CRUD (`lib/kv.ts`)
 - [x] Notion wrapper: Subscribers read/update **and** Waitlist add/list (`lib/notion.ts`)
 - [x] `POST /auth/magic-link` → token in KV → Resend email
-- [x] `GET /auth/verify?token=…` → validate, set session cookie, redirect to portal
+- [x] `GET /auth/verify?token=…` → validate, set session cookie, redirect to the
+      frontend `/auth/verify` proxy (which lands the cookie on the Pages origin)
 - [x] `POST /auth/request-access` → upsert into Notion **Waitlist** DB + notify owner
 - [x] `GET /auth/request-access` (owner-only) → list waitlist
 - [x] `POST /auth/logout` → clear session
@@ -118,6 +125,9 @@ bargain-hunter/
       `/auth/callback` page — verification is handled server-side by the worker)
 - [x] Portal home + keywords + settings
 - [x] Strategy guide index + detail pages
+- [x] Same-origin proxy route handlers (`app/auth/verify/route.ts`,
+      `app/api/[...path]/route.ts`) so the session cookie lives on the Pages origin
+      — see [Same-origin cookie proxy](#same-origin-cookie-proxy) below
 
 ### Phase 5 — Polish
 - [x] Multi-origin CORS — `FRONTEND_URL` is a comma-separated allow-list so the
@@ -151,9 +161,33 @@ Corresponding to the existing `Subscriber` model — all editable in the portal:
 ### Magic Link (live)
 ```
 User enters email → portal-worker generates token (15 min expiry), stores in KV
-→ Resend sends email (with link) → user clicks link
-→ portal-worker validates token → creates session cookie → redirects to /portal
+→ Resend sends email (link points at the FRONTEND /auth/verify proxy)
+→ user clicks link → frontend /auth/verify proxy forwards token to portal-worker
+→ portal-worker validates token → creates session + returns Set-Cookie & redirect
+→ the proxy re-emits that Set-Cookie on the Pages origin and redirects to /portal
 ```
+The link targets the **frontend** (not the worker) on purpose — see
+[Same-origin cookie proxy](#same-origin-cookie-proxy).
+
+### Same-origin cookie proxy
+The frontend (`*.pages.dev`) and the API worker (`*.workers.dev`) are **separate
+sites** on the Public Suffix List, so a cookie set on the worker domain can't be
+read by the frontend (and `Domain=.pages.dev` is rejected). With only free
+domains, the fix is to keep auth **same-origin** via two Next.js edge route
+handlers on the Pages origin:
+
+- `app/auth/verify/route.ts` — proxies the magic-link verify to the worker with
+  `redirect: 'manual'`, then re-emits the worker's `Set-Cookie` on the **pages.dev**
+  response so the session cookie is stored host-only for the frontend.
+- `app/api/[...path]/route.ts` — a catch-all proxy so client-side calls (e.g.
+  `updateMe` → `PUT /api/me`) hit the Pages origin; the browser auto-sends the
+  pages.dev cookie, which the handler forwards to the worker.
+
+Server-side calls (`getMe`, `logout`) still hit the worker's **absolute** URL with
+an explicitly forwarded `Cookie` header (server-to-server, no browser/CORS).
+
+> A real custom domain (e.g. `api.bargainhunter.app` with `Domain=.bargainhunter.app`)
+> would let cookies be shared directly and make this proxy unnecessary.
 
 ### Access request / waitlist (live)
 ```
