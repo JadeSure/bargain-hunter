@@ -11,7 +11,7 @@ async function send(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "Bargain Hunter <noreply@bargainhunter.app>",
+      from: "Bargain Hunter <onboarding@resend.dev>",
       to: [to],
       subject,
       html,
