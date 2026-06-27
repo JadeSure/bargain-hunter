@@ -1,0 +1,54 @@
+{
+  "id": "energy-provider-churn-au",
+  "goal": "Earn signup bonuses by switching energy providers in Australia",
+  "category": "Utilities",
+  "region": "AU",
+  "summary": "Australian energy providers periodically offer new-customer incentives (e.g. $200 bill credit) to attract switchers via comparison aggregators like Econnex. By switching when an attractive offer appears and then reassessing after the lock-in period, households can capture recurring credits. Note that some providers conduct hard credit checks, which matters if you are also churning credit cards or planning a loan.",
+  "techniques": ["bill_switching", "signup_bonus"],
+  "steps": [
+    {
+      "order": 1,
+      "action": "Browse energy comparison aggregators such as Econnex for new-customer incentives",
+      "detail": "Comparison sites like Econnex list competing energy providers and highlight signup incentives such as a $200 bill credit or promotional plans (e.g. 'three for free') for new customers. Offers close at specific deadlines so act before the cut-off.",
+      "est_saving": null,
+      "technique": "signup_bonus"
+    },
+    {
+      "order": 2,
+      "action": "Check whether the provider conducts a hard or soft credit check before applying",
+      "detail": "Some energy providers on Econnex — including OVO Energy — perform a hard credit check during sign-up. A hard check is recorded on your credit file and can reduce your score. If you are also churning bank accounts or credit cards, or planning a mortgage/car loan application soon, factor this cost into the decision.",
+      "est_saving": null,
+      "technique": null
+    },
+    {
+      "order": 3,
+      "action": "Switch to the provider with the best incentive and meet the minimum terms to receive it",
+      "detail": "Complete the sign-up via the comparison site or directly. Read the terms for the incentive — credits typically require you to remain connected for a minimum period (e.g. 90 days) before the credit is applied. Notify your current provider of the switch.",
+      "est_saving": "$100–200+ per switch",
+      "technique": "bill_switching"
+    },
+    {
+      "order": 4,
+      "action": "After the incentive period and any lock-in ends, compare rates again",
+      "detail": "Once the signup credit has been paid out and any minimum period has passed, revisit comparison sites. If another provider is offering a better rate or new-customer incentive, switch again. OzBargain forum members regularly post new energy deal alerts.",
+      "est_saving": null,
+      "technique": "bill_switching"
+    }
+  ],
+  "total_est_saving": "~$100–200+ per household per switch; more if rates are also competitive",
+  "difficulty": "Easy",
+  "risks": [
+    "Hard credit checks from energy providers will appear on your credit file — especially relevant if you are also credit-card churning or applying for a loan",
+    "Incentives typically require a minimum connection period before being paid out; exiting early forfeits the credit",
+    "After the promotional period, rates may revert to something less competitive than your previous provider",
+    "Offer windows are time-limited; available deals change regularly"
+  ],
+  "prerequisites": [
+    "Australian residential electricity or gas customer",
+    "Located in a region with competing energy retailers (most of eastern Australia)"
+  ],
+  "sources": ["https://www.ozbargain.com.au/node/965105"],
+  "valid_until": null,
+  "confidence": 0.6,
+  "generated_at": "2026-06-27T03:12:10+00:00"
+}

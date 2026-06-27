@@ -24,5 +24,3 @@ Apple's official store prices have jumped recently, so buying direct is no longe
 - Flybuys 10x points promos are targeted; not everyone gets them.
 
 *Mechanics and prices change anytime — always check the retailer's current terms.*
-
-Sources: https://www.ozbargain.com.au/node/965287 · https://www.ozbargain.com.au/node/965277

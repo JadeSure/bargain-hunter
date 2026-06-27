@@ -1,0 +1,54 @@
+{
+  "id": "nrma-membership-dining-deals-au",
+  "goal": "Access free dining and entertainment deals via NRMA Basic membership",
+  "category": "Memberships",
+  "region": "AU",
+  "summary": "NRMA Basic (Everyday) membership is free for the first 12 months and unlocks recurring dining and entertainment deals through the MyNRMA app — including Buy 1 Get 1 free meals at Zambrero every Tuesday, daily B1G1 at Cold Rock and San Churro, and discounts at local restaurants. The deal catalogue is comparable to the Entertainment Book.",
+  "techniques": ["membership"],
+  "steps": [
+    {
+      "order": 1,
+      "action": "Sign up for free NRMA Basic (Everyday) membership via the MyNRMA app or website",
+      "detail": "Basic NRMA membership is free for the first 12 months. You do not need to be an existing NRMA roadside customer. Download the MyNRMA app, register an account, and your free membership activates immediately.",
+      "est_saving": null,
+      "technique": "membership"
+    },
+    {
+      "order": 2,
+      "action": "Activate the Zambrero Buy 1 Get 1 Free offer every Tuesday",
+      "detail": "NRMA members receive B1G1 free burritos or bowls at Zambrero every Tuesday. This is a recurring weekly offer — one of the most consistently usable deals in the catalogue. Activate the offer in the app before visiting the restaurant.",
+      "est_saving": "~50% off two meals each Tuesday",
+      "technique": "membership"
+    },
+    {
+      "order": 3,
+      "action": "Use daily B1G1 offers at Cold Rock and San Churro",
+      "detail": "Cold Rock (ice cream) and San Churro (churros/desserts) offer daily Buy 1 Get 1 free for NRMA members. These are available every day of the week, making them easy to use regularly.",
+      "est_saving": "50% off each visit",
+      "technique": "membership"
+    },
+    {
+      "order": 4,
+      "action": "Browse the full MyNRMA offers catalogue for additional restaurant and retailer deals",
+      "detail": "The MyNRMA catalogue covers local independent restaurants (typically 25% off) and a range of other annual or one-off offers. Community members note the offering is comparable to the Entertainment Book. Check the app regularly as the deal list is updated.",
+      "est_saving": "25–50% at participating venues",
+      "technique": "membership"
+    }
+  ],
+  "total_est_saving": "Potentially $200–500+/year for regular diners, at no cost for the first 12 months",
+  "difficulty": "Easy",
+  "risks": [
+    "Free membership lasts 12 months only; after expiry the app prompts an upgrade to ~$5/month to continue accessing deals",
+    "Participating venues and offer terms change regularly — verify offers in-app before making plans",
+    "NRMA is primarily focused on NSW and ACT; venue availability in other states may be limited",
+    "Some deals are one-off annual vouchers rather than recurring weekly or daily offers"
+  ],
+  "prerequisites": [
+    "Smartphone with MyNRMA app installed",
+    "Australian resident able to register for NRMA membership"
+  ],
+  "sources": ["https://www.ozbargain.com.au/node/965273"],
+  "valid_until": null,
+  "confidence": 0.7,
+  "generated_at": "2026-06-27T03:12:10+00:00"
+}

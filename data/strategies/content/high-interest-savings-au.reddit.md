@@ -23,5 +23,3 @@ Australian high-interest savers can reach **5.50–5.90% p.a.**, but usually wit
 - ING has flagged a possible tiered subscription model for AU accounts; future terms may change.
 
 *Mechanics and rates change anytime — always check the bank's current terms.*
-
-Sources: https://www.ozbargain.com.au/node/916378 · https://www.ozbargain.com.au/node/963761

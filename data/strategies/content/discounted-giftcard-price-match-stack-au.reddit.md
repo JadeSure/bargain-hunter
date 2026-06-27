@@ -22,5 +22,3 @@ Two simple steps combine a supermarket gift card promo (~10% off) with Officewor
 - Agency-supplied products are typically excluded from retailer discounts.
 
 *Mechanics and prices change anytime — always check the retailer's current terms.*
-
-Sources: https://www.ozbargain.com.au/node/964314 · https://www.ozbargain.com.au/node/963304

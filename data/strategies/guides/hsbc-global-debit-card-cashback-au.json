@@ -1,0 +1,54 @@
+{
+  "id": "hsbc-global-debit-card-cashback-au",
+  "goal": "Earn 2% cashback on everyday in-person purchases using the HSBC Global Debit Card",
+  "category": "Banking & Finance",
+  "region": "AU",
+  "summary": "The HSBC Global Everyday Debit Card offers 2% cashback on in-person purchases under $100, with no annual fee. Used consistently for daily spending, community members report saving $10–20/month with typical spend levels, rising to ~$50/month at the $2,500/month eligible-spend cap.",
+  "techniques": ["cashback"],
+  "steps": [
+    {
+      "order": 1,
+      "action": "Apply for the HSBC Global Everyday Account and Debit Card",
+      "detail": "The account is free to open online. There is no annual fee on the debit card. Note the card cannot be used for online transactions — it is designed for in-person purchases only.",
+      "est_saving": null,
+      "technique": null
+    },
+    {
+      "order": 2,
+      "action": "Use the card for in-person tap-and-go purchases under $100",
+      "detail": "2% cashback applies to in-store purchases under $100 per transaction. Google Pay with the HSBC debit card may also qualify. For purchases over $100, split into multiple sub-$100 transactions where practical to stay within the cashback tier.",
+      "est_saving": "2% per qualifying transaction",
+      "technique": "cashback"
+    },
+    {
+      "order": 3,
+      "action": "Direct everyday spending (transport, groceries, cafés) through this card",
+      "detail": "Community discussion notes the card may work for public transport tap-on/tap-off (e.g. Opal) and in-store supermarket purchases — verify these work for your use case before relying on them. The OP confirmed saving $10–20/month at their spend level.",
+      "est_saving": "$10–20/month at typical spend levels",
+      "technique": "cashback"
+    },
+    {
+      "order": 4,
+      "action": "Track monthly eligible spend to approach the $2,500/month cap",
+      "detail": "The maximum cashback benefit is achieved at $2,500/month of eligible in-person spend (= $50/month cashback). Spend above the cap does not earn further cashback. Always verify current HSBC product terms as rates and conditions may change.",
+      "est_saving": "Up to $50/month (~$600/year)",
+      "technique": "cashback"
+    }
+  ],
+  "total_est_saving": "~$120–600/year depending on eligible in-person spend volume",
+  "difficulty": "Easy",
+  "risks": [
+    "Card does not work for online transactions — a separate card is still needed for e-commerce",
+    "2% cashback applies per transaction only to purchases under $100; plan accordingly for larger in-store purchases",
+    "Public transport tap-on/tap-off and supermarket in-store eligibility should be verified against current HSBC merchant category terms",
+    "Cashback rate and monthly cap are subject to HSBC product changes"
+  ],
+  "prerequisites": [
+    "Australian resident with valid ID for HSBC KYC",
+    "Primary day-to-day spending mix must include a meaningful share of in-person sub-$100 purchases"
+  ],
+  "sources": ["https://www.ozbargain.com.au/node/939305"],
+  "valid_until": null,
+  "confidence": 0.65,
+  "generated_at": "2026-06-27T03:12:10+00:00"
+}
