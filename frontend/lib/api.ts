@@ -61,7 +61,9 @@ export async function getMe(cookie?: string): Promise<SubscriberData> {
 }
 
 export async function updateMe(update: SubscriberUpdate): Promise<void> {
-  const res = await fetch(`${WORKER}/api/me`, {
+  // Relative URL → hits the frontend's same-origin /api proxy so the browser
+  // sends the session cookie (which lives on the frontend domain, not the worker).
+  const res = await fetch(`/api/me`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(update),
