@@ -80,6 +80,11 @@ resource "cloudflare_workers_script" "portal" {
       text = var.subscribers_db_id
     },
     {
+      name = "WAITLIST_DB_ID"
+      type = "plain_text"
+      text = var.waitlist_db_id
+    },
+    {
       name = "RESEND_API_KEY"
       type = "secret_text"
       text = var.resend_api_key
