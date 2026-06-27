@@ -10,6 +10,7 @@ export interface SubscriberData {
   maxWatchAlertsPerDay: number
   channels: string[]
   categories: string[]
+  hotLevel: string | null
 }
 
 export interface SubscriberUpdate {
@@ -21,6 +22,7 @@ export interface SubscriberUpdate {
   maxWatchAlertsPerDay?: number
   channels?: string[]
   categories?: string[]
+  hotLevel?: string | null
 }
 
 const WORKER = process.env.NEXT_PUBLIC_WORKER_URL ?? ''

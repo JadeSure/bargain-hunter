@@ -17,6 +17,7 @@ const P = {
   MAX_ALERTS: "Max Alerts/Day",
   MAX_WATCH_ALERTS: "Max Watch Alerts/Day",
   BLOCK_KEYWORDS: "Block Keywords",
+  HOT_LEVEL: "Hot Level",
 } as const;
 
 function headers(token: string): Record<string, string> {
@@ -35,6 +36,11 @@ function richText(props: Record<string, unknown>, key: string): string {
 function multiSelect(props: Record<string, unknown>, key: string): string[] {
   const prop = props[key] as { multi_select?: Array<{ name: string }> };
   return (prop?.multi_select ?? []).map((o) => o.name);
+}
+
+function selectName(props: Record<string, unknown>, key: string): string | null {
+  const prop = props[key] as { select?: { name: string } | null };
+  return prop?.select?.name ?? null;
 }
 
 function parseKeywords(raw: string): string[] {
@@ -75,6 +81,7 @@ function parseSubscriber(
   const minDiscountPercent = minDiscountProp?.number ?? null;
 
   const categories = multiSelect(props, P.CATEGORIES);
+  const hotLevel = selectName(props, P.HOT_LEVEL);
 
   const maxAlertsProp = props[P.MAX_ALERTS] as { number?: number | null };
   const maxAlertsPerDay = maxAlertsProp?.number ?? 10;
@@ -98,6 +105,7 @@ function parseSubscriber(
       maxWatchAlertsPerDay,
       channels,
       categories,
+      hotLevel,
     },
   };
 }
@@ -170,6 +178,10 @@ export async function updateSubscriber(
     properties[P.CATEGORIES] = {
       multi_select: update.categories.map((name) => ({ name })),
     };
+  }
+  if (update.hotLevel !== undefined) {
+    properties[P.HOT_LEVEL] =
+      update.hotLevel === null ? { select: null } : { select: { name: update.hotLevel } };
   }
 
   if (!Object.keys(properties).length) return;

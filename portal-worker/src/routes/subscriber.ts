@@ -64,6 +64,11 @@ app.put("/me", async (c) => {
   if (Array.isArray(body.categories)) {
     update.categories = body.categories.map((c) => String(c).trim()).filter(Boolean);
   }
+  if (body.hotLevel !== undefined) {
+    const valid = new Set(["top", "great", "good"]);
+    const v = body.hotLevel === null ? null : String(body.hotLevel).trim().toLowerCase();
+    update.hotLevel = v && valid.has(v) ? v : null;
+  }
 
   await updateSubscriber(c.env.NOTION_TOKEN, user.notionPageId, update);
   return c.json({ ok: true });

@@ -26,6 +26,7 @@ export interface SubscriberData {
   maxWatchAlertsPerDay: number
   channels: string[]
   categories: string[]
+  hotLevel: string | null
 }
 
 export interface SubscriberUpdate {
@@ -37,4 +38,5 @@ export interface SubscriberUpdate {
   maxWatchAlertsPerDay?: number
   channels?: string[]
   categories?: string[]
+  hotLevel?: string | null
 }

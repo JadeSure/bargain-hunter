@@ -64,15 +64,30 @@ Launch ONE `general-purpose` task agent with `model: claude-sonnet-4.6`
 - The newest digest path, and permission to open raw corpus files for context.
 - The existing guide ids to avoid duplicates.
 - These hard rules:
-  - Cluster by **purchase goal**, not one-post-one-guide. Merge threads about
-    the same goal (e.g. "cheap MacBook in AU", "best travel credit card").
-  - Only emit guides that are **genuinely useful** for saving money. Skip chit-
-    chat, news, and unanswered questions. Quality over quantity — 2 solid guides
-    beat 10 thin ones.
-  - Every `sources[]` URL MUST come from a corpus post. No invented URLs/prices.
-  - Lower `confidence` when the corpus is thin; never overstate savings.
+  - Run **two passes** (this is what raises the yield). **Pass A — inventory:**
+    read the whole digest and list every candidate strategy as
+    `goal → source url(s)`, walking the coverage checklist in
+    `extract_guide.md` (Electronics, Banking & savings, Credit cards & points,
+    Travel, Subscriptions & software, Groceries, Memberships). Expect 6–12
+    candidates from a ~40-post batch. **Pass B — write:** emit a guide for every
+    candidate that clears the bar.
+  - Extract **two kinds** of guide: (a) **purchase-goal** guides (merge same-goal
+    threads), and (b) **technique/tactic** guides — one reusable money-saving
+    method (churning, gift-card+price-beat stacking, receipt-scanning, savings-rate
+    maximisation, no-FX travel card). A single rich thread is enough for (b).
+  - **Maximise coverage, not scarcity.** If the batch holds eight legitimately
+    useful strategies, ship eight guides — never cap the count to keep it short.
+    Equally, don't force-merge unrelated tactics into one bloated guide.
+  - Skip only genuine non-material: idle chat, pure news, and questions with **no
+    useful answer**. A question thread that got good answers IS valid — extract it.
+  - A candidate with only **one** strong source is still shipped, at lower
+    `confidence` — don't drop it for being single-source.
+  - The bar is **truthful + actionable + sourced**, not "few". Every `sources[]`
+    URL MUST come from a corpus post. No invented URLs/prices.
   - `id` is a kebab-case slug, unique across existing + new guides.
-  - `techniques[]` use the stable English enum from the schema.
+  - `techniques[]` use the stable English enum from the schema (reuse before
+    inventing; `other` only as a last resort).
+  - Each guide needs **≥2 ordered steps** with unique `order` values.
   - Write each guide to `data/strategies/guides/<id>.json` (valid JSON, UTF-8).
   - Set `generated_at` to the current UTC time (ISO 8601).
 - Ask it to report: the ids it wrote, the goal of each, and which corpus posts
@@ -93,8 +108,13 @@ This is the point of the two-model split. Do all of it:
    - the steps are genuinely actionable and in sensible order.
    Correct the JSON directly for small issues; for systemic problems, re-prompt
    the subagent with specifics.
-3. **Dedup check:** no new `id` or goal collides with an existing guide.
-4. **Trim noise:** delete any guide that is thin, speculative, or unsupported.
+3. **Dedup check:** block only **near-identical** guides (same goal *and* same
+   technique set). An adjacent-but-distinct strategy (e.g. "credit-card churning"
+   vs "high-interest savings") is a *complementary* guide — keep it. When a new
+   guide truly overlaps an existing one, extend the existing guide instead.
+4. **Trim only true noise:** delete a guide only if it has no real method, is
+   speculative, or is unsupported by its sources — **not** merely to reduce the
+   count. A useful single-source guide stays (at lower `confidence`).
 
 ### 3. Generate share content (optional)
 
@@ -122,6 +142,11 @@ no-fabrication bar) and tone before saving.
 
 - A cited source is not in the corpus, or doesn't support the claim.
 - Any fabricated price, discount, or "guaranteed" saving.
-- `confidence` high on a thin/single-source guide.
-- Duplicate of an existing guide's goal.
+- `confidence` high on a thin/single-source guide (lower it instead of dropping).
+- Near-identical duplicate (same goal AND same techniques) of an existing guide —
+  extend it instead.
+- A guide with fewer than 2 steps, or no real method behind it.
 - `validate-guides` not green.
+
+Note: a high guide count is **not** a defect. Dropping a real, sourced strategy
+just to keep the batch small **is**.
