@@ -22,11 +22,17 @@ infra:
 - **`frontend/`** — Next.js + React + Tailwind website. ⚠️ Uses a pre-release
   Next.js with breaking changes; read `frontend/AGENTS.md` and the bundled docs
   in `node_modules/next/dist/docs/` first.
-- **`feedback-worker/`, `portal-worker/`** — Cloudflare Workers.
-- **`terraform/`** — infra (Workers + secrets), auto-deployed from `main`.
+- **`feedback-worker/`** — Cloudflare Worker that records digest 👍/👎 feedback
+  into Notion. **`portal-worker/`** — Hono API Worker behind the website:
+  magic-link auth, subscriber settings (`/api/me`), and the access-request
+  **waitlist** (`POST /auth/request-access` → a separate Notion Waitlist DB).
+  Google OAuth is scaffolded but not yet wired. CORS reads a comma-separated
+  `FRONTEND_URL` allow-list. Both Workers deploy via Terraform.
+- **`terraform/`** — infra (both Workers + portal KV + secrets), auto-deployed
+  from `main` via `terraform-feedback.yml` (R2-backed state).
 
 Design docs live in `docs/` (`PRD.md`, `IMPLEMENTATION_PLAN.md`,
-`STRATEGY_PLAN.md`).
+`STRATEGY_PLAN.md`, `WEB_PLAN.md`).
 
 ## Setup, build, test, lint
 
@@ -105,8 +111,12 @@ src/strategy_hunter/    daily guide pipeline (collect → digest → guides)
   prompts/              Stage-2 LLM extraction prompt + schema
 config/settings.yaml    shared config for BOTH packages (see warning above)
 data/strategies/        raw corpus, digests, and extracted guides (committed)
-frontend/               Next.js site (read frontend/AGENTS.md first!)
-.github/workflows/      hunt.yml (deals), collect-strategies.yml (daily guides)
+frontend/               Next.js site + portal UI (read frontend/AGENTS.md first!)
+portal-worker/          Hono API Worker: magic-link auth, settings, access waitlist
+feedback-worker/        Cloudflare Worker: digest 👍/👎 feedback → Notion
+terraform/              deploys both Workers + portal KV (R2-backed state)
+.github/workflows/      hunt.yml (deals), collect-strategies.yml (guides),
+                        terraform-feedback.yml (Workers), deploy-frontend.yml (Pages)
 tests/ + tests/fixtures frozen-fixture tests; pythonpath=src
-docs/                   PRD, implementation + strategy plans
+docs/                   PRD, implementation + strategy + web plans
 ```

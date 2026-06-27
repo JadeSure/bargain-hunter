@@ -1,11 +1,19 @@
-# Terraform: feedback-worker deployment
+# Terraform: Cloudflare Workers deployment
 
 ## What this is
 
-Terraform module that deploys the `feedback-worker` Cloudflare Worker. It creates two resources:
+Terraform module that deploys this repo's Cloudflare Workers. It manages:
 
-- `cloudflare_workers_script` — uploads `feedback-worker/src/index.js` directly as a single dependency-free ES module (no bundler or wrangler build step required).
-- `cloudflare_workers_script_subdomain` — publishes the worker at `https://<worker_name>.<account-subdomain>.workers.dev`.
+- **`feedback-worker`** — `cloudflare_workers_script` uploads
+  `feedback-worker/src/index.js` directly as a single dependency-free ES module
+  (no bundler step), plus a `cloudflare_workers_script_subdomain`.
+- **`portal-worker`** — `cloudflare_workers_script` uploads the bundled
+  `portal-worker/dist/index.js` (built in CI with `wrangler deploy --dry-run
+  --outdir dist`), a `cloudflare_workers_script_subdomain`, and a
+  `cloudflare_workers_kv_namespace` for sessions + magic-link tokens. Its plain
+  `FRONTEND_URL`, `SUBSCRIBERS_DB_ID`, `WAITLIST_DB_ID`, `WORKER_URL` and
+  `OWNER_EMAIL` bindings and `NOTION_TOKEN`/`RESEND_API_KEY` secrets are set here
+  — **so the worker's runtime vars come from Terraform, not `wrangler.jsonc`.**
 
 Remote state is stored in a Cloudflare R2 bucket (S3-compatible backend).
 
@@ -89,14 +97,15 @@ The digest email template uses this variable to render 👍/👎 links per deal.
 
 ## Local dev
 
-Use `wrangler dev` to test the worker locally — Terraform is for deployment only:
+Use `wrangler dev` to test a worker locally — Terraform is for deployment only:
 
 ```bash
-cd feedback-worker
-npx wrangler dev
+cd feedback-worker && npx wrangler dev     # or: cd portal-worker && npx wrangler dev
 ```
 
-The `feedback-worker/wrangler.jsonc` config controls local dev settings.
+Each worker's `wrangler.jsonc` controls local dev settings. The portal worker
+also has `npm run type-check` (`tsc --noEmit`) — run it before pushing, since CI
+builds it with `wrangler deploy --dry-run` before Terraform uploads the bundle.
 
 ## Destroy
 
@@ -109,7 +118,9 @@ terraform destroy
 
 `.github/workflows/terraform-feedback.yml` runs this module in CI:
 
-- **push to `main`** touching `terraform/**` or `feedback-worker/src/**` → `init` + `fmt -check` + `validate` + `plan` + **`apply`**.
+- **push to `main`** touching `terraform/**`, `feedback-worker/src/**`,
+  `portal-worker/src/**`, `portal-worker/package.json`, `frontend/wrangler.toml`,
+  or the workflow file → `init` + `fmt -check` + `validate` + `plan` + **`apply`**.
 - **pull request** on those paths → same, but **plan only** (no apply).
 - **manual** via *Actions → terraform-feedback-worker → Run workflow* → applies.
 
@@ -125,15 +136,16 @@ Runs are serialised by a `concurrency` group so two applies never touch state at
 | `R2_SECRET_ACCESS_KEY` | R2 S3 API token secret |
 | `CLOUDFLARE_API_TOKEN` | Cloudflare token, Workers Scripts: Edit |
 | `NOTION_TOKEN` | reuse the secret already set for the hunt workflow |
+| `FEEDBACK_HMAC_SECRET` | signs the feedback 👍/👎 links |
+| `TF_VAR_SUBSCRIBERS_DB_ID` | Notion Subscribers DB id (portal worker) |
+| `TF_VAR_RESEND_API_KEY` | Resend API key (magic-link + owner emails) |
+| `TF_VAR_OWNER_EMAIL` | address that receives access-request notices |
 
-**Variables**
-
-| Name | Value |
-|---|---|
-| `CLOUDFLARE_ACCOUNT_ID` | your 32-char account id |
-| `NOTION_FEEDBACK_DB_ID` | from `scripts/setup_notion.py` |
-| `TF_STATE_BUCKET` | the R2 state bucket name |
-| `TF_STATE_R2_ENDPOINT` | `https://<account-id>.r2.cloudflarestorage.com` |
+**Inlined in `terraform-feedback.yml`** (not repo config — edit the workflow to
+change them): `TF_VAR_cloudflare_account_id`, `TF_VAR_feedback_db_id`,
+`TF_VAR_frontend_url` (comma-separated CORS allow-list), `TF_VAR_pages_project_name`,
+and the R2 `backend.hcl` (bucket + endpoint, written with `printf`).
+`waitlist_db_id` has a default in `terraform/variables.tf`.
 
 ### Optional hardening
 

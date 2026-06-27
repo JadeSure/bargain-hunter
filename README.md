@@ -279,6 +279,26 @@ terraform init -backend-config=backend.hcl
 terraform apply
 ```
 
+## Website & access portal
+
+A Next.js site (`frontend/`, Cloudflare Pages) presents the project to subscribers
+and renders the strategy guides at `/guides`. A separate Hono API Worker
+(`portal-worker/`) backs it:
+
+- **Magic-link login** (`/login`) — passwordless email sign-in via Resend; only
+  emails already in the Notion **Subscribers** DB can log in.
+- **Subscriber portal** (`/portal`) — manage watch/block keywords and
+  notification settings, written straight back to Notion.
+- **Request Access waitlist** — the landing page's "Request Access" modal posts
+  to `POST /auth/request-access`, which upserts the email into a separate Notion
+  **Waitlist** DB (dedup by email, bumping a count) and emails the owner. The
+  maintainer reviews the waitlist and promotes approved emails into Subscribers.
+
+CORS is driven by a comma-separated `FRONTEND_URL` allow-list so both the custom
+domain and the `*.pages.dev` URL work. Like the feedback worker, `portal-worker`
+deploys via Terraform on every push to `main` (see [`terraform/README.md`](terraform/README.md));
+the site deploys via `deploy-frontend.yml`. Full design: [`docs/WEB_PLAN.md`](docs/WEB_PLAN.md).
+
 ## Alerting
 
 Maintainer alert emails are throttled: only sent after 3 consecutive failures, then at most once per hour while failures persist. A clean run resets the counter.
@@ -293,6 +313,7 @@ Live and running. Highlights since v1.0:
 - **HMAC-signed feedback links** — 👍/👎 links in emails are signed; unsigned or replayed requests are rejected (403)
 - **Cloudflare Worker deployed** at `https://bargain-feedback.jadesure17.workers.dev` — collects feedback into a Notion Feedback database
 - **Terraform CI/CD** — pushing to `main` auto-deploys the Worker and its secrets via `terraform-feedback.yml`
+- **Website + access portal** — Next.js site on Cloudflare Pages with magic-link login, a subscriber settings portal, and a Notion-backed access waitlist (`portal-worker`); see [Website & access portal](#website--access-portal)
 
 ### TODO (v1.2 direction)
 
