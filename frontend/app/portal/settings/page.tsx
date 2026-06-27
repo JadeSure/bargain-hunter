@@ -19,6 +19,12 @@ const CATEGORY_OPTIONS = [
   { id: 'travel', label: 'Travel' },
 ]
 
+const HOT_LEVEL_OPTIONS = [
+  { id: '', label: 'Good & up — all hot deals' },
+  { id: 'great', label: 'Great & up — strong deals only' },
+  { id: 'top', label: 'Top only — best of the best' },
+]
+
 export default function SettingsPage() {
   const { user, saveUpdate } = useUser()
 
@@ -30,6 +36,7 @@ export default function SettingsPage() {
   const [maxWatchAlerts, setMaxWatchAlerts] = useState<string>(String(user.maxWatchAlertsPerDay))
   const [channels, setChannels] = useState<string[]>(user.channels)
   const [categories, setCategories] = useState<string[]>(user.categories)
+  const [hotLevel, setHotLevel] = useState<string>(user.hotLevel ?? '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [dirty, setDirty] = useState(false)
@@ -56,6 +63,7 @@ export default function SettingsPage() {
         maxWatchAlertsPerDay: Number(maxWatchAlerts) || 5,
         channels,
         categories,
+        hotLevel: hotLevel === '' ? null : hotLevel,
       })
       setDirty(false)
       setSaved(true)
@@ -87,6 +95,22 @@ export default function SettingsPage() {
           >
             <span className={`toggle-knob ${subscribeHot ? 'toggle-knob-on' : 'toggle-knob-off'}`} />
           </button>
+        </div>
+        <div className="settings-row" style={{ marginBottom: 0 }}>
+          <div>
+            <div className="settings-field-label">Hot deal level</div>
+            <div className="settings-field-sub">Set how selective your hot alerts are. Top picks reach you across all categories; lower levels are filtered to your chosen categories.</div>
+          </div>
+          <select
+            className="settings-number-input"
+            value={hotLevel}
+            disabled={!subscribeHot}
+            onChange={(e) => { setHotLevel(e.target.value); markDirty() }}
+          >
+            {HOT_LEVEL_OPTIONS.map(({ id, label }) => (
+              <option key={id || 'good'} value={id}>{label}</option>
+            ))}
+          </select>
         </div>
       </div>
 
