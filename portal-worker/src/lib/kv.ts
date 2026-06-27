@@ -1,5 +1,5 @@
 import type { KVNamespace } from "@cloudflare/workers-types";
-import type { SessionData } from "../types";
+import type { SessionData, WaitlistEntry } from "../types";
 
 const SESSION_TTL = 60 * 60 * 24 * 7; // 7 days
 const MAGIC_LINK_TTL = 60 * 15; // 15 minutes
@@ -74,4 +74,58 @@ export async function verifyOAuthState(
   if (!val) return false;
   await kv.delete(`oauth:${state}`);
   return true;
+}
+
+// Waitlist entries are persisted without a TTL so an access request is never
+// lost, even if the owner notification email fails. Keyed by email so repeat
+// requests from the same address de-duplicate (bumping count + lastRequestedAt).
+export async function addToWaitlist(
+  kv: KVNamespace,
+  email: string,
+  source = "modal"
+): Promise<WaitlistEntry> {
+  const key = `waitlist:${email}`;
+  const now = new Date().toISOString();
+  const existingRaw = await kv.get(key);
+
+  let entry: WaitlistEntry;
+  if (existingRaw) {
+    const prev = JSON.parse(existingRaw) as WaitlistEntry;
+    entry = { ...prev, lastRequestedAt: now, count: prev.count + 1 };
+  } else {
+    entry = {
+      email,
+      status: "pending",
+      source,
+      firstRequestedAt: now,
+      lastRequestedAt: now,
+      count: 1,
+    };
+  }
+
+  await kv.put(key, JSON.stringify(entry), {
+    metadata: {
+      email: entry.email,
+      status: entry.status,
+      count: entry.count,
+      lastRequestedAt: entry.lastRequestedAt,
+    },
+  });
+  return entry;
+}
+
+export async function listWaitlist(kv: KVNamespace): Promise<WaitlistEntry[]> {
+  const entries: WaitlistEntry[] = [];
+  let cursor: string | undefined;
+  for (;;) {
+    const res = await kv.list({ prefix: "waitlist:", cursor });
+    for (const k of res.keys) {
+      const raw = await kv.get(k.name);
+      if (raw) entries.push(JSON.parse(raw) as WaitlistEntry);
+    }
+    if (res.list_complete) break;
+    cursor = res.cursor;
+  }
+  entries.sort((a, b) => b.lastRequestedAt.localeCompare(a.lastRequestedAt));
+  return entries;
 }

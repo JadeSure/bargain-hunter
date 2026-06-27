@@ -14,6 +14,15 @@ export interface SessionData {
   notionPageId: string
 }
 
+export interface WaitlistEntry {
+  email: string
+  status: "pending" | "approved" | "rejected"
+  source: string
+  firstRequestedAt: string
+  lastRequestedAt: string
+  count: number
+}
+
 export interface SubscriberData {
   name: string
   email: string
