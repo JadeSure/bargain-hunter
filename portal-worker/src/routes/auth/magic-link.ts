@@ -29,7 +29,9 @@ app.post("/", async (c) => {
         if (!found) return;
 
         const token = await createMagicToken(c.env.PORTAL_KV, email.toLowerCase().trim());
-        const url = `${c.env.WORKER_URL}/auth/verify?token=${token}`;
+        // Point the link at the frontend's same-origin proxy (/auth/verify), not
+        // the worker, so the session cookie is set on the frontend's domain.
+        const url = `${primaryFrontendUrl(c.env)}/auth/verify?token=${token}`;
         await sendMagicLink(c.env.RESEND_API_KEY, email, url);
       } catch (err) {
         console.error("magic-link error:", err);
