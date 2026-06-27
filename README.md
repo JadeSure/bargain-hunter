@@ -10,10 +10,58 @@ Full design: [`docs/PRD.md`](docs/PRD.md) · Implementation notes: [`docs/IMPLEM
 
 ## Two tracks
 
-- **Hot:** vote velocity + absolute votes + age decay. Passes a threshold → notifies all opt-in subscribers. Low frequency, high precision.
+- **Hot:** vote velocity + absolute votes + age decay → a single `score`. The score is
+  bucketed into three levels (**good / great / top**); each subscriber picks the level they
+  want and, optionally, the categories they care about. See [Hot scoring & levels](#hot-scoring--levels).
 - **Watch:** keyword appears in a deal title → notifies the subscriber who listed that keyword. Noise guard: ≥5 votes (OzBargain) or ≥10% discount (CamelCamelCamel). Optional price ceiling to filter further.
 
 A deal that qualifies on both tracks is merged into one notification.
+
+## Hot scoring & levels
+
+A deal's heat is a single weighted `score`. The highest tier it clears decides who gets
+notified. All knobs live in `config/settings.yaml` under `scoring.hot`.
+
+```
+score = 0.5^(age_h / 12) × ( vote_vel/5  +  ln(1+votes)/ln(31)  +  0.1×comment_vel )  −  0.5×neg_ratio
+        └── age decay ──┘   └ how fast ┘    └─ how many ─┘         └ discussion ┘        └ bad reviews ┘
+```
+
+| Term | Scale / weight | Intuition |
+|---|---|---|
+| `vote_vel / 5` | `5` = `min_votes_gain_per_window` (5 votes / 15 min = the baseline hot bar) | **Main signal** — how fast votes are climbing right now (votes/hour). |
+| `ln(1+votes) / ln(31)` | `30` = `early_burst_min_votes` → this term = 1.0 at 30 votes | Accumulated approval, but **logarithmic** (diminishing) so a high vote count alone can't camp the top tier. |
+| `0.1 × comment_vel` | `0.1` = `comment_velocity_weight` | Discussion buzz — a **small** top-up (was 0.25, dropped to 0.1 because comment-only deals were scoring as false positives). |
+| `× age_factor` | `0.5 ^ (age / 12h)` — 12 h half-life | **Freshness**: heat is halved every 12 h. A new deal barely decays; a 24 h-old one is at ×0.25. |
+| `− 0.5 × neg_ratio` | `0.5` = `neg_vote_penalty_weight`; `neg_ratio = neg/(pos+neg)` | Reputation penalty — caps at −0.5 when a deal is all downvotes. |
+
+### The three levels
+
+| Level | Floor (`min_score`) | Extra gate | Meaning |
+|---|---|---|---|
+| **good** | `1.5` | — | Mildly hot (the original hot floor). |
+| **great** | `4.0` | — | Clearly hot — velocity is ~4× the baseline. |
+| **top** | `7.0` | `min_votes ≥ 40` | Hottest of the hot. `universal_top: true` lets it reach **every** hot subscriber, bypassing their category filter. |
+
+A subscriber set to `good` also receives `great` and `top`; set to `top` they only get the
+very best. Roughly: **microscopically hot / very hot / once-a-day blockbuster**.
+
+### Worked examples (real formula)
+
+| Deal | Votes | Last 15 min | Age | Calculation | Score → level |
+|---|---|---|---|---|---|
+| Just-surfaced PS5 controller | 12 | +2 (8/h) | 0.5 h | `(8/5 + 0.75) × 0.97` | **2.28 → good** |
+| Laptop spiking fast | 35 | +5 (20/h) | 0.5 h | `(20/5 + 1.04) × 0.97` | **4.90 → great** |
+| Front-page GPU steal | 55 | +9 (36/h) | 1 h | `(36/5 + 1.17) × 0.94` | **7.90 → top** |
+| Old deal still creeping | 60 | +2 (8/h) | 8 h | `(1.6 + 1.2) × 0.63` | **1.76 → good** (age decay nearly drops it) |
+| Popular but contested | 45 (+10 down) | +3 (12/h) | 2 h | `(2.4 + 1.11) × 0.89 − 0.09` | **3.04 → good** (downvotes hold it back) |
+
+### Tuning
+
+Raise `min_votes_gain_per_window` or the tier `min_score` floors to fire less often; lower
+them to fire more. Thresholds were calibrated on ~143 observed deals (`good` ≈ original hot
+floor, ~57% of distinct hot deals reach `great`, ~36% reach `top`). Edit `settings.yaml` and
+push — no code change needed.
 
 ## Sources
 
