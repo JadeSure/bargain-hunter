@@ -26,7 +26,10 @@ def build_digest_markdown(posts: list[CapturedPost], date_label: str) -> str:
     lines: list[str] = [
         f"# Strategy guide material digest — {date_label}",
         "",
-        f"{len(posts)} new posts. Use the schema in `prompts/extract_guide.md` to extract structured guides.",
+        (
+            f"{len(posts)} new posts. Use the schema in `prompts/extract_guide.md` "
+            "to extract structured guides."
+        ),
         "",
     ]
 

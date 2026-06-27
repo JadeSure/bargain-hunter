@@ -58,3 +58,29 @@ def test_click_count_roundtrip(tmp_path):
     snaps = s2.snapshots(d.key)
     assert snaps
     assert snaps[-1].click_count == 42
+
+
+def test_prune_removes_orphaned_first_seen_entries(tmp_path):
+    s = StateStore(path=tmp_path / "deals_state.json", retention_hours=1)
+    old = datetime.now(UTC) - timedelta(hours=2)
+    s._first_seen["ozbargain:old"] = old
+
+    s.save()
+
+    s2 = StateStore(path=s.path)
+    s2.load()
+    assert s2.first_seen("ozbargain:old") is None
+
+
+def test_prune_keeps_first_seen_for_deals_with_snapshots(tmp_path):
+    s = StateStore(path=tmp_path / "deals_state.json", retention_hours=1)
+    d = _deal()
+    first_seen = datetime.now(UTC) - timedelta(hours=2)
+    s._first_seen[d.key] = first_seen
+    s.record(d, now=datetime.now(UTC))
+
+    s.save()
+
+    s2 = StateStore(path=s.path)
+    s2.load()
+    assert s2.first_seen(d.key) == first_seen

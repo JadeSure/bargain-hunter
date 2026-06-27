@@ -11,7 +11,11 @@ VALID_GUIDE = {
     "summary": "Stack discounted gift cards + cashback to save on a MacBook.",
     "techniques": ["discounted_giftcard", "cashback"],
     "steps": [
-        {"order": 1, "action": "Buy discounted Apple gift cards", "technique": "discounted_giftcard"},
+        {
+            "order": 1,
+            "action": "Buy discounted Apple gift cards",
+            "technique": "discounted_giftcard",
+        },
         {"order": 2, "action": "Place the order via a cashback portal", "technique": "cashback"},
     ],
     "sources": ["https://www.ozbargain.com.au/node/111111"],
