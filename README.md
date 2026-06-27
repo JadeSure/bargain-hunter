@@ -295,7 +295,12 @@ and renders the strategy guides at `/guides`. A separate Hono API Worker
   maintainer reviews the waitlist and promotes approved emails into Subscribers.
 
 CORS is driven by a comma-separated `FRONTEND_URL` allow-list so both the custom
-domain and the `*.pages.dev` URL work. Like the feedback worker, `portal-worker`
+domain and the `*.pages.dev` URL work. Because the site (`*.pages.dev`) and the API
+worker (`*.workers.dev`) are separate sites that can't share a cookie, magic-link
+auth runs through a **same-origin proxy**: two Next.js edge route handlers
+(`app/auth/verify/route.ts` and `app/api/[...path]/route.ts`) re-emit the worker's
+session cookie on the Pages origin and forward authenticated calls to the worker.
+Like the feedback worker, `portal-worker`
 deploys via Terraform on every push to `main` (see [`terraform/README.md`](terraform/README.md));
 the site deploys via `deploy-frontend.yml`. Full design: [`docs/WEB_PLAN.md`](docs/WEB_PLAN.md).
 
