@@ -66,8 +66,7 @@ app.get("/auth/_diag2", async (c) => {
   }
 
   // 2) Real Resend send attempt; report the actual status/body.
-  if (c.req.query("send") === "1") {
-    try {
+  if (c.req.query("send") === "1") {    try {
       const r = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -85,6 +84,19 @@ app.get("/auth/_diag2", async (c) => {
       out.resendBody = await r.text();
     } catch (err) {
       out.resendError = String(err);
+    }
+  }
+
+  // 3) Look up delivery status of a previously-sent email id.
+  const statusId = c.req.query("statusId");
+  if (statusId) {
+    try {
+      const r = await fetch(`https://api.resend.com/emails/${statusId}`, {
+        headers: { Authorization: `Bearer ${c.env.RESEND_API_KEY}` },
+      });
+      out.statusLookup = await r.json();
+    } catch (err) {
+      out.statusError = String(err);
     }
   }
 
