@@ -11,7 +11,7 @@ async function send(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "Bargain Hunter <noreply@bargainhunter.dpdns.org>",
+      from: "Bargain Hunter <noreply-bargain-hunter@sylvalume.online>",
       to: [to],
       subject,
       html,
