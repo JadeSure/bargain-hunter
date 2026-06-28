@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getGuides } from '@/lib/guides'
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bargainhunter.app'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bargain-hunter.sylvalume.online'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const guides = await getGuides()

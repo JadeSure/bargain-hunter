@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Space_Grotesk } from 'next/font/google'
 import './globals.css'
 
-const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bargainhunter.app')
+const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bargain-hunter.sylvalume.online')
 const siteDescription =
   'Automated Australian deal alerts and saving guides, monitoring OzBargain and CamelCamelCamel AU for hot deals, price drops, and personalised watch matches.'
 

@@ -24,6 +24,7 @@ jobs:
         working-directory: frontend
     env:
       NEXT_PUBLIC_WORKER_URL: https://bargain-portal-api.jadesure17.workers.dev
+      NEXT_PUBLIC_SITE_URL: https://bargain-hunter.sylvalume.online
     steps:
       - name: Checkout
         uses: actions/checkout@v4
