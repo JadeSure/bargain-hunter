@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { sendAccessRequest } from "../../lib/email";
 import { addToWaitlist, listWaitlist } from "../../lib/notion";
 import { requireAuth } from "../../middleware/auth";
+import { primaryFrontendUrl } from "../../lib/origins";
 import type { Env, SessionData } from "../../types";
 
 type Variables = { user: SessionData };
@@ -36,9 +37,12 @@ app.post("/", async (c) => {
 
   // Best-effort owner notification — fire-and-forget.
   c.executionCtx.waitUntil(
-    sendAccessRequest(c.env.RESEND_API_KEY, c.env.OWNER_EMAIL, email).catch(
-      (err) => console.error("request-access email failed:", err)
-    )
+    sendAccessRequest(
+      c.env.RESEND_API_KEY,
+      c.env.OWNER_EMAIL,
+      email,
+      `${primaryFrontendUrl(c.env)}/login`
+    ).catch((err) => console.error("request-access email failed:", err))
   );
 
   return c.json({ ok: true });

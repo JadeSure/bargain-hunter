@@ -11,7 +11,7 @@ async function send(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "Bargain Hunter <onboarding@resend.dev>",
+      from: "Bargain Hunter <noreply@bargainhunter.dpdns.org>",
       to: [to],
       subject,
       html,
@@ -43,7 +43,8 @@ export async function sendMagicLink(
 export async function sendAccessRequest(
   resendApiKey: string,
   ownerEmail: string,
-  applicantEmail: string
+  applicantEmail: string,
+  loginUrl: string
 ): Promise<void> {
   await send(
     resendApiKey,
@@ -52,6 +53,6 @@ export async function sendAccessRequest(
     `<p>${applicantEmail} has requested access to Bargain Hunter.</p>
      <p>They've been added to the Waitlist (Notion) with status <b>pending</b>.</p>
      <p>To approve, add them to the Notion Subscribers DB and set Active = true.</p>
-     <p>They can then log in at <a href="https://bargainhunter.app/login">bargainhunter.app/login</a> with their email.</p>`
+     <p>They can then log in at <a href="${loginUrl}">${loginUrl}</a> with their email.</p>`
   );
 }
