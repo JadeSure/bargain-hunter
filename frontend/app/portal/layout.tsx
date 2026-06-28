@@ -66,7 +66,7 @@ export default async function PortalLayout({ children }: { children: ReactNode }
             <div className="portal-user-info">
               <div className="portal-avatar-row">
                 <div className="portal-avatar" aria-hidden="true">{initials}</div>
-                <div>
+                <div className="portal-user-meta">
                   <div className="portal-user-name">{user.name || 'You'}</div>
                   <div className="portal-user-email">{user.email}</div>
                 </div>

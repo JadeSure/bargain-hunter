@@ -411,7 +411,7 @@ html, body {
 .portal-nav-link:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
 .portal-sidebar-footer { padding: 16px 12px; border-top: 1px solid var(--border-subtle); }
 .portal-user-info { padding: 0 8px 12px; }
-.portal-user-name { font-size: 13px; font-weight: 600; color: rgba(232,233,236,0.7); margin-bottom: 2px; }
+.portal-user-name { font-size: 13px; font-weight: 600; color: rgba(232,233,236,0.7); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .portal-user-email { font-size: 11px; color: rgba(232,233,236,0.3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .btn-logout {
   width: 100%; background: rgba(255,255,255,0.04); color: rgba(232,233,236,0.4);
@@ -574,6 +574,7 @@ html, body {
 .portal-stat-card--teal   .portal-stat-value { color: var(--teal); }
 .portal-stat-card--green  .portal-stat-value { color: var(--green); }
 .portal-avatar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.portal-user-meta { min-width: 0; flex: 1; }
 .portal-avatar {
   width: 32px; height: 32px; border-radius: 50%; background: rgba(249,115,22,0.15);
   color: var(--orange); font-size: 12px; font-weight: 700;
