@@ -1,0 +1,46 @@
+{
+  "id": "revolut-au",
+  "name": "Revolut AU",
+  "category": "travel",
+  "one_liner": "Multi-currency fintech card with no FX fees on everyday purchases and competitive exchange rates.",
+  "benefit": "Spend in local currency with no FX surcharge up to the free-plan monthly limit; instant currency exchange at interbank-like rates; virtual cards for online security; AU bank account details; budgeting tools.",
+  "signup_bonus": "~$20–50 AUD for new users who sign up via referral and make qualifying spend (check current terms)",
+  "needs_referral": true,
+  "referral_note": "Get a referral via OzBargain's referral threads/randomiser so both you and the referrer get the bonus.",
+  "how_to_join": [
+    {
+      "order": 1,
+      "action": "Get a referral link from OzBargain's Revolut referral thread"
+    },
+    {
+      "order": 2,
+      "action": "Download the Revolut app (iOS or Android) and sign up using the referral link"
+    },
+    {
+      "order": 3,
+      "action": "Verify your identity in-app with a passport or driver's licence"
+    },
+    {
+      "order": 4,
+      "action": "Add funds and make the qualifying spend to unlock the signup bonus"
+    }
+  ],
+  "prerequisites": ["AU mobile number", "Passport or driver's licence", "18+"],
+  "risks": [
+    "Free-plan has a monthly FX-free limit; a 0.5% surcharge applies on amounts above the limit on weekdays",
+    "Weekend FX rates include a markup vs the weekday interbank rate — avoid large conversions on weekends",
+    "Signup bonus terms change frequently — verify at time of signup"
+  ],
+  "region": "AU",
+  "recommended_for_newcomer": true,
+  "priority": 51,
+  "est_value": "~$20–50 signup bonus + saves ~2–3% FX fees on travel and international purchases",
+  "official_url": "https://www.revolut.com/en-AU/",
+  "sources": [
+    "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
+    "https://www.revolut.com/en-AU/"
+  ],
+  "valid_until": null,
+  "confidence": 0.72,
+  "generated_at": "2026-06-29T00:00:00+00:00"
+}

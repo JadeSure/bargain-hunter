@@ -1,0 +1,47 @@
+{
+  "id": "topcashback-au",
+  "name": "TopCashback AU",
+  "category": "cashback_portal",
+  "one_liner": "Highest-rate cashback portal in AU — often beats Cashrewards and ShopBack on big stores.",
+  "benefit": "Earn cashback at 5,000+ stores including Apple, Booking.com, and Expedia; well-known for high rates (Apple 8%, travel 15%+); cashback withdrawable to bank or gift cards.",
+  "signup_bonus": "~$10–20 bonus after first qualifying purchase (check current terms)",
+  "needs_referral": true,
+  "referral_note": "Get a referral via OzBargain's referral threads/randomiser so both you and the referrer get the bonus.",
+  "how_to_join": [
+    {
+      "order": 1,
+      "action": "Get a referral link from OzBargain's TopCashback referral thread"
+    },
+    {
+      "order": 2,
+      "action": "Sign up at topcashback.com.au via the referral link"
+    },
+    {
+      "order": 3,
+      "action": "Install the TopCashback browser extension"
+    },
+    {
+      "order": 4,
+      "action": "Make a qualifying purchase to unlock the welcome bonus",
+      "detail": "Always click through from the TopCashback portal; keep the confirmation email as proof."
+    }
+  ],
+  "prerequisites": ["New TopCashback account only", "18+"],
+  "risks": [
+    "Cashback can be declined — always shop with tracking enabled and keep order confirmations",
+    "High cashback rates on major retailers (e.g. Apple 8%) are promotional and may change",
+    "Minimum balance required before withdrawal to bank account"
+  ],
+  "region": "AU",
+  "recommended_for_newcomer": true,
+  "priority": 12,
+  "est_value": "~$10–20 one-off bonus + ongoing 2–15% cashback; especially valuable for Apple products and travel",
+  "official_url": "https://www.topcashback.com.au",
+  "sources": [
+    "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
+    "https://www.topcashback.com.au"
+  ],
+  "valid_until": null,
+  "confidence": 0.78,
+  "generated_at": "2026-06-29T00:00:00+00:00"
+}

@@ -720,3 +720,18 @@ html, body {
 .guide-sources a:hover { text-decoration: underline; }
 .guide-footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-subtle); }
 .guide-disclaimer { font-size: 13px; color: rgba(232,233,236,0.4); line-height: 1.5; }
+
+/* ── Start Here onboarding ──────────────────────────────────── */
+.program-referral-chip { border-color: rgba(249,115,22,0.4); color: var(--orange); }
+.program-referral-callout {
+  margin-top: 28px; padding: 18px 22px;
+  background: rgba(249,115,22,0.07); border: 1px solid rgba(249,115,22,0.25); border-radius: 12px;
+}
+.program-referral-callout strong { font-size: 15px; }
+.program-referral-callout p { margin-top: 6px; font-size: 14px; color: rgba(232,233,236,0.7); line-height: 1.55; }
+.program-official-btn {
+  display: inline-block; padding: 11px 22px; border-radius: 10px;
+  background: var(--orange); color: #fff; font-size: 15px; font-weight: 600;
+  text-decoration: none; transition: opacity 0.15s;
+}
+.program-official-btn:hover { opacity: 0.88; }

@@ -1,0 +1,45 @@
+{
+  "id": "qantas-frequent-flyer",
+  "name": "Qantas Frequent Flyer",
+  "category": "loyalty",
+  "one_liner": "Earn Qantas points on flights, everyday spending, and hundreds of AU partner brands.",
+  "benefit": "Earn Qantas points on Qantas flights, Woolworths Everyday Rewards, Uber, wine clubs, hotels, and credit card partners; redeem for domestic/international flights, upgrades, and gift cards.",
+  "signup_bonus": null,
+  "needs_referral": false,
+  "how_to_join": [
+    {
+      "order": 1,
+      "action": "Join at qantas.com — a joining fee (~$99.50 AUD) applies unless a free-join promotion is active",
+      "detail": "Search OzBargain for 'Qantas FF free join' before paying; free-join promos run several times a year."
+    },
+    {
+      "order": 2,
+      "action": "Link your Everyday Rewards card in the Qantas app to earn on Woolworths spending"
+    },
+    {
+      "order": 3,
+      "action": "Add your QFF number to Uber, car-hire, and hotel booking profiles to earn on every trip"
+    }
+  ],
+  "prerequisites": [
+    "~$99.50 joining fee unless a current free-join promotion applies — wait for an OzBargain promo",
+    "18+ recommended"
+  ],
+  "risks": [
+    "Do not pay the joining fee — wait for a free-join promotion (multiple per year on OzBargain)",
+    "Points expire after 18 months of inactivity",
+    "Best redemption value is for business-class flights; economy cash redemptions offer modest value"
+  ],
+  "region": "AU",
+  "recommended_for_newcomer": true,
+  "priority": 32,
+  "est_value": "Variable — best value for flight upgrades; worth joining (free) before your first Qantas flight",
+  "official_url": "https://www.qantas.com/au/en/frequent-flyer.html",
+  "sources": [
+    "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
+    "https://www.qantas.com/au/en/frequent-flyer.html"
+  ],
+  "valid_until": null,
+  "confidence": 0.75,
+  "generated_at": "2026-06-29T00:00:00+00:00"
+}

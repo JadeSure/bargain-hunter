@@ -1,0 +1,47 @@
+{
+  "id": "wise-au",
+  "name": "Wise (multi-currency / no-FX)",
+  "category": "travel",
+  "one_liner": "Send money internationally at near mid-market rates — essential for newcomers remitting home.",
+  "benefit": "Convert and send money in 50+ currencies at the mid-market rate with low transparent fees; Wise debit card spends in local currency with no FX mark-up; receive money in multiple currencies with local account details; far cheaper than bank telegraphic transfers.",
+  "signup_bonus": "~$50–75 AUD equivalent fee-free transfer for new customers via referral (check current terms)",
+  "needs_referral": true,
+  "referral_note": "Get a referral via OzBargain's referral threads/randomiser so both you and the referrer get the bonus.",
+  "how_to_join": [
+    {
+      "order": 1,
+      "action": "Get a referral link from OzBargain's Wise referral thread or from a friend"
+    },
+    {
+      "order": 2,
+      "action": "Sign up at wise.com via the referral link",
+      "detail": "Create a Wise account with your email; identity verification required (passport)."
+    },
+    {
+      "order": 3,
+      "action": "Open a Wise multi-currency account and order a Wise Visa debit card"
+    },
+    {
+      "order": 4,
+      "action": "Make your first qualifying transfer to unlock the fee-free bonus"
+    }
+  ],
+  "prerequisites": ["Passport or government-issued ID for identity verification", "18+"],
+  "risks": [
+    "Wise is not a bank in AU — deposits are not covered by the Australian government guarantee scheme",
+    "Transfer fees are low but not zero; compare rates for large transfers against your bank",
+    "Identity verification can take 1–3 business days for new accounts"
+  ],
+  "region": "AU",
+  "recommended_for_newcomer": true,
+  "priority": 50,
+  "est_value": "~$50–75 fee-free transfer bonus + saves ~2–4% vs bank FX fees on every international transfer",
+  "official_url": "https://wise.com/au/",
+  "sources": [
+    "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
+    "https://wise.com/au/"
+  ],
+  "valid_until": null,
+  "confidence": 0.78,
+  "generated_at": "2026-06-29T00:00:00+00:00"
+}

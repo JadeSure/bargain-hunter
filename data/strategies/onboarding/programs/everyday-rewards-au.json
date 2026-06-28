@@ -1,0 +1,41 @@
+{
+  "id": "everyday-rewards-au",
+  "name": "Everyday Rewards",
+  "category": "loyalty",
+  "one_liner": "Woolworths' loyalty program — earn points on groceries and redeem for shopping discounts.",
+  "benefit": "Earn 1 point per $1 at Woolworths, BWS, and EG Fuel; redeem 2,000 points for $10 off a Woolworths shop; weekly personalised bonus offers and the option to convert points to Qantas Frequent Flyer points.",
+  "signup_bonus": null,
+  "needs_referral": false,
+  "how_to_join": [
+    {
+      "order": 1,
+      "action": "Sign up for free at everydayrewards.com.au or in-store at Woolworths"
+    },
+    {
+      "order": 2,
+      "action": "Download the Everyday Rewards app to view personalised offers and scan in-store",
+      "detail": "Activate the bonus offers each week before shopping."
+    },
+    {
+      "order": 3,
+      "action": "Optionally link to a Qantas Frequent Flyer account to convert points to Qantas points"
+    }
+  ],
+  "prerequisites": ["AU resident", "13+"],
+  "risks": [
+    "Points expire after 12 months of inactivity",
+    "Bonus offers are personalised — you may not receive the same promotions as other members"
+  ],
+  "region": "AU",
+  "recommended_for_newcomer": true,
+  "priority": 31,
+  "est_value": "~$20–60/year in grocery discounts for typical household spend",
+  "official_url": "https://www.everydayrewards.com.au",
+  "sources": [
+    "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
+    "https://www.everydayrewards.com.au"
+  ],
+  "valid_until": null,
+  "confidence": 0.82,
+  "generated_at": "2026-06-29T00:00:00+00:00"
+}

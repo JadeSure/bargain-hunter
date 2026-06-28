@@ -72,6 +72,29 @@ class StrategySourcesConfig(StrictConfigModel):
     whirlpool: WhirlpoolConfig = Field(default_factory=WhirlpoolConfig)
 
 
+class OzbTagConfig(StrictConfigModel):
+    enabled: bool = True
+    tags: list[str] = Field(default_factory=lambda: ["referral", "cashback"])
+
+
+class OnboardingSourcesConfig(StrictConfigModel):
+    ozbargain_tags: OzbTagConfig = Field(default_factory=OzbTagConfig)
+    reddit: RedditConfig = Field(
+        default_factory=lambda: RedditConfig(subreddits=["AusFinance", "AusFrugal"])
+    )
+
+
+class OnboardingConfig(StrictConfigModel):
+    enabled: bool = True
+    programs_dir: str = "data/strategies/onboarding/programs"
+    digest_dir: str = "data/strategies/onboarding/digest"
+    raw_dir: str = "data/strategies/onboarding/raw"
+    min_relevance: int = 1
+    request_delay_seconds: float = 2.0
+    retention_days: int = 90
+    sources: OnboardingSourcesConfig = Field(default_factory=OnboardingSourcesConfig)
+
+
 class StrategyConfig(StrictConfigModel):
     enabled: bool = True
     # Minimum money-saving keyword hits for a post to be kept (filters off-topic news).
@@ -86,6 +109,7 @@ class StrategyConfig(StrictConfigModel):
     digest_dir: str = "data/strategies/digest"
     guides_dir: str = "data/strategies/guides"
     sources: StrategySourcesConfig = Field(default_factory=StrategySourcesConfig)
+    onboarding: OnboardingConfig = Field(default_factory=OnboardingConfig)
 
 
 def load_strategy_config(path: Path | None = None) -> StrategyConfig:

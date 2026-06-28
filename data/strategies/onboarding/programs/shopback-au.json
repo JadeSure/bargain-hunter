@@ -1,0 +1,47 @@
+{
+  "id": "shopback-au",
+  "name": "ShopBack AU",
+  "category": "cashback_portal",
+  "one_liner": "Cashback + in-store cashback at major AU retailers and restaurants.",
+  "benefit": "Earn cashback at 1,500+ online stores and select in-store partners; ShopBack Pay enables tap-and-earn at physical retailers; competitive rates on Woolworths, Chemist Warehouse, and travel.",
+  "signup_bonus": "~$10–20 bonus for new members after first qualifying purchase (check current terms)",
+  "needs_referral": true,
+  "referral_note": "Get a referral via OzBargain's referral threads/randomiser so both you and the referrer get the bonus.",
+  "how_to_join": [
+    {
+      "order": 1,
+      "action": "Get a referral link from OzBargain's ShopBack referral thread",
+      "detail": "Search OzBargain for 'ShopBack referral' to find the current thread."
+    },
+    {
+      "order": 2,
+      "action": "Create an account at shopback.com.au via the referral link"
+    },
+    {
+      "order": 3,
+      "action": "Install the ShopBack browser extension for automatic activation"
+    },
+    {
+      "order": 4,
+      "action": "Make a qualifying online purchase via ShopBack to unlock the signup bonus"
+    }
+  ],
+  "prerequisites": ["New ShopBack account only", "AU mobile number", "18+"],
+  "risks": [
+    "Cashback can be declined if tracking cookies are blocked — disable ad-blockers during sessions",
+    "In-store cashback via ShopBack Pay requires pre-loading funds",
+    "Bonus terms change frequently — always verify before signing up"
+  ],
+  "region": "AU",
+  "recommended_for_newcomer": true,
+  "priority": 11,
+  "est_value": "~$10–20 one-off bonus + ongoing 2–15% cashback",
+  "official_url": "https://www.shopback.com.au",
+  "sources": [
+    "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
+    "https://www.shopback.com.au"
+  ],
+  "valid_until": null,
+  "confidence": 0.78,
+  "generated_at": "2026-06-29T00:00:00+00:00"
+}
