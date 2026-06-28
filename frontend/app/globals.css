@@ -506,6 +506,16 @@ html, body {
   text-align: right; font-variant-numeric: tabular-nums;
 }
 .settings-number-input:focus { border-color: rgba(249,115,22,0.4); }
+.settings-select {
+  min-width: 150px; background: var(--ground); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px; padding: 8px 34px 8px 12px; font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 14px; color: var(--text-primary); outline: none; transition: border-color 0.15s; cursor: pointer;
+  appearance: none; -webkit-appearance: none; -moz-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a0a1a4' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat: no-repeat; background-position: right 12px center;
+}
+.settings-select:focus { border-color: rgba(249,115,22,0.4); }
+.settings-select:disabled { opacity: 0.4; cursor: not-allowed; }
 .settings-checkbox-group { display: flex; flex-direction: column; gap: 12px; }
 .settings-checkbox-row { display: flex; align-items: center; gap: 10px; cursor: pointer; }
 .settings-checkbox {

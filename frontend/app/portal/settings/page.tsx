@@ -20,9 +20,9 @@ const CATEGORY_OPTIONS = [
 ]
 
 const HOT_LEVEL_OPTIONS = [
-  { id: '', label: 'Good & up — all hot deals' },
-  { id: 'great', label: 'Great & up — strong deals only' },
-  { id: 'top', label: 'Top only — best of the best' },
+  { id: '', label: 'Good & up' },
+  { id: 'great', label: 'Great & up' },
+  { id: 'top', label: 'Top only' },
 ]
 
 export default function SettingsPage() {
@@ -102,7 +102,7 @@ export default function SettingsPage() {
             <div className="settings-field-sub">Set how selective your hot alerts are. Top picks reach you across all categories; lower levels are filtered to your chosen categories.</div>
           </div>
           <select
-            className="settings-number-input"
+            className="settings-select"
             value={hotLevel}
             disabled={!subscribeHot}
             onChange={(e) => { setHotLevel(e.target.value); markDirty() }}
