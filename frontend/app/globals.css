@@ -573,6 +573,25 @@ html, body {
 .portal-stat-card--orange .portal-stat-value { color: var(--orange); }
 .portal-stat-card--teal   .portal-stat-value { color: var(--teal); }
 .portal-stat-card--green  .portal-stat-value { color: var(--green); }
+
+/* ── Hot deal level card (portal dashboard) ──────────────── */
+.hotlevel-card { background: var(--surface-2); border: 1px solid var(--border-low); border-radius: 12px; padding: 20px 22px; }
+.hotlevel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.hotlevel-head-label { font-size: 13px; font-weight: 600; color: rgba(232,233,236,0.6); }
+.hotlevel-chip { font-size: 12px; font-weight: 700; color: var(--orange); background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.25); border-radius: 999px; padding: 4px 12px; }
+.hotlevel-chip-off { color: rgba(232,233,236,0.45); background: rgba(255,255,255,0.05); border-color: var(--border-low); }
+.hotlevel-intro { font-size: 13px; line-height: 1.6; color: rgba(232,233,236,0.5); margin-bottom: 16px; }
+.hotlevel-tiers { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.hotlevel-tier { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 12px; }
+.hotlevel-tier--muted { opacity: 0.4; }
+.hotlevel-tier-name { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.hotlevel-tier-top { color: var(--orange); }
+.hotlevel-tier-great { color: var(--teal); }
+.hotlevel-tier-good { color: var(--green); }
+.hotlevel-tier-desc { font-size: 13px; line-height: 1.5; color: rgba(232,233,236,0.6); }
+.hotlevel-tier-mark { font-size: 11px; font-weight: 600; color: rgba(232,233,236,0.35); white-space: nowrap; }
+.hotlevel-edit { font-size: 13px; font-weight: 600; color: var(--orange); text-decoration: none; }
+.hotlevel-edit:hover { text-decoration: underline; }
 .portal-avatar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .portal-user-meta { min-width: 0; flex: 1; }
 .portal-avatar {
