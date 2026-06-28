@@ -173,8 +173,9 @@ export default function LandingPage() {
             <div className="lp-scan-status">
               <div className="live-dot-sm" aria-hidden="true" />
               <span className="lp-scan-status-text">Scanning · last run 3 min ago</span>
+              <span className="lp-scan-status-sample">Example previews</span>
             </div>
-            <div className="lp-cards" aria-label="Sample deal alerts">
+            <div className="lp-cards" aria-label="Example deal alert previews (illustrative)">
 
               {/* Card 1 – HOT DEAL (front) */}
               <div className="deal-card deal-card-hot">

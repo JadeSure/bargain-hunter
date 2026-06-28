@@ -169,6 +169,7 @@ html, body {
 .lp-hero-right { flex: 0 0 370px; animation: fadeUp 0.75s 0.15s ease both; }
 .lp-scan-status { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
 .lp-scan-status-text { font-size: 11px; color: rgba(232,233,236,0.26); font-weight: 500; letter-spacing: 0.03em; }
+.lp-scan-status-sample { margin-left: auto; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(232,233,236,0.4); background: rgba(232,233,236,0.06); border: 1px solid rgba(232,233,236,0.12); border-radius: 6px; padding: 2px 7px; }
 .lp-cards { position: relative; height: 450px; width: 360px; }
 
 .deal-card {
