@@ -15,6 +15,36 @@ export default function PortalOverview() {
 
   const firstName = user.name?.split(' ')[0] || 'there'
 
+  const hotOff = !user.subscribeHot
+  const rank: Record<string, number> = { good: 0, great: 1, top: 2 }
+  const floor = user.hotLevel ?? 'good'
+  const floorRank = rank[floor] ?? 0
+  const levelLabel = hotOff
+    ? 'Off'
+    : floor === 'top'
+    ? 'Top only'
+    : floor === 'great'
+    ? 'Great & up'
+    : 'Good & up'
+
+  const TIERS = [
+    {
+      id: 'top',
+      name: 'Top',
+      desc: 'Best of the best — viral deals with 40+ upvotes, delivered across every category.',
+    },
+    {
+      id: 'great',
+      name: 'Great',
+      desc: 'Strong deals with clear community momentum.',
+    },
+    {
+      id: 'good',
+      name: 'Good',
+      desc: 'Solid deals that just cleared the community hot threshold.',
+    },
+  ]
+
   return (
     <div className="portal-page">
       <h1 className="portal-page-title">{greeting}, {firstName}.</h1>
@@ -37,6 +67,35 @@ export default function PortalOverview() {
           <div className="portal-stat-label">Min discount</div>
           <div className="portal-stat-value">{user.minDiscountPercent != null ? `${user.minDiscountPercent}%` : 'Any'}</div>
         </div>
+      </div>
+
+      <div style={{ marginTop: '32px', marginBottom: '8px' }}>
+        <p className="portal-section-heading">Hot deal level</p>
+      </div>
+      <div className="hotlevel-card">
+        <div className="hotlevel-head">
+          <span className="hotlevel-head-label">Your level</span>
+          <span className={`hotlevel-chip ${hotOff ? 'hotlevel-chip-off' : ''}`}>{levelLabel}</span>
+        </div>
+        <p className="hotlevel-intro">
+          Every deal earns a heat score from how fast the community is upvoting and
+          commenting on it — adjusted for downvotes and how old the deal is. Each
+          deal lands in the highest tier it reaches. Your level sets the lowest tier
+          you&apos;re alerted about.
+        </p>
+        <ul className="hotlevel-tiers">
+          {TIERS.map((t) => {
+            const included = !hotOff && (rank[t.id] ?? 0) >= floorRank
+            return (
+              <li key={t.id} className={`hotlevel-tier ${included ? '' : 'hotlevel-tier--muted'}`}>
+                <span className={`hotlevel-tier-name hotlevel-tier-${t.id}`}>{t.name}</span>
+                <span className="hotlevel-tier-desc">{t.desc}</span>
+                <span className="hotlevel-tier-mark">{included ? 'Included' : '—'}</span>
+              </li>
+            )
+          })}
+        </ul>
+        <Link href="/portal/settings" className="hotlevel-edit">Change level →</Link>
       </div>
 
       <div style={{ marginBottom: '8px', marginTop: '32px' }}>
