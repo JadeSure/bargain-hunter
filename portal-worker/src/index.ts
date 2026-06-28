@@ -74,7 +74,7 @@ app.get("/auth/_diag2", async (c) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "Bargain Hunter <noreply@bargainhunter.dpdns.org>",
+          from: "Bargain Hunter <noreply-bargain-hunter@sylvalume.online>",
           to: [email],
           subject: "Bargain Hunter diag test",
           html: "<p>diag test send</p>",
