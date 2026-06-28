@@ -1,0 +1,53 @@
+{
+  "id": "ubank-au",
+  "name": "ubank",
+  "category": "bank",
+  "one_liner": "High-interest savings account with no monthly fees and a referral cash bonus.",
+  "benefit": "Competitive bonus interest rate on savings (up to ~5% p.a. when conditions met); no monthly fees; linked Spend account with no foreign transaction fees on overseas purchases.",
+  "signup_bonus": "~$20–30 for new customers who sign up via a referral (check current terms)",
+  "needs_referral": true,
+  "referral_note": "Get a referral via OzBargain's referral threads/randomiser so both you and the referrer get the bonus.",
+  "how_to_join": [
+    {
+      "order": 1,
+      "action": "Get a referral code from OzBargain's ubank referral thread"
+    },
+    {
+      "order": 2,
+      "action": "Download the ubank app and apply with the referral code",
+      "detail": "You need a valid AU mobile number and ID (passport or driver's licence)."
+    },
+    {
+      "order": 3,
+      "action": "Open both a Save account and a Spend account"
+    },
+    {
+      "order": 4,
+      "action": "Deposit $200+/month into the Save account to qualify for bonus interest",
+      "detail": "Check the current conditions in the app as the minimum deposit amount may change."
+    }
+  ],
+  "prerequisites": [
+    "New ubank customer only (never held a ubank or 86 400 account)",
+    "AU mobile number",
+    "AU address",
+    "18+"
+  ],
+  "risks": [
+    "Bonus interest rate requires minimum monthly deposit — check current conditions in-app",
+    "Referral bonus only for new accounts; previous 86 400 customers do not qualify",
+    "Interest rates are variable and can change at any time"
+  ],
+  "region": "AU",
+  "recommended_for_newcomer": true,
+  "priority": 21,
+  "est_value": "~$20–30 signup bonus + competitive savings interest (~5% p.a. when conditions met)",
+  "official_url": "https://www.ubank.com.au",
+  "sources": [
+    "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
+    "https://www.ubank.com.au"
+  ],
+  "valid_until": null,
+  "confidence": 0.72,
+  "generated_at": "2026-06-29T00:00:00+00:00"
+}

@@ -21,13 +21,19 @@ _AET = ZoneInfo("Australia/Sydney")
 _BODY_EXCERPT = 1500
 
 
-def build_digest_markdown(posts: list[CapturedPost], date_label: str) -> str:
+def build_digest_markdown(
+    posts: list[CapturedPost],
+    date_label: str,
+    *,
+    title: str = "Strategy guide material digest",
+    prompt_ref: str = "prompts/extract_guide.md",
+) -> str:
     """Render captured posts into a single Markdown digest string."""
     lines: list[str] = [
-        f"# Strategy guide material digest — {date_label}",
+        f"# {title} — {date_label}",
         "",
         (
-            f"{len(posts)} new posts. Use the schema in `prompts/extract_guide.md` "
+            f"{len(posts)} new posts. Use the schema in `{prompt_ref}` "
             "to extract structured guides."
         ),
         "",
@@ -58,7 +64,12 @@ def build_digest_markdown(posts: list[CapturedPost], date_label: str) -> str:
 
 
 def write_digest(
-    posts: list[CapturedPost], digest_dir: Path, now: datetime
+    posts: list[CapturedPost],
+    digest_dir: Path,
+    now: datetime,
+    *,
+    title: str = "Strategy guide material digest",
+    prompt_ref: str = "prompts/extract_guide.md",
 ) -> Path | None:
     """Write today's digest Markdown. Returns the path, or None if no posts."""
     if not posts:
@@ -66,6 +77,9 @@ def write_digest(
     date_label = now.astimezone(_AET).strftime("%Y-%m-%d")
     digest_dir.mkdir(parents=True, exist_ok=True)
     path = digest_dir / f"{date_label}.md"
-    path.write_text(build_digest_markdown(posts, date_label), encoding="utf-8")
+    path.write_text(
+        build_digest_markdown(posts, date_label, title=title, prompt_ref=prompt_ref),
+        encoding="utf-8",
+    )
     log.info("Wrote digest with %d posts to %s", len(posts), path)
     return path

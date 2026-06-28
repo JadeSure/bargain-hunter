@@ -1,0 +1,50 @@
+{
+  "id": "cashrewards-au",
+  "name": "Cashrewards",
+  "category": "cashback_portal",
+  "one_liner": "Australia's largest cashback portal — earn % back at 2,000+ AU retailers.",
+  "benefit": "Earn 2–20%+ cashback at Woolworths, JB Hi-Fi, eBay AU, Booking.com and hundreds more; cashback paid to your Cashrewards wallet and withdrawable to your bank account.",
+  "signup_bonus": "~$10 bonus for new members after first qualifying purchase (check current terms)",
+  "needs_referral": true,
+  "referral_note": "Get a referral via OzBargain's referral threads/randomiser so both you and the referrer get the bonus.",
+  "how_to_join": [
+    {
+      "order": 1,
+      "action": "Get a referral link from OzBargain's referral thread",
+      "detail": "Search OzBargain for 'Cashrewards referral' to find the current exchange thread."
+    },
+    {
+      "order": 2,
+      "action": "Sign up at cashrewards.com.au via the referral link",
+      "detail": "Create an account with your email; confirm via the verification email."
+    },
+    {
+      "order": 3,
+      "action": "Install the Cashrewards browser extension or app",
+      "detail": "The extension reminds you when cashback is available and activates it automatically."
+    },
+    {
+      "order": 4,
+      "action": "Make a qualifying purchase via Cashrewards to unlock the signup bonus",
+      "detail": "Always click through from Cashrewards before adding to cart; disable other extensions temporarily."
+    }
+  ],
+  "prerequisites": ["New Cashrewards account only", "AU bank account for withdrawal", "18+"],
+  "risks": [
+    "Cashback can be tracked then declined if the retailer disputes the referral cookie — keep order records",
+    "Bonus cashback terms change frequently; verify the current offer before signing up",
+    "Do not use ad-blockers or VPNs during a cashback session as they break tracking"
+  ],
+  "region": "AU",
+  "recommended_for_newcomer": true,
+  "priority": 10,
+  "est_value": "~$10 one-off bonus + ongoing 2–20% cashback on everyday purchases",
+  "official_url": "https://www.cashrewards.com.au",
+  "sources": [
+    "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
+    "https://www.cashrewards.com.au"
+  ],
+  "valid_until": null,
+  "confidence": 0.80,
+  "generated_at": "2026-06-29T00:00:00+00:00"
+}

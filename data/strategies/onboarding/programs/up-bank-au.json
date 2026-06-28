@@ -1,0 +1,47 @@
+{
+  "id": "up-bank-au",
+  "name": "Up",
+  "category": "bank",
+  "one_liner": "Slick app-based bank with smart spending insights, no fees, and a referral bonus.",
+  "benefit": "Free everyday account; smart spending categorisation; 2Up joint account feature; competitive Saver rate; no international transaction fees on Visa; integrates with Apple Pay and Google Pay.",
+  "signup_bonus": "~$10 bonus for new customers signed up via a referral link (check current terms)",
+  "needs_referral": true,
+  "referral_note": "Get a referral via OzBargain's referral threads/randomiser so both you and the referrer get the bonus.",
+  "how_to_join": [
+    {
+      "order": 1,
+      "action": "Get a referral link from OzBargain's Up Bank referral thread"
+    },
+    {
+      "order": 2,
+      "action": "Download the Up app (iOS or Android) and sign up using the referral link",
+      "detail": "Requires AU phone number; identity is verified entirely in-app."
+    },
+    {
+      "order": 3,
+      "action": "Activate your Visa debit card when it arrives in the post"
+    },
+    {
+      "order": 4,
+      "action": "Open a Saver account to earn bonus interest on top of the base rate"
+    }
+  ],
+  "prerequisites": ["New Up account only", "AU mobile number", "18+"],
+  "risks": [
+    "Signup bonus is small (~$10) — the main value is ongoing fee-free banking and no FX fees",
+    "Up is backed by Bendigo Bank (APRA-licensed ADI); deposits are government-guaranteed up to $250,000",
+    "Referral bonus terms change — verify at time of signup"
+  ],
+  "region": "AU",
+  "recommended_for_newcomer": true,
+  "priority": 22,
+  "est_value": "~$10 signup bonus + fee-free banking with no FX fees on international purchases",
+  "official_url": "https://up.com.au",
+  "sources": [
+    "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
+    "https://up.com.au"
+  ],
+  "valid_until": null,
+  "confidence": 0.78,
+  "generated_at": "2026-06-29T00:00:00+00:00"
+}

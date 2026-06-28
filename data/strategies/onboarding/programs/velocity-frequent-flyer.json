@@ -1,0 +1,41 @@
+{
+  "id": "velocity-frequent-flyer",
+  "name": "Velocity Frequent Flyer",
+  "category": "loyalty",
+  "one_liner": "Virgin Australia's free loyalty program — earn points and status on domestic flights.",
+  "benefit": "Free to join; earn Velocity points on Virgin Australia and partner airline flights, Flybuys transfers, Shell Coles Express, Uber, and credit card partners; redeem for Virgin flights, upgrades, and partner rewards.",
+  "signup_bonus": null,
+  "needs_referral": false,
+  "how_to_join": [
+    {
+      "order": 1,
+      "action": "Join for free at virginaustralia.com/velocity — no joining fee"
+    },
+    {
+      "order": 2,
+      "action": "Link your Flybuys card to convert Flybuys points to Velocity at a 2:1 ratio"
+    },
+    {
+      "order": 3,
+      "action": "Add your Velocity number to Virgin Australia bookings and Uber to earn on every trip"
+    }
+  ],
+  "prerequisites": ["No fee — free to join", "Any age (under 18 via a family account)"],
+  "risks": [
+    "Points expire after 24 months of inactivity",
+    "Flybuys-to-Velocity transfer rate (2:1) is relatively poor value; earning direct is better",
+    "Velocity points are mainly useful for domestic AU and select international Virgin/partner flights"
+  ],
+  "region": "AU",
+  "recommended_for_newcomer": true,
+  "priority": 33,
+  "est_value": "Free to join — worth holding to earn on any Virgin Australia flights you take",
+  "official_url": "https://www.virginaustralia.com/au/en/velocity/",
+  "sources": [
+    "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
+    "https://www.virginaustralia.com/au/en/velocity/"
+  ],
+  "valid_until": null,
+  "confidence": 0.78,
+  "generated_at": "2026-06-29T00:00:00+00:00"
+}

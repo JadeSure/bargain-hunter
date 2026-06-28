@@ -19,6 +19,8 @@ from pathlib import Path
 from .collect import collect, load_all_posts
 from .config import load_strategy_config
 from .digest import write_digest
+from .onboarding import validate_programs
+from .onboarding.collect import collect_onboarding, load_all_onboarding_posts
 from .validate import validate_guides
 
 logging.basicConfig(
@@ -64,10 +66,20 @@ def main() -> None:
         "command",
         nargs="?",
         default="collect",
-        choices=["collect", "digest", "validate-guides"],
+        choices=[
+            "collect",
+            "digest",
+            "validate-guides",
+            "onboarding-validate",
+            "onboarding-collect",
+            "onboarding-digest",
+        ],
         help=(
             "collect: fetch + store + digest; digest: rebuild digest from corpus; "
-            "validate-guides: validate Stage 2 guide JSON."
+            "validate-guides: validate Stage 2 guide JSON; "
+            "onboarding-validate: validate onboarding program JSON; "
+            "onboarding-collect: fetch + store + digest onboarding material; "
+            "onboarding-digest: rebuild onboarding digest from corpus."
         ),
     )
     parser.add_argument(
@@ -102,6 +114,33 @@ def main() -> None:
         )
         if not result.ok:
             sys.exit(1)
+    elif args.command == "onboarding-validate":
+        result = validate_programs(Path(cfg.onboarding.programs_dir))
+        for warn in result.warnings:
+            log.warning("program warning: %s", warn)
+        for err in result.errors:
+            log.error("program error: %s", err)
+        log.info(
+            "Validated %d/%d program files OK.",
+            result.valid_files, result.total_files,
+        )
+        if not result.ok:
+            sys.exit(1)
+    elif args.command == "onboarding-collect":
+        summary = collect_onboarding(cfg, now=now)
+        log.info("Summary: %s", summary)
+        if cfg.alert_on_failure:
+            _maybe_alert(summary)
+    elif args.command == "onboarding-digest":
+        posts = load_all_onboarding_posts(Path(cfg.onboarding.raw_dir))
+        path = write_digest(
+            posts,
+            Path(cfg.onboarding.digest_dir),
+            now,
+            title="Newcomer onboarding material digest",
+            prompt_ref="prompts/extract_onboarding.md",
+        )
+        log.info("Rebuilt onboarding digest from %d posts: %s", len(posts), path)
 
 
 if __name__ == "__main__":

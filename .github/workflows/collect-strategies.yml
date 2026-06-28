@@ -42,6 +42,12 @@ jobs:
           REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
         run: python -m strategy_hunter collect
 
+      - name: Collect onboarding material
+        env:
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+        run: python -m strategy_hunter onboarding-collect
+
       - name: Commit corpus + digest
         if: success()
         run: |
@@ -83,6 +89,7 @@ jobs:
           #    it. Regeneration is the conflict resolution for the per-day digest
           #    file: it always reflects every post on disk after the rebase.
           python -m strategy_hunter digest
+          python -m strategy_hunter onboarding-digest
           git add data/strategies/digest/
           if ! git diff --cached --quiet; then
             git commit -m "chore: strategy digest [skip ci]"

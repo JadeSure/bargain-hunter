@@ -1,0 +1,41 @@
+{
+  "id": "flybuys-au",
+  "name": "Flybuys",
+  "category": "loyalty",
+  "one_liner": "Australia's biggest loyalty program — earn points at Coles, BP, Kmart, Target, and more.",
+  "benefit": "Earn 1 point per $1 at Coles supermarkets, BP fuel, Kmart, Target, and partner stores; redeem for Coles dollars ($10 off per 2,000 pts), gift cards, or Velocity frequent flyer miles; regular bonus point events at Coles.",
+  "signup_bonus": null,
+  "needs_referral": false,
+  "how_to_join": [
+    {
+      "order": 1,
+      "action": "Sign up for free at flybuys.com.au or in-store at any Coles supermarket"
+    },
+    {
+      "order": 2,
+      "action": "Download the Flybuys app to access personalised bonus offers",
+      "detail": "Activate bonus point offers in the app each week before shopping."
+    },
+    {
+      "order": 3,
+      "action": "Link your card to the Coles app for contactless barcode scanning at checkout"
+    }
+  ],
+  "prerequisites": ["AU resident", "13+"],
+  "risks": [
+    "Points expire after 18 months of inactivity — make at least one earning transaction per 18 months",
+    "Earning rate is modest (~0.5c per dollar); the main value is bonus-point events and targeted offers"
+  ],
+  "region": "AU",
+  "recommended_for_newcomer": true,
+  "priority": 30,
+  "est_value": "~$20–50/year in Coles dollars for typical grocery spend when bonus events are used",
+  "official_url": "https://www.flybuys.com.au",
+  "sources": [
+    "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
+    "https://www.flybuys.com.au"
+  ],
+  "valid_until": null,
+  "confidence": 0.82,
+  "generated_at": "2026-06-29T00:00:00+00:00"
+}

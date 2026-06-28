@@ -1,0 +1,43 @@
+{
+  "id": "macquarie-transaction-au",
+  "name": "Macquarie Transaction Account",
+  "category": "bank",
+  "one_liner": "Zero-fee everyday account with no FX fees and a well-regarded mobile app.",
+  "benefit": "No monthly fees, no foreign transaction fees on the debit card, no international ATM fees at eligible overseas ATMs; pairs with Macquarie Savings Account for competitive bonus interest; highly rated digital experience.",
+  "signup_bonus": null,
+  "needs_referral": false,
+  "how_to_join": [
+    {
+      "order": 1,
+      "action": "Apply online at macquarie.com.au",
+      "detail": "Requires AU mobile number, email, TFN, and identification (passport or driver's licence)."
+    },
+    {
+      "order": 2,
+      "action": "Download the Macquarie app and add your card to Apple Pay or Google Pay"
+    },
+    {
+      "order": 3,
+      "action": "Optionally open a Macquarie Savings Account to earn bonus interest",
+      "detail": "Bonus interest requires meeting monthly deposit conditions — check current terms."
+    }
+  ],
+  "prerequisites": ["AU resident", "18+", "AU mobile number"],
+  "risks": [
+    "Fully digital bank — no physical branches",
+    "Bonus interest on savings requires meeting monthly deposit conditions",
+    "International ATM fee-free access applies at specific ATM networks; verify before travelling"
+  ],
+  "region": "AU",
+  "recommended_for_newcomer": true,
+  "priority": 24,
+  "est_value": "Saves ~$5/month in account fees + ~2–3% FX fee savings on overseas purchases",
+  "official_url": "https://www.macquarie.com.au/everyday-banking/transaction-account.html",
+  "sources": [
+    "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
+    "https://www.macquarie.com.au/everyday-banking/transaction-account.html"
+  ],
+  "valid_until": null,
+  "confidence": 0.72,
+  "generated_at": "2026-06-29T00:00:00+00:00"
+}

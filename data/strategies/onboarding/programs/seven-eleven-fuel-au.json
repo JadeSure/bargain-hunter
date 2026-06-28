@@ -1,0 +1,42 @@
+{
+  "id": "seven-eleven-fuel-au",
+  "name": "7-Eleven Fuel App",
+  "category": "fuel_app",
+  "one_liner": "Lock in cheap fuel prices from anywhere in AU and redeem at any 7-Eleven servo.",
+  "benefit": "Lock in the cheapest 7-Eleven fuel price anywhere in Australia for up to 7 days; pay that locked price at your local servo regardless of current local price — significant savings during price-cycle peaks.",
+  "signup_bonus": null,
+  "needs_referral": false,
+  "how_to_join": [
+    {
+      "order": 1,
+      "action": "Download the 7-Eleven App (iOS or Android) and create a free account"
+    },
+    {
+      "order": 2,
+      "action": "Search for the cheapest fuel price nationally in the app and tap 'Lock in price'",
+      "detail": "The app shows live fuel prices at every 7-Eleven in Australia."
+    },
+    {
+      "order": 3,
+      "action": "Drive to any 7-Eleven servo and redeem the locked price within 7 days"
+    }
+  ],
+  "prerequisites": ["A 7-Eleven servo within reasonable driving distance"],
+  "risks": [
+    "Price locks expire after 7 days — only lock when you plan to refuel soon",
+    "7-Eleven coverage is strongest in metro areas; check availability in your suburb",
+    "App requires location permission to find nearby servos"
+  ],
+  "region": "AU",
+  "recommended_for_newcomer": true,
+  "priority": 40,
+  "est_value": "~$10–30 saved per tank during price-cycle peaks compared with local servo prices",
+  "official_url": "https://www.7eleven.com.au/fuel-app",
+  "sources": [
+    "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
+    "https://www.7eleven.com.au/fuel-app"
+  ],
+  "valid_until": null,
+  "confidence": 0.82,
+  "generated_at": "2026-06-29T00:00:00+00:00"
+}

@@ -106,6 +106,26 @@ strategy:
   request_delay_seconds: 1.0       # polite crawl delay when fetching thread bodies
   retention_days: 60               # raw corpus retention in days; pruned on each run (0 = keep forever)
   alert_on_failure: true           # email maintainer if a collection run errors or harvests nothing
+  onboarding:
+    enabled: true
+    programs_dir: "data/strategies/onboarding/programs"
+    digest_dir: "data/strategies/onboarding/digest"
+    raw_dir: "data/strategies/onboarding/raw"
+    min_relevance: 1
+    request_delay_seconds: 2.0
+    retention_days: 90
+    sources:
+      ozbargain_tags:
+        enabled: true
+        tags: ["referral", "cashback"]
+      reddit:
+        enabled: true
+        subreddits: ["AusFinance", "AusFrugal"]
+        listing: "hot"
+        limit: 25
+        request_delay_seconds: 8
+        max_retries: 5
+        max_backoff_seconds: 120
   sources:
     reddit:
       enabled: true
