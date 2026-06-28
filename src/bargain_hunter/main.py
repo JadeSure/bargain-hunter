@@ -277,7 +277,13 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 vel, _ = compute_vote_velocity(
                     snaps_map.get(deal.key, []), settings.scoring.window_minutes, now
                 )
-                if not _passes_quality_gate(deal, settings.scoring.hot, vote_velocity=vel):
+                # Quality gate guards the lowest tier only. Deals at "great"/"top" already
+                # earned a higher score threshold via classify_hot; don't double-filter.
+                is_elevated = tier_rank.get(level, 0) > tier_rank.get(tiers[-1].name, 0)
+                passes_qg = is_elevated or _passes_quality_gate(
+                    deal, settings.scoring.hot, vote_velocity=vel
+                )
+                if not passes_qg:
                     log.info(
                         "[%s] hot skip %s: quality gate (votes=%d disc=%s vel=%.1f)",
                         sub.ref, deal.key, deal.votes_pos, deal.discount_percent, vel,
