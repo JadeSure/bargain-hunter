@@ -140,6 +140,98 @@ export async function findSubscriberByEmail(
   }
 }
 
+// Finds a subscriber page regardless of active status; used for approval flow.
+async function findSubscriberPageAny(
+  token: string,
+  dbId: string,
+  email: string
+): Promise<{ pageId: string; active: boolean } | null> {
+  const resp = await fetch(`${NOTION_API}/databases/${dbId}/query`, {
+    method: "POST",
+    headers: headers(token),
+    body: JSON.stringify({
+      filter: { property: P.EMAIL, email: { equals: email } },
+      page_size: 1,
+    }),
+  });
+  if (!resp.ok) throw new Error(`Notion query failed: ${resp.status}`);
+  const data = (await resp.json()) as { results: Array<Record<string, unknown>> };
+  if (!data.results.length) return null;
+  const props = data.results[0].properties as Record<string, unknown>;
+  const active = (props[P.ACTIVE] as { checkbox?: boolean })?.checkbox ?? false;
+  return { pageId: data.results[0].id as string, active };
+}
+
+// Creates an inactive subscriber entry in the Subscribers DB. No-ops if already present.
+export async function createInactiveSubscriber(
+  token: string,
+  dbId: string,
+  email: string
+): Promise<void> {
+  const existing = await findSubscriberPageAny(token, dbId, email);
+  if (existing) return;
+
+  const resp = await fetch(`${NOTION_API}/pages`, {
+    method: "POST",
+    headers: headers(token),
+    body: JSON.stringify({
+      parent: { database_id: dbId },
+      properties: {
+        [P.NAME]: { title: [{ text: { content: email } }] },
+        [P.EMAIL]: { email },
+        [P.ACTIVE]: { checkbox: false },
+      },
+    }),
+  });
+  if (!resp.ok) {
+    throw new Error(`Notion subscriber create failed: ${resp.status}`);
+  }
+}
+
+// Activates a subscriber (sets Active = true). Returns false if not found.
+export async function activateSubscriber(
+  token: string,
+  dbId: string,
+  email: string
+): Promise<boolean> {
+  const found = await findSubscriberPageAny(token, dbId, email);
+  if (!found) return false;
+
+  const resp = await fetch(`${NOTION_API}/pages/${found.pageId}`, {
+    method: "PATCH",
+    headers: headers(token),
+    body: JSON.stringify({
+      properties: { [P.ACTIVE]: { checkbox: true } },
+    }),
+  });
+  if (!resp.ok) {
+    throw new Error(`Notion subscriber activate failed: ${resp.status}`);
+  }
+  return true;
+}
+
+// Deactivates a subscriber (sets Active = false). Returns false if not found.
+export async function deactivateSubscriber(
+  token: string,
+  dbId: string,
+  email: string
+): Promise<boolean> {
+  const found = await findSubscriberPageAny(token, dbId, email);
+  if (!found) return false;
+
+  const resp = await fetch(`${NOTION_API}/pages/${found.pageId}`, {
+    method: "PATCH",
+    headers: headers(token),
+    body: JSON.stringify({
+      properties: { [P.ACTIVE]: { checkbox: false } },
+    }),
+  });
+  if (!resp.ok) {
+    throw new Error(`Notion subscriber deactivate failed: ${resp.status}`);
+  }
+  return true;
+}
+
 export async function updateSubscriber(
   token: string,
   pageId: string,

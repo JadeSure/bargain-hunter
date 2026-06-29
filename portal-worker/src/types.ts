@@ -7,6 +7,7 @@ export interface Env {
   WORKER_URL: string
   FRONTEND_URL: string
   OWNER_EMAIL: string
+  UNSUBSCRIBE_HMAC_SECRET: string
 }
 
 export interface SessionData {
