@@ -71,6 +71,7 @@ def build_observation(
         "click_velocity": round(click_vel, 4),
         "age_hours": age_hours,
         "price": deal.price,
+        "price_confidence": deal.price_confidence,
         "discount_percent": deal.discount_percent,
         "hot_score": score,
         "is_hot": is_hot,

@@ -43,7 +43,7 @@
   <div class="deal">
     <h2><a href="{{ deal.url }}">{{ deal.title }}</a></h2>
     <div class="meta">
-      {% if deal.price is not none %}
+      {% if deal.price is not none and deal.price_confidence == 'high' %}
       <span class="badge price">${{ "%.2f"|format(deal.price) }}</span>
       {% endif %}
       {% if deal.discount_percent is not none %}
