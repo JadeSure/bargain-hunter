@@ -13,6 +13,7 @@ concurrency:
 
 permissions:
   contents: write           # to commit the harvested corpus + digest
+  issues: write             # to open/refresh the onboarding staleness review issue
 
 jobs:
   collect:
@@ -94,4 +95,30 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m "chore: strategy digest [skip ci]"
             push_with_retry || { echo "Could not push digest." >&2; exit 1; }
+          fi
+
+      - name: Audit onboarding catalog freshness
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Flag programs past valid_until / undated / older than staleness_days.
+          # Stage 2 (program extraction) is manual, so the catalog can rot silently;
+          # this opens or refreshes a single review issue, never failing the run.
+          python -m strategy_hunter onboarding-audit --report /tmp/onboarding-audit.md
+          title="Onboarding catalog: stale programs need review"
+          gh label create onboarding-audit --color BFD4F2 \
+            --description "Catalog freshness review" 2>/dev/null || true
+          if [ -s /tmp/onboarding-audit.md ]; then
+            num=$(gh issue list --state open --label onboarding-audit \
+              --search "$title" --json number --jq '.[0].number' 2>/dev/null || true)
+            if [ -n "$num" ]; then
+              gh issue edit "$num" --body-file /tmp/onboarding-audit.md
+              echo "Refreshed audit issue #$num."
+            else
+              gh issue create --title "$title" --label onboarding-audit \
+                --body-file /tmp/onboarding-audit.md
+            fi
+          else
+            echo "Catalog fresh — no audit issue needed."
           fi
