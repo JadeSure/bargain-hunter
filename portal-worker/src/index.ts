@@ -4,6 +4,7 @@ import { logger } from "hono/logger";
 import magicLinkRoutes from "./routes/auth/magic-link";
 import requestAccessRoute from "./routes/auth/request-access";
 import logoutRoute from "./routes/auth/logout";
+import unsubscribeRoute from "./routes/auth/unsubscribe";
 import subscriberRoutes from "./routes/subscriber";
 import { allowedOrigins } from "./lib/origins";
 import type { Env } from "./types";
@@ -31,6 +32,7 @@ app.get("/health", (c) => c.json({ ok: true }));
 app.route("/auth/magic-link", magicLinkRoutes);
 app.route("/auth/request-access", requestAccessRoute);
 app.route("/auth/logout", logoutRoute);
+app.route("/auth/unsubscribe", unsubscribeRoute);
 app.route("/api", subscriberRoutes);
 
 app.onError((err, c) => {

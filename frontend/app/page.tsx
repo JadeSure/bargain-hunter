@@ -125,6 +125,7 @@ export default function LandingPage() {
           <span className="lp-nav-logo-text">Bargain Hunter</span>
         </div>
         <div className="lp-nav-right">
+          <Link className="lp-nav-link" href="/deals">Hot Deals</Link>
           <Link className="lp-nav-link" href="/start-here">Start Here</Link>
           <Link className="lp-nav-link" href="/guides">Saving Guides</Link>
           <span className="lp-nav-tagline">Invite-only · Australia</span>

@@ -16,6 +16,10 @@ from ..models import Deal, Subscriber
 
 TEMPLATES_DIR = Path(__file__).resolve().parents[1] / "templates"
 _AET = ZoneInfo("Australia/Sydney")
+SOURCE_LABELS = {
+    "camelcamelcamel": "CamelCamelCamel",
+    "ozbargain": "OzBargain",
+}
 
 _env = Environment(
     loader=FileSystemLoader(str(TEMPLATES_DIR)),
@@ -38,6 +42,12 @@ class DealItem:
 def _sign(secret: str, deal_key: str, verdict: str, email: str) -> str:
     """Return a 32-char hex HMAC-SHA256 token covering deal+verdict+email."""
     msg = f"{deal_key}|{verdict}|{email}".encode()
+    return hmac.new(secret.encode(), msg, hashlib.sha256).hexdigest()[:32]
+
+
+def _unsubscribe_token(secret: str, email: str) -> str:
+    """Return a 32-char hex HMAC-SHA256 token covering just the email."""
+    msg = f"unsubscribe|{email}".encode()
     return hmac.new(secret.encode(), msg, hashlib.sha256).hexdigest()[:32]
 
 
@@ -64,6 +74,8 @@ def render_email(
     sent_at = datetime.now(UTC).astimezone(_AET).strftime("%d %b %Y %H:%M AEST")
     feedback_base = (os.environ.get("FEEDBACK_BASE_URL") or "").strip() or None
     hmac_secret = (os.environ.get("FEEDBACK_HMAC_SECRET") or "").strip() or None
+    unsubscribe_base = (os.environ.get("UNSUBSCRIBE_BASE_URL") or "").strip() or None
+    unsubscribe_secret = (os.environ.get("UNSUBSCRIBE_HMAC_SECRET") or "").strip() or None
 
     if feedback_base and hmac_secret and subscriber.email:
         for item in items:
@@ -74,8 +86,17 @@ def render_email(
                 feedback_base, hmac_secret, item.deal.key, "down", subscriber.email, item.deal.title
             )
 
+    unsubscribe_url: str | None = None
+    if unsubscribe_base and unsubscribe_secret and subscriber.email:
+        token = _unsubscribe_token(unsubscribe_secret, subscriber.email)
+        unsubscribe_url = (
+            f"{unsubscribe_base}?e={quote(subscriber.email)}&t={token}"
+        )
+
     return tmpl.render(
         subscriber=subscriber,
         deals=items,
+        source_labels=SOURCE_LABELS,
         sent_at=sent_at,
+        unsubscribe_url=unsubscribe_url,
     )

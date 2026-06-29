@@ -735,3 +735,78 @@ html, body {
   text-decoration: none; transition: opacity 0.15s;
 }
 .program-official-btn:hover { opacity: 0.88; }
+
+/* ── Deals page ─────────────────────────────────────────────── */
+.deals-page { min-height: 100vh; }
+.deals-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 32px; border-bottom: 1px solid var(--border-subtle);
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(8,10,14,0.88); backdrop-filter: blur(18px);
+}
+.deals-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-primary); font-weight: 700; font-size: 16px; }
+.deals-back { font-size: 14px; color: rgba(232,233,236,0.5); text-decoration: none; transition: color 0.15s; }
+.deals-back:hover { color: var(--orange); }
+
+.deals-hero { padding: 48px 32px 32px; max-width: 860px; margin: 0 auto; }
+.deals-hero-eyebrow { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(232,233,236,0.5); margin-bottom: 14px; }
+.deals-hero-title { font-size: clamp(28px, 5vw, 40px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; }
+.deals-hero-sub { font-size: 16px; color: rgba(232,233,236,0.6); line-height: 1.6; max-width: 600px; }
+
+.deals-empty { text-align: center; padding: 80px 32px; color: rgba(232,233,236,0.45); }
+.deals-empty-icon { font-size: 48px; margin-bottom: 16px; }
+
+.deals-grid-section { padding: 0 32px 64px; max-width: 1100px; margin: 0 auto; }
+.deals-count { font-size: 13px; color: rgba(232,233,236,0.4); margin-bottom: 20px; }
+
+.deals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.deal-live-card {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 20px; border-radius: 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-mid);
+  text-decoration: none; color: inherit;
+  transition: border-color 0.18s, background 0.18s;
+  cursor: pointer;
+}
+.deal-live-card:hover {
+  border-color: rgba(249,115,22,0.4);
+  background: var(--surface-2);
+}
+.deal-live-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.deal-live-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.deal-live-age { font-size: 12px; color: rgba(232,233,236,0.35); white-space: nowrap; flex-shrink: 0; }
+.deal-live-title { font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--text-primary); flex: 1; }
+.deal-live-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.deal-live-price { font-size: 18px; font-weight: 700; color: #4ade80; }
+.deal-live-discount {
+  font-size: 13px; font-weight: 600; color: #f87171;
+  background: rgba(248,113,113,0.12); border-radius: 5px; padding: 2px 7px;
+}
+.deal-live-footer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: auto; }
+.deal-live-votes { font-size: 12px; color: rgba(232,233,236,0.45); display: flex; align-items: center; gap: 5px; }
+.deal-live-score { font-size: 12px; color: rgba(232,233,236,0.3); margin-left: auto; }
+.deal-live-link-hint { font-size: 12px; color: var(--orange); opacity: 0; transition: opacity 0.15s; }
+.deal-live-card:hover .deal-live-link-hint { opacity: 1; }
+
+.deals-badge {
+  display: inline-flex; align-items: center;
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 5px;
+  white-space: nowrap;
+}
+.deals-badge-top    { background: rgba(249,115,22,0.18); color: #f97316; border: 1px solid rgba(249,115,22,0.3); }
+.deals-badge-great  { background: rgba(250,204,21,0.12); color: #eab308; border: 1px solid rgba(250,204,21,0.25); }
+.deals-badge-good   { background: rgba(74,222,128,0.1);  color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+.deals-badge-source { background: var(--surface-3); color: rgba(232,233,236,0.5); border: 1px solid var(--border-mid); }
+
+@media (max-width: 600px) {
+  .deals-header { padding: 16px 20px; }
+  .deals-hero   { padding: 36px 20px 24px; }
+  .deals-grid-section { padding: 0 20px 48px; }
+  .deals-grid { grid-template-columns: 1fr; }
+}

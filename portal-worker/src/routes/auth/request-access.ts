@@ -1,8 +1,9 @@
 import { Hono } from "hono";
-import { sendAccessRequest } from "../../lib/email";
-import { addToWaitlist, listWaitlist } from "../../lib/notion";
+import { sendAccessRequest, sendActivationEmail } from "../../lib/email";
+import { addToWaitlist, listWaitlist, createInactiveSubscriber, activateSubscriber } from "../../lib/notion";
 import { requireAuth } from "../../middleware/auth";
 import { primaryFrontendUrl } from "../../lib/origins";
+import { createMagicToken } from "../../lib/kv";
 import type { Env, SessionData } from "../../types";
 
 type Variables = { user: SessionData };
@@ -22,27 +23,39 @@ app.post("/", async (c) => {
     return c.json({ error: "Invalid email" }, 400);
   }
 
-  // Durable source of truth: persist first so a request is never lost, even if
-  // the notification email later fails. Errors are swallowed (still return ok)
-  // to avoid leaking state, but are logged for observability.
-  try {
-    if (c.env.WAITLIST_DB_ID) {
-      await addToWaitlist(c.env.NOTION_TOKEN, c.env.WAITLIST_DB_ID, email, "modal");
-    } else {
-      console.warn("WAITLIST_DB_ID not set — skipping waitlist persistence");
-    }
-  } catch (err) {
-    console.error("waitlist persist failed:", err);
-  }
-
-  // Best-effort owner notification — fire-and-forget.
+  // Persist to waitlist and create an inactive subscriber entry. Both are
+  // best-effort — errors are logged but never surfaced to the caller (anti-enumeration).
   c.executionCtx.waitUntil(
-    sendAccessRequest(
-      c.env.RESEND_API_KEY,
-      c.env.OWNER_EMAIL,
-      email,
-      `${primaryFrontendUrl(c.env)}/login`
-    ).catch((err) => console.error("request-access email failed:", err))
+    (async () => {
+      try {
+        if (c.env.WAITLIST_DB_ID) {
+          await addToWaitlist(c.env.NOTION_TOKEN, c.env.WAITLIST_DB_ID, email, "modal");
+        } else {
+          console.warn("WAITLIST_DB_ID not set — skipping waitlist persistence");
+        }
+      } catch (err) {
+        console.error("waitlist persist failed:", err);
+      }
+
+      try {
+        if (c.env.SUBSCRIBERS_DB_ID) {
+          await createInactiveSubscriber(c.env.NOTION_TOKEN, c.env.SUBSCRIBERS_DB_ID, email);
+        }
+      } catch (err) {
+        console.error("inactive subscriber create failed:", err);
+      }
+
+      try {
+        await sendAccessRequest(
+          c.env.RESEND_API_KEY,
+          c.env.OWNER_EMAIL,
+          email,
+          `${primaryFrontendUrl(c.env)}/login`
+        );
+      } catch (err) {
+        console.error("request-access email failed:", err);
+      }
+    })()
   );
 
   return c.json({ ok: true });
@@ -60,6 +73,39 @@ app.get("/", requireAuth, async (c) => {
   }
   const waitlist = await listWaitlist(c.env.NOTION_TOKEN, c.env.WAITLIST_DB_ID);
   return c.json({ count: waitlist.length, waitlist });
+});
+
+// POST /auth/request-access/approve — owner-only: activate a subscriber and
+// send them a magic-link welcome email.
+app.post("/approve", requireAuth, async (c) => {
+  const user = c.get("user");
+  const owner = c.env.OWNER_EMAIL?.toLowerCase().trim();
+  if (!owner || user.email.toLowerCase().trim() !== owner) {
+    return c.json({ error: "Forbidden" }, 403);
+  }
+
+  const body = await c.req.json<{ email?: string }>().catch(() => ({ email: "" }));
+  const email = (body.email ?? "").toLowerCase().trim();
+  if (!email || !email.includes("@")) {
+    return c.json({ error: "Invalid email" }, 400);
+  }
+
+  const activated = await activateSubscriber(c.env.NOTION_TOKEN, c.env.SUBSCRIBERS_DB_ID, email);
+  if (!activated) {
+    return c.json({ error: "Subscriber not found" }, 404);
+  }
+
+  // Generate a magic link and email it to the newly activated user.
+  const token = await createMagicToken(c.env.PORTAL_KV, email);
+  const magicLinkUrl = `${primaryFrontendUrl(c.env)}/auth/verify?token=${token}`;
+
+  c.executionCtx.waitUntil(
+    sendActivationEmail(c.env.RESEND_API_KEY, email, magicLinkUrl).catch((err) =>
+      console.error("activation email failed:", err)
+    )
+  );
+
+  return c.json({ ok: true, email });
 });
 
 export default app;

@@ -65,7 +65,7 @@
     <div class="expiry">Expires {{ deal.expiry.strftime('%d %b %Y %H:%M AEST') }}</div>
     {% endif %}
     <div class="links">
-      <a href="{{ deal.url }}">OzBargain ↗</a>
+      <a href="{{ deal.url }}">{{ source_labels.get(deal.source, deal.source|title) }} ↗</a>
       {% if deal.merchant_url %}
       <a href="{{ deal.merchant_url }}">Go to deal ↗</a>
       {% endif %}
@@ -78,8 +78,10 @@
   {% endfor %}
 
   <div class="footer">
-    You're subscribed via Bargain Hunter. To manage your alerts, update your entry in the Notion subscribers list.
-    <br>Sent {{ sent_at }}.
+    Sent {{ sent_at }}.
+    {% if unsubscribe_url %}
+    &nbsp;·&nbsp;<a href="{{ unsubscribe_url }}" style="color:#aaa;">Unsubscribe</a>
+    {% endif %}
   </div>
 </div>
 </body>
