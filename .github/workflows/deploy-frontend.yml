@@ -53,14 +53,28 @@ jobs:
             echo "Pipeline conclusion='$CONCLUSION' branch='$HEAD_BRANCH'; skipping."
             echo "proceed=false" >> "$GITHUB_OUTPUT"; exit 0
           fi
-          # Throttle: at most one data-driven deploy per ~30 min.
-          last=$(gh run list --repo "$REPO" --workflow=deploy-frontend.yml \
-                   --status=success --json createdAt -L 30 2>/dev/null \
-                 | jq -r '[.[].createdAt | fromdateiso8601] | max // 0' || echo 0)
-          case "$last" in (''|*[!0-9]*) last=0 ;; esac
-          now=$(date +%s)
-          if [ "$last" -gt 0 ] && [ $((now - last)) -lt 1680 ]; then
-            echo "Last deploy $((now - last))s ago (<1680s); skipping."
+          # Throttle: skip if a *real* deploy (deploy job actually ran, not
+          # throttle-skipped) happened within the last ~30 min. We must inspect
+          # each candidate run's deploy-job conclusion, because a throttled run
+          # still concludes "success" at the run level and would otherwise reset
+          # the window on every pipeline tick.
+          window=1680
+          now=$(date -u +%s)
+          skip=false
+          while read -r id created; do
+            [ -z "$id" ] && continue
+            cts=$(python3 -c "import datetime,sys; print(int(datetime.datetime.fromisoformat(sys.argv[1].replace('Z','+00:00')).timestamp()))" "$created" 2>/dev/null || echo 0)
+            # Runs are newest-first; once past the window, no need to look further.
+            [ "$cts" -gt 0 ] && [ $((now - cts)) -ge "$window" ] && break
+            concl=$(gh api "repos/$REPO/actions/runs/$id/jobs" \
+                      --jq 'first(.jobs[] | select(.name=="deploy") | .conclusion) // ""' \
+                      2>/dev/null || echo "")
+            if [ "$concl" = "success" ]; then skip=true; break; fi
+          done < <(gh run list --repo "$REPO" --workflow=deploy-frontend.yml \
+                     --status=completed --json databaseId,createdAt -L 30 2>/dev/null \
+                   | jq -r '.[] | "\(.databaseId) \(.createdAt)"')
+          if [ "$skip" = true ]; then
+            echo "A real deploy occurred within ${window}s; skipping."
             echo "proceed=false" >> "$GITHUB_OUTPUT"
           else
             echo "proceed=true" >> "$GITHUB_OUTPUT"
