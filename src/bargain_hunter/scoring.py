@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import math
 import re
+from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from .config import ScoringConfig, effective_tiers
@@ -23,10 +24,77 @@ _PRICE_RE = re.compile(r"\$\s*([\d,]+(?:\.\d{1,2})?)")
 _PCT_OFF_RE = re.compile(r"(\d+(?:\.\d+)?)\s*%\s*off", re.IGNORECASE)
 # Matches: "was $X", "RRP $X", "RRP: $X"
 _WAS_RE = re.compile(r"(?:was|rrp):?\s*\$\s*([\d,]+(?:\.\d{1,2})?)", re.IGNORECASE)
+_NON_PRICE_AFTER_RE = re.compile(
+    r"^\W*(?:"
+    r"c&c\b|click\s*(?:and|&)\s*collect\b|"
+    r"del\b|delivery\b|shipping\b|post(?:age)?\b|"
+    r"cash\s*back\b|cashback\b|bonus\b|coupon\b|voucher\b|"
+    r"off\b|discount\b|saving\b|savings\b|credit\b|code\b|total\b|"
+    r"cap\b|capped\b|"
+    r"(?:for\s+)?referrer\b|(?:for\s+)?referee\b|earned\b|order\b|spend\b|required\b|"
+    r"gift\s*card\b|gc\b"
+    r")",
+    re.IGNORECASE,
+)
+_NON_PRICE_BEFORE_RE = re.compile(
+    r"(?:"
+    r"cash\s*back|cashback|bonus|coupon|voucher|"
+    r"save|saving|savings|credit|referrer|referee|earned|"
+    r"minimum\s+spend|min\s+spend|max\s+spend|spend|refer\s+a\s+friend\s+for|"
+    r"cap|capped|capped\s+at|valued\s+at|worth|"
+    r"delivery|shipping|post(?:age)?"
+    r")\W*$",
+    re.IGNORECASE,
+)
+_NON_PRICE_TITLE_RE = re.compile(r"^\s*\$[\d,.]+\s*(?:off|bonus)\b", re.IGNORECASE)
+
+
+@dataclass(frozen=True)
+class _PriceCandidate:
+    value: float
+    start: int
+    end: int
 
 
 def _to_float(raw: str) -> float:
     return float(raw.replace(",", ""))
+
+
+def _price_candidates(text: str) -> list[_PriceCandidate]:
+    return [
+        _PriceCandidate(_to_float(match.group(1)), match.start(), match.end())
+        for match in _PRICE_RE.finditer(text)
+    ]
+
+
+def _is_non_price_amount(text: str, candidate: _PriceCandidate) -> bool:
+    before = text[max(0, candidate.start - 32) : candidate.start]
+    after = text[candidate.end : candidate.end + 40]
+    before_is_parenthesis = candidate.start > 0 and text[candidate.start - 1] == "("
+    return bool(
+        _NON_PRICE_AFTER_RE.match(after)
+        or (not before_is_parenthesis and _NON_PRICE_BEFORE_RE.search(before))
+    )
+
+
+def _select_current_price(
+    text: str,
+    candidates: list[_PriceCandidate],
+    was_price: float | None,
+) -> float | None:
+    current_candidates = [
+        candidate
+        for candidate in candidates
+        if (was_price is None or candidate.value != was_price)
+        and not _is_non_price_amount(text, candidate)
+    ]
+    if not current_candidates:
+        return None
+    return min(candidate.value for candidate in current_candidates)
+
+
+def _has_any_price(text: str) -> bool:
+    return _PRICE_RE.search(text) is not None
 
 
 def extract_price_signals(text: str) -> tuple[float | None, float | None, float | None]:
@@ -35,6 +103,9 @@ def extract_price_signals(text: str) -> tuple[float | None, float | None, float 
     Uses a lenient cascade: explicit % off → was/RRP pair → first two prices.
     Returns None for any signal we can't confidently extract.
     """
+    if _NON_PRICE_TITLE_RE.match(text):
+        return None, None, None
+
     # 1. Explicit "X% off"
     pct_match = _PCT_OFF_RE.search(text)
     discount_pct: float | None = float(pct_match.group(1)) if pct_match else None
@@ -44,16 +115,9 @@ def extract_price_signals(text: str) -> tuple[float | None, float | None, float 
     was_price: float | None = _to_float(was_match.group(1)) if was_match else None
 
     # 3. All dollar amounts
-    all_prices = [_to_float(m) for m in _PRICE_RE.findall(text)]
+    candidates = _price_candidates(text)
 
-    # Current price: smallest dollar amount (filters the "was" anchor if both present)
-    price: float | None = None
-    if all_prices:
-        candidates = [p for p in all_prices if was_price is None or p != was_price]
-        if candidates:
-            price = min(candidates)
-        elif all_prices:
-            price = min(all_prices)
+    price = _select_current_price(text, candidates, was_price)
 
     # Derive missing signals
     if discount_pct is None and price and was_price and was_price > price:
@@ -68,8 +132,10 @@ def enrich_deal(deal: Deal) -> Deal:
     """Populate Deal.price/was_price/discount_percent from title (in-place copy)."""
     if deal.price is not None:
         return deal  # already enriched
-    text = deal.title + " " + (deal.description or "")
+    text = deal.title
     price, was_price, discount_pct = extract_price_signals(text)
+    if price is None and deal.description and not _has_any_price(text):
+        price, was_price, discount_pct = extract_price_signals(deal.description)
     return deal.model_copy(
         update={
             "price": price,
