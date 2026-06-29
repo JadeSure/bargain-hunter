@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1uigbz6",
+  "url": "https://www.reddit.com/r/fiaustralia/comments/1uigbz6/cgt_changes_and_stock_market_crash_timing/",
+  "title": "CGT changes and stock market crash timing",
+  "author": "/u/OppositeEmu7324",
+  "body": "With the CGT changes coming next year, could the timing of a stock market crash have an impact on your taxes? https://preview.redd.it/diqze6t4x4ah1.png?width=2068&format=png&auto=webp&s=69a115aec7b8b41fb4e51de0b47aaf1d2940f762 Say the stock market crashes right as the new CGT changes take effect. Then say the market goes back to normal a year later. Because of the CGT changes, your recovery gains will be taxed using the inflation method. Whereas if the crash happened after the CGT changes, you get to keep the 50% discount on the recovery gains. https://preview.redd.it/ur9vycm6x4ah1.png?width=2272&format=png&auto=webp&s=8f10c41bdafb8385cadff42bcd8b6780d2dae74a Consider this hypothetical scenario ( Google sheet ()): Say you invested $30k in the market 5 years ago. At a 10% annual growth rate, this is now worth around $50k Say the market crashes 30% around the CGT changes, then recovers a year later. Here's what your taxes will be if you were to sell after the recovery: Crash before CGT changes (Bad) Tax type Amount Grandfathered 50% CGT $1.9k Inflation based CGT $18.9k Total tax $20.8k Compare this to the crash happening after the CGT changes: Crash after CGT changes (Good) Tax type Amount Grandfathered 50% CGT $9.2k Inflation based CGT $4.7k Total tax $13.9k --> That's a $6.9k increase in taxes (50% more)! Note that this effect is less severe if you wait longer before selling. For example, if you sell 10 years after the crash, then it's about 6% extra tax. Does this sound right? Or I have I got something wrong? Do capital loss deductions affect this somehow? submitted by /u/OppositeEmu7324 [link] [comments]",
+  "board": "r/fiaustralia",
+  "created_at": "2026-06-29T02:47:36Z",
+  "fetched_at": "2026-06-29T17:59:03.792778Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "9160b53c358a5411",
+  "key": "reddit:1uigbz6"
+}
