@@ -26,7 +26,10 @@
       "action": "Make your first qualifying transfer to unlock the fee-free bonus"
     }
   ],
-  "prerequisites": ["Passport or government-issued ID for identity verification", "18+"],
+  "prerequisites": [
+    "Passport or government-issued ID for identity verification",
+    "18+"
+  ],
   "risks": [
     "Wise is not a bank in AU — deposits are not covered by the Australian government guarantee scheme",
     "Transfer fees are low but not zero; compare rates for large transfers against your bank",
@@ -43,5 +46,5 @@
   ],
   "valid_until": null,
   "confidence": 0.78,
-  "generated_at": "2026-06-29T00:00:00+00:00"
+  "generated_at": "2026-06-29T02:30:00+00:00"
 }

@@ -4,7 +4,7 @@
   "category": "bank",
   "one_liner": "High-interest savings account with no monthly fees and a referral cash bonus.",
   "benefit": "Competitive bonus interest rate on savings (up to ~5% p.a. when conditions met); no monthly fees; linked Spend account with no foreign transaction fees on overseas purchases.",
-  "signup_bonus": "~$20–30 for new customers who sign up via a referral (check current terms)",
+  "signup_bonus": "$30 for both new customer and referrer — make 5 eligible card purchases within first 30 days (18+) — verify current offer",
   "needs_referral": true,
   "referral_note": "Get a referral via OzBargain's referral threads/randomiser so both you and the referrer get the bonus.",
   "how_to_join": [
@@ -19,7 +19,8 @@
     },
     {
       "order": 3,
-      "action": "Open both a Save account and a Spend account"
+      "action": "Open both a Save account and a Spend account, then make 5 eligible card purchases in 30 days",
+      "detail": "Both you and the referrer get $30 once the 5 purchases settle; you also need to be 18+."
     },
     {
       "order": 4,
@@ -41,13 +42,13 @@
   "region": "AU",
   "recommended_for_newcomer": true,
   "priority": 21,
-  "est_value": "~$20–30 signup bonus + competitive savings interest (~5% p.a. when conditions met)",
+  "est_value": "$30 signup bonus + competitive savings interest (~5% p.a. when conditions met)",
   "official_url": "https://www.ubank.com.au",
   "sources": [
     "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
     "https://www.ubank.com.au"
   ],
   "valid_until": null,
-  "confidence": 0.72,
-  "generated_at": "2026-06-29T00:00:00+00:00"
+  "confidence": 0.75,
+  "generated_at": "2026-06-29T02:30:00+00:00"
 }

@@ -20,7 +20,10 @@
       "action": "Add your Velocity number to Virgin Australia bookings and Uber to earn on every trip"
     }
   ],
-  "prerequisites": ["No fee — free to join", "Any age (under 18 via a family account)"],
+  "prerequisites": [
+    "No fee — free to join",
+    "Any age (under 18 via a family account)"
+  ],
   "risks": [
     "Points expire after 24 months of inactivity",
     "Flybuys-to-Velocity transfer rate (2:1) is relatively poor value; earning direct is better",
@@ -37,5 +40,5 @@
   ],
   "valid_until": null,
   "confidence": 0.78,
-  "generated_at": "2026-06-29T00:00:00+00:00"
+  "generated_at": "2026-06-29T02:30:00+00:00"
 }

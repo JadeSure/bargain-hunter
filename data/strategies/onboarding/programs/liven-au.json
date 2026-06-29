@@ -25,7 +25,10 @@
       "action": "Pay via the app at a participating restaurant to earn rewards automatically"
     }
   ],
-  "prerequisites": ["AU mobile number", "18+"],
+  "prerequisites": [
+    "AU mobile number",
+    "18+"
+  ],
   "risks": [
     "Partner restaurant coverage is strongest in major cities (Sydney, Melbourne, Brisbane, Perth)",
     "Rewards are store credit redeemable only at partner venues — not withdrawable cash",
@@ -42,5 +45,5 @@
   ],
   "valid_until": null,
   "confidence": 0.6,
-  "generated_at": "2026-06-29T07:45:00+00:00"
+  "generated_at": "2026-06-29T02:30:00+00:00"
 }
