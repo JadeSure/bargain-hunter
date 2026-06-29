@@ -781,7 +781,7 @@ html, body {
 .deal-live-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .deal-live-badges { display: flex; flex-wrap: wrap; gap: 6px; }
 .deal-live-age { font-size: 12px; color: rgba(232,233,236,0.35); white-space: nowrap; flex-shrink: 0; }
-.deal-live-title { font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--text-primary); flex: 1; }
+.deal-live-title { font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--text-primary); }
 .deal-live-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .deal-live-price { font-size: 18px; font-weight: 700; color: #4ade80; }
 .deal-live-discount {
