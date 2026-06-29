@@ -9,8 +9,16 @@ on:
       - "data/strategies/onboarding/**"
       - ".github/workflows/deploy-frontend.yml"
   schedule:
-    # Rebuild every 30 minutes so expired hot deals drop off the /deals page.
+    # Backup refresh. GitHub heavily throttles scheduled runs, so the primary
+    # freshness driver is the workflow_run trigger below (off the reliable
+    # */5 bargain-hunter pipeline).
     - cron: '*/30 * * * *'
+  workflow_run:
+    # Redeploy after each successful deal-pipeline run so newly-hot deals reach
+    # /deals without waiting for the (throttled) cron. The gate job below caps
+    # this to ~one deploy per 30 min, matching the "refreshed every 30 min" copy.
+    workflows: ["bargain-hunter"]
+    types: [completed]
   workflow_dispatch:
 
 concurrency:
@@ -19,9 +27,48 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.decide.outputs.proceed }}
+    steps:
+      - name: Decide whether to deploy
+        id: decide
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Non-data-driven events (push/schedule/manual) always deploy.
+          if [ "$EVENT" != "workflow_run" ]; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          # Only react to successful pipeline runs on main.
+          if [ "$CONCLUSION" != "success" ] || [ "$HEAD_BRANCH" != "main" ]; then
+            echo "Pipeline conclusion='$CONCLUSION' branch='$HEAD_BRANCH'; skipping."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          # Throttle: at most one data-driven deploy per ~30 min.
+          last=$(gh run list --repo "$REPO" --workflow=deploy-frontend.yml \
+                   --status=success --json createdAt -L 30 2>/dev/null \
+                 | jq -r '[.[].createdAt | fromdateiso8601] | max // 0' || echo 0)
+          case "$last" in (''|*[!0-9]*) last=0 ;; esac
+          now=$(date +%s)
+          if [ "$last" -gt 0 ] && [ $((now - last)) -lt 1680 ]; then
+            echo "Last deploy $((now - last))s ago (<1680s); skipping."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy:
+    needs: gate
+    if: needs.gate.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
