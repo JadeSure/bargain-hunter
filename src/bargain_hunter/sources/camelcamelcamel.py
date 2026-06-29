@@ -112,6 +112,7 @@ class CamelCamelCamelSource(Source):
             price=price,
             was_price=was_price,
             discount_percent=discount_pct,
+            price_confidence="high",
             votes_pos=0,
             votes_neg=0,
             comment_count=0,

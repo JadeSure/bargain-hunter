@@ -85,6 +85,32 @@ from bargain_hunter.scoring import (
             None,
             None,
         ),
+        (
+            "Omo Professional Active Clean Laundry Powder 6kg $21 + Delivery ($0 C&C)",
+            21.0,
+            None,
+            None,
+        ),
+        (
+            "Apple Magsafe Charger (2m) $67 (RRP $89) Delivered ($0 Prime/ $59 Spend)",
+            67.0,
+            89.0,
+            pytest.approx(24.7, abs=0.2),
+        ),
+        (
+            "Under Armour Curry Series 7 Men’s Basketball Shoes $99.95 + "
+            "Delivery / Free over $150 @ Foot Locker",
+            99.95,
+            None,
+            None,
+        ),
+        (
+            "Save $100 on $1000 Minimum Spend, e.g. Palit GeForce RTX 5080 GPU $1499, "
+            "RTX 5070 Ti GPU $1199 + Delivery @ Shopping Express",
+            1199.0,
+            None,
+            None,
+        ),
     ],
 )
 def test_extract_price_signals(text, expected_price, expected_was, expected_pct):
@@ -122,6 +148,7 @@ def test_enrich_deal_sets_price_signals():
     d = _deal(title="Widget $49.99 (was $79.99)")
     enriched = enrich_deal(d)
     assert enriched.price == pytest.approx(49.99)
+    assert enriched.price_confidence == "high"
     assert enriched.was_price == pytest.approx(79.99)
     assert enriched.discount_percent is not None
 
@@ -151,6 +178,7 @@ def test_enrich_deal_ignores_coupon_discount_amount_in_description():
     )
     enriched = enrich_deal(d)
     assert enriched.price == pytest.approx(2059.0)
+    assert enriched.price_confidence == "high"
 
 
 def test_enrich_deal_does_not_use_description_when_title_has_only_promo_amounts():
@@ -160,6 +188,28 @@ def test_enrich_deal_does_not_use_description_when_title_has_only_promo_amounts(
     )
     enriched = enrich_deal(d)
     assert enriched.price is None
+    assert enriched.price_confidence is None
+
+
+def test_enrich_deal_marks_single_price_with_fulfilment_noise_high_confidence():
+    d = _deal(
+        title="Logitech MX Keys S Wireless Keyboard $139 + Delivery ($0 C&C) @ Umart",
+    )
+    enriched = enrich_deal(d)
+    assert enriched.price == pytest.approx(139.0)
+    assert enriched.price_confidence == "high"
+
+
+def test_enrich_deal_marks_multi_variant_price_low_confidence():
+    d = _deal(
+        title=(
+            "Save $100 on $1000 Minimum Spend, e.g. Palit GeForce RTX 5080 GPU $1499, "
+            "RTX 5070 Ti GPU $1199 + Delivery @ Shopping Express"
+        ),
+    )
+    enriched = enrich_deal(d)
+    assert enriched.price == pytest.approx(1199.0)
+    assert enriched.price_confidence == "low"
 
 
 def test_enrich_deal_falls_back_to_description_when_title_has_no_price():
@@ -169,6 +219,7 @@ def test_enrich_deal_falls_back_to_description_when_title_has_no_price():
     )
     enriched = enrich_deal(d)
     assert enriched.price == pytest.approx(49.99)
+    assert enriched.price_confidence == "low"
 
 
 # ---------------------------------------------------------------------------

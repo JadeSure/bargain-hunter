@@ -27,11 +27,12 @@ _WAS_RE = re.compile(r"(?:was|rrp):?\s*\$\s*([\d,]+(?:\.\d{1,2})?)", re.IGNORECA
 _NON_PRICE_AFTER_RE = re.compile(
     r"^\W*(?:"
     r"c&c\b|click\s*(?:and|&)\s*collect\b|"
-    r"del\b|delivery\b|shipping\b|post(?:age)?\b|"
     r"cash\s*back\b|cashback\b|bonus\b|coupon\b|voucher\b|"
-    r"off\b|discount\b|saving\b|savings\b|credit\b|code\b|total\b|"
+    r"off\b|discount\b|saving\b|savings\b|credit\b|total\b|"
     r"cap\b|capped\b|"
+    r"minimum\s+spend\b|min\s+spend\b|max\s+spend\b|"
     r"(?:for\s+)?referrer\b|(?:for\s+)?referee\b|earned\b|order\b|spend\b|required\b|"
+    r"for\s+free\s+(?:del\b|delivery\b|shipping\b|post(?:age)?\b)|"
     r"gift\s*card\b|gc\b"
     r")",
     re.IGNORECASE,
@@ -40,13 +41,22 @@ _NON_PRICE_BEFORE_RE = re.compile(
     r"(?:"
     r"cash\s*back|cashback|bonus|coupon|voucher|"
     r"save|saving|savings|credit|referrer|referee|earned|"
-    r"minimum\s+spend|min\s+spend|max\s+spend|spend|refer\s+a\s+friend\s+for|"
+    r"orders?\s+over|free\s+over|over|minimum\s+spend|min\s+spend|max\s+spend|"
+    r"spend|orders?|refer\s+a\s+friend\s+for|"
     r"cap|capped|capped\s+at|valued\s+at|worth|"
-    r"delivery|shipping|post(?:age)?"
+    r"delivery(?:\s+from)?|shipping(?:\s+from)?|post(?:age)?(?:\s+from)?"
     r")\W*$",
     re.IGNORECASE,
 )
 _NON_PRICE_TITLE_RE = re.compile(r"^\s*\$[\d,.]+\s*(?:off|bonus)\b", re.IGNORECASE)
+_LOW_CONFIDENCE_CONTEXT_RE = re.compile(
+    r"\b(?:"
+    r"cash\s*back|cashback|bonus|"
+    r"cap|capped|min(?:imum)?\s+spend|max(?:imum)?\s+spend|"
+    r"gift\s*card|gc|credit|referrer|referee"
+    r")\b",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -68,10 +78,20 @@ def _price_candidates(text: str) -> list[_PriceCandidate]:
 
 
 def _is_non_price_amount(text: str, candidate: _PriceCandidate) -> bool:
+    if candidate.value == 0:
+        return True
     before = text[max(0, candidate.start - 32) : candidate.start]
     after = text[candidate.end : candidate.end + 40]
+    before_tail = before.strip()
     before_is_parenthesis = candidate.start > 0 and text[candidate.start - 1] == "("
+    is_additive_fee = before_tail.endswith(("+", "/", "&")) and re.match(
+        r"^\W*(?:del\b|delivery\b|shipping\b|post(?:age)?\b)",
+        after,
+        re.IGNORECASE,
+    )
     return bool(
+        is_additive_fee
+        or
         _NON_PRICE_AFTER_RE.match(after)
         or (not before_is_parenthesis and _NON_PRICE_BEFORE_RE.search(before))
     )
@@ -93,8 +113,36 @@ def _select_current_price(
     return min(candidate.value for candidate in current_candidates)
 
 
+def _current_price_candidates(
+    text: str,
+    candidates: list[_PriceCandidate],
+    was_price: float | None,
+) -> list[_PriceCandidate]:
+    return [
+        candidate
+        for candidate in candidates
+        if (was_price is None or candidate.value != was_price)
+        and not _is_non_price_amount(text, candidate)
+    ]
+
+
 def _has_any_price(text: str) -> bool:
     return _PRICE_RE.search(text) is not None
+
+
+def price_display_confidence(text: str, price: float | None, was_price: float | None) -> str | None:
+    """Return display confidence for a parsed title price.
+
+    Low-confidence prices can still feed matching/dedup, but should not be shown
+    as a factual badge in notifications.
+    """
+    if price is None:
+        return None
+    candidates = _current_price_candidates(text, _price_candidates(text), was_price)
+    matching = [candidate for candidate in candidates if candidate.value == price]
+    if len(candidates) == 1 and matching and not _LOW_CONFIDENCE_CONTEXT_RE.search(text):
+        return "high"
+    return "low"
 
 
 def extract_price_signals(text: str) -> tuple[float | None, float | None, float | None]:
@@ -134,13 +182,16 @@ def enrich_deal(deal: Deal) -> Deal:
         return deal  # already enriched
     text = deal.title
     price, was_price, discount_pct = extract_price_signals(text)
+    confidence = price_display_confidence(text, price, was_price)
     if price is None and deal.description and not _has_any_price(text):
         price, was_price, discount_pct = extract_price_signals(deal.description)
+        confidence = "low" if price is not None else None
     return deal.model_copy(
         update={
             "price": price,
             "was_price": was_price,
             "discount_percent": discount_pct,
+            "price_confidence": confidence,
         }
     )
 

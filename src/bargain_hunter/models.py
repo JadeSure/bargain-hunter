@@ -28,6 +28,7 @@ class Deal(BaseModel):
     price: float | None = None
     was_price: float | None = None
     discount_percent: float | None = None
+    price_confidence: Literal["high", "low"] | None = None
     expired: bool = False
 
     @property
