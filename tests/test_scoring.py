@@ -30,6 +30,61 @@ from bargain_hunter.scoring import (
         ("TV $1,299 RRP $1,999", 1299.0, 1999.0, pytest.approx(35.0, abs=0.2)),
         ("Free shipping on orders", None, None, None),
         ("iPhone $799 (was $999) 20% off", 799.0, 999.0, 20.0),
+        ("1more Hq31 Bluetooth Headphones $55.97 Delivered @ Amazon AU", 55.97, None, None),
+        (
+            "Motorola Moto G86 Power 5G $272, Edge 60 Pro $620 + Del ($0 C&C)",
+            272.0,
+            None,
+            None,
+        ),
+        (
+            "Motorola Moto G86 with $40 cashback ($232) and bonus software valued at $178",
+            232.0,
+            None,
+            None,
+        ),
+        (
+            "Upsized Referral Bonus: $50 for Referrer & $50 for Referee "
+            "($10 Earned Cashback Required)",
+            None,
+            None,
+            None,
+        ),
+        (
+            "Everyday Market: 30% Cashback (Capped at $150 per Member, "
+            "Min Spend $50, Max Spend $1000)",
+            None,
+            None,
+            None,
+        ),
+        ("Join Amazon Prime Get $10 Credit for Eligible $59+ Order", None, None, None),
+        (
+            "$2 off $15, $4 off $30, $9 off $65 Spend (in USD) @ AliExpress",
+            None,
+            None,
+            None,
+        ),
+        ("$50 off Big essentials Collection @ Baby Village", None, None, None),
+        (
+            "Apple iPhone 17 256GB $1299 Delivered ($100 off RRP) @ Costco",
+            1299.0,
+            None,
+            None,
+        ),
+        (
+            "Seasonal Farm Direct Whole Australian Black Truffle 15g $28.50 / "
+            "30g $57 / 45g $85.50 + $20 Postage",
+            28.5,
+            None,
+            None,
+        ),
+        (
+            "Men's Suit Jacket from $39.20, Wool Trousers 3 for $84 + "
+            "$10 Delivery ($75 Order) @ Oxford",
+            39.2,
+            None,
+            None,
+        ),
     ],
 )
 def test_extract_price_signals(text, expected_price, expected_was, expected_pct):
@@ -75,6 +130,45 @@ def test_enrich_deal_skips_if_already_set():
     d = _deal(title="Widget $49.99 (was $79.99)", price=10.0)
     enriched = enrich_deal(d)
     assert enriched.price == 10.0  # untouched
+
+
+def test_enrich_deal_prefers_title_price_over_description_noise():
+    d = _deal(
+        title="Mitsubishi Electric 442L Refrigerator $1,865 @ Appliances Online",
+        description="Includes a 2 year warranty and occasional $2 off accessory references.",
+    )
+    enriched = enrich_deal(d)
+    assert enriched.price == pytest.approx(1865.0)
+
+
+def test_enrich_deal_ignores_coupon_discount_amount_in_description():
+    d = _deal(
+        title=(
+            "Apple MacBook Pro 14-Inch - M5 Chip 16GB 512GB (Silver) - "
+            '$2059 with Code "Y2K220" - Free Delivery - Direct Debit @ MWAVE'
+        ),
+        description="Apply coupon code Y2K220 for $220 off the regular price.",
+    )
+    enriched = enrich_deal(d)
+    assert enriched.price == pytest.approx(2059.0)
+
+
+def test_enrich_deal_does_not_use_description_when_title_has_only_promo_amounts():
+    d = _deal(
+        title="Everyday Market: 30% Cashback (Capped at $150, Min Spend $50)",
+        description="New users can also get a $10 welcome bonus after their first purchase.",
+    )
+    enriched = enrich_deal(d)
+    assert enriched.price is None
+
+
+def test_enrich_deal_falls_back_to_description_when_title_has_no_price():
+    d = _deal(
+        title="Special member deal @ Example Store",
+        description="Now $49.99, was $79.99 for members only.",
+    )
+    enriched = enrich_deal(d)
+    assert enriched.price == pytest.approx(49.99)
 
 
 # ---------------------------------------------------------------------------
