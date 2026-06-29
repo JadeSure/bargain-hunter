@@ -61,13 +61,10 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
   const all = [...todayRows, ...yestRows]
   if (!all.length) return []
 
-  // Find the timestamp of the most recent scan batch.
+  // Find the exact timestamp of the most recent scan batch. All rows in one
+  // batch share an identical ts string, so an exact match gives us one batch only.
   const maxTs = all.reduce((m, r) => (r.ts > m ? r.ts : m), '')
-  const maxTime = new Date(maxTs).getTime()
-
-  // Include all rows within 15 minutes of the latest scan (one batch window).
-  const BATCH_WINDOW_MS = 15 * 60 * 1000
-  const batch = all.filter((r) => maxTime - new Date(r.ts).getTime() < BATCH_WINDOW_MS)
+  const batch = all.filter((r) => r.ts === maxTs)
 
   const hot = batch.filter((r) => r.is_hot === true)
 
