@@ -4,7 +4,7 @@
   "category": "cashback_portal",
   "one_liner": "Australia's #1 cashback portal — online + in-store cashback at major AU retailers (Cashrewards closed in 2025, ShopBack is the go-to).",
   "benefit": "Earn cashback at 1,500+ online stores and select in-store partners; ShopBack Pay enables tap-and-earn at physical retailers; competitive rates on Woolworths, Chemist Warehouse, and travel.",
-  "signup_bonus": "~$10–20 bonus for new members after first qualifying purchase (check current terms)",
+  "signup_bonus": "~$20 bonus for new members after $50+ spend and $20 confirmed cashback within 180 days (referrer gets ~$40) — verify current offer",
   "needs_referral": true,
   "referral_note": "Get a referral via OzBargain's referral threads/randomiser so both you and the referrer get the bonus.",
   "how_to_join": [
@@ -39,7 +39,7 @@
   "region": "AU",
   "recommended_for_newcomer": true,
   "priority": 10,
-  "est_value": "~$10–20 one-off bonus + ongoing 2–15% cashback",
+  "est_value": "~$20 one-off bonus + ongoing 2–15% cashback",
   "official_url": "https://www.shopback.com.au",
   "sources": [
     "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
@@ -47,5 +47,5 @@
   ],
   "valid_until": null,
   "confidence": 0.78,
-  "generated_at": "2026-06-29T07:45:00+00:00"
+  "generated_at": "2026-06-29T02:30:00+00:00"
 }

@@ -21,7 +21,10 @@
       "action": "Optionally link to a Qantas Frequent Flyer account to convert points to Qantas points"
     }
   ],
-  "prerequisites": ["AU resident", "13+"],
+  "prerequisites": [
+    "AU resident",
+    "13+"
+  ],
   "risks": [
     "Points expire after 12 months of inactivity",
     "Bonus offers are personalised — you may not receive the same promotions as other members"
@@ -37,5 +40,5 @@
   ],
   "valid_until": null,
   "confidence": 0.82,
-  "generated_at": "2026-06-29T00:00:00+00:00"
+  "generated_at": "2026-06-29T02:30:00+00:00"
 }

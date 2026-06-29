@@ -21,7 +21,9 @@
       "action": "Drive to any 7-Eleven servo and redeem the locked price within 7 days"
     }
   ],
-  "prerequisites": ["A 7-Eleven servo within reasonable driving distance"],
+  "prerequisites": [
+    "A 7-Eleven servo within reasonable driving distance"
+  ],
   "risks": [
     "Price locks expire after 7 days — only lock when you plan to refuel soon",
     "7-Eleven coverage is strongest in metro areas; check availability in your suburb",
@@ -38,5 +40,5 @@
   ],
   "valid_until": null,
   "confidence": 0.82,
-  "generated_at": "2026-06-29T00:00:00+00:00"
+  "generated_at": "2026-06-29T02:30:00+00:00"
 }

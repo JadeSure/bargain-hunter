@@ -21,7 +21,10 @@
       "action": "Link your card to the Coles app for contactless barcode scanning at checkout"
     }
   ],
-  "prerequisites": ["AU resident", "13+"],
+  "prerequisites": [
+    "AU resident",
+    "13+"
+  ],
   "risks": [
     "Points expire after 18 months of inactivity — make at least one earning transaction per 18 months",
     "Earning rate is modest (~0.5c per dollar); the main value is bonus-point events and targeted offers"
@@ -37,5 +40,5 @@
   ],
   "valid_until": null,
   "confidence": 0.82,
-  "generated_at": "2026-06-29T00:00:00+00:00"
+  "generated_at": "2026-06-29T02:30:00+00:00"
 }

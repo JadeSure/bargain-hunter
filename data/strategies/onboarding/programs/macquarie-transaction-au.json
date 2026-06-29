@@ -22,7 +22,11 @@
       "detail": "Bonus interest requires meeting monthly deposit conditions — check current terms."
     }
   ],
-  "prerequisites": ["AU resident", "18+", "AU mobile number"],
+  "prerequisites": [
+    "AU resident",
+    "18+",
+    "AU mobile number"
+  ],
   "risks": [
     "Fully digital bank — no physical branches",
     "Bonus interest on savings requires meeting monthly deposit conditions",
@@ -39,5 +43,5 @@
   ],
   "valid_until": null,
   "confidence": 0.72,
-  "generated_at": "2026-06-29T00:00:00+00:00"
+  "generated_at": "2026-06-29T02:30:00+00:00"
 }
