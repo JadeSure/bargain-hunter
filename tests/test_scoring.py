@@ -92,6 +92,12 @@ from bargain_hunter.scoring import (
             None,
         ),
         (
+            "Cygnett 100W Laptop Power Bank 25K + Stand $43.12 + Delivery ($0 C&C) @ Bing Lee",
+            43.12,
+            None,
+            None,
+        ),
+        (
             "Apple Magsafe Charger (2m) $67 (RRP $89) Delivered ($0 Prime/ $59 Spend)",
             67.0,
             89.0,
@@ -191,12 +197,21 @@ def test_enrich_deal_does_not_use_description_when_title_has_only_promo_amounts(
     assert enriched.price_confidence is None
 
 
-def test_enrich_deal_marks_single_price_with_fulfilment_noise_high_confidence():
-    d = _deal(
-        title="Logitech MX Keys S Wireless Keyboard $139 + Delivery ($0 C&C) @ Umart",
-    )
+@pytest.mark.parametrize(
+    "title,price",
+    [
+        ("Logitech MX Keys S Wireless Keyboard $139 + Delivery ($0 C&C) @ Umart", 139.0),
+        (
+            "Cygnett 100W Laptop Power Bank 25K + Stand $43.12 + Delivery ($0 C&C) "
+            "@ Bing Lee",
+            43.12,
+        ),
+    ],
+)
+def test_enrich_deal_marks_single_price_with_fulfilment_noise_high_confidence(title, price):
+    d = _deal(title=title)
     enriched = enrich_deal(d)
-    assert enriched.price == pytest.approx(139.0)
+    assert enriched.price == pytest.approx(price)
     assert enriched.price_confidence == "high"
 
 
