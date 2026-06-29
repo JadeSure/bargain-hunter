@@ -2,7 +2,7 @@
   "id": "shopback-au",
   "name": "ShopBack AU",
   "category": "cashback_portal",
-  "one_liner": "Cashback + in-store cashback at major AU retailers and restaurants.",
+  "one_liner": "Australia's #1 cashback portal — online + in-store cashback at major AU retailers (Cashrewards closed in 2025, ShopBack is the go-to).",
   "benefit": "Earn cashback at 1,500+ online stores and select in-store partners; ShopBack Pay enables tap-and-earn at physical retailers; competitive rates on Woolworths, Chemist Warehouse, and travel.",
   "signup_bonus": "~$10–20 bonus for new members after first qualifying purchase (check current terms)",
   "needs_referral": true,
@@ -26,7 +26,11 @@
       "action": "Make a qualifying online purchase via ShopBack to unlock the signup bonus"
     }
   ],
-  "prerequisites": ["New ShopBack account only", "AU mobile number", "18+"],
+  "prerequisites": [
+    "New ShopBack account only",
+    "AU mobile number",
+    "18+"
+  ],
   "risks": [
     "Cashback can be declined if tracking cookies are blocked — disable ad-blockers during sessions",
     "In-store cashback via ShopBack Pay requires pre-loading funds",
@@ -34,7 +38,7 @@
   ],
   "region": "AU",
   "recommended_for_newcomer": true,
-  "priority": 11,
+  "priority": 10,
   "est_value": "~$10–20 one-off bonus + ongoing 2–15% cashback",
   "official_url": "https://www.shopback.com.au",
   "sources": [
@@ -43,5 +47,5 @@
   ],
   "valid_until": null,
   "confidence": 0.78,
-  "generated_at": "2026-06-29T00:00:00+00:00"
+  "generated_at": "2026-06-29T07:45:00+00:00"
 }
