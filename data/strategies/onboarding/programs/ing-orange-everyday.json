@@ -2,53 +2,48 @@
   "id": "ing-orange-everyday",
   "name": "ING Orange Everyday",
   "category": "bank",
-  "one_liner": "Fee-free everyday account with 1% tap-and-pay cashback and free international ATMs.",
+  "one_liner": "Fee-free everyday account with 1% tap-and-pay cashback and free international ATMs — top pick for newcomers.",
   "benefit": "1% cashback on tap-and-pay (up to ~$30/month when conditions met), no monthly fees, rebated international ATM fees worldwide, and a high-rate Savings Maximiser when paired together.",
-  "signup_bonus": "~$50–100 for new customers referred by an existing member (check current terms)",
-  "needs_referral": true,
-  "referral_note": "Get a referral via OzBargain's referral threads/randomiser so both you and the referrer get the bonus.",
+  "signup_bonus": "No cash signup bonus as of 2026 — value is ongoing cashback + Savings Maximiser bonus interest (check current terms)",
+  "needs_referral": false,
+  "referral_note": null,
   "how_to_join": [
     {
       "order": 1,
-      "action": "Get a referral link from OzBargain's ING referral thread"
-    },
-    {
-      "order": 2,
       "action": "Apply for ING Orange Everyday online at ing.com.au",
       "detail": "You will need your TFN, AU address, and identification documents (passport or driver's licence)."
     },
     {
-      "order": 3,
+      "order": 2,
       "action": "Deposit your pay (min $1,000/month) and make 5+ settled card purchases each month",
       "detail": "These two conditions activate the 1% cashback and the rebated ATM fee each month."
     },
     {
-      "order": 4,
+      "order": 3,
       "action": "Also open a Savings Maximiser to lock in the bonus interest rate",
       "detail": "The high Savings Maximiser bonus rate requires the Orange Everyday conditions to be met each month."
     }
   ],
   "prerequisites": [
-    "New ING customer only (never held an ING account previously)",
     "AU resident",
     "AU mobile number",
     "18+"
   ],
   "risks": [
-    "Signup bonus only for customers who have never previously held an ING account",
     "1% cashback and bonus savings rate both require meeting monthly deposit and transaction conditions",
+    "Watch for an introductory savings rate that drops after a few months — re-check the ongoing rate",
     "ING is an online-only bank — all support is via phone or app"
   ],
   "region": "AU",
   "recommended_for_newcomer": true,
   "priority": 20,
-  "est_value": "~$50–100 signup bonus + ~$10–30/month cashback when conditions met",
+  "est_value": "No signup cash, but ~$10–30/month cashback + market-leading Savings Maximiser interest when conditions met",
   "official_url": "https://www.ing.com.au",
   "sources": [
     "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
     "https://www.ing.com.au/everyday-banking.html"
   ],
   "valid_until": null,
-  "confidence": 0.75,
-  "generated_at": "2026-06-29T00:00:00+00:00"
+  "confidence": 0.78,
+  "generated_at": "2026-06-29T07:45:00+00:00"
 }

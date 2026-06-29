@@ -1,46 +1,46 @@
 {
   "id": "liven-au",
-  "name": "Liven",
+  "name": "Nomni (formerly Liven)",
   "category": "food_app",
-  "one_liner": "Earn cashback automatically at 1,000+ Australian restaurants just by paying in-app.",
-  "benefit": "Earn 5–20% LivenCash back at participating restaurants; cashback is applied automatically when you pay via the Liven app — no vouchers to activate; redeem LivenCash at any Liven partner venue.",
-  "signup_bonus": "~$5–10 LivenCash for new members who sign up via a referral (check current terms)",
+  "one_liner": "Dining-rewards app (rebranded from Liven to Nomni in 2025) — pay in-app at partner restaurants to earn redeemable rewards.",
+  "benefit": "Earn 5–30% back as Nomni Rewards (formerly LivenCash) at partner restaurants; rewards are store credit redeemable at any partner venue, not cash to your bank — applied automatically when you pay via the app.",
+  "signup_bonus": "~$5–10 reward credit for new members who sign up via a referral (check current terms)",
   "needs_referral": true,
   "referral_note": "Get a referral via OzBargain's referral threads/randomiser so both you and the referrer get the bonus.",
   "how_to_join": [
     {
       "order": 1,
-      "action": "Get a referral code from OzBargain's Liven referral thread"
+      "action": "Get a referral code from OzBargain's Liven/Nomni referral thread"
     },
     {
       "order": 2,
-      "action": "Download the Liven app (iOS or Android) and create an account using the referral code"
+      "action": "Download the Liven/Nomni app (iOS or Android) and create an account using the referral code"
     },
     {
       "order": 3,
-      "action": "Add a payment method and browse nearby Liven partner restaurants"
+      "action": "Add a payment method and browse nearby partner restaurants"
     },
     {
       "order": 4,
-      "action": "Pay via the Liven app at a participating restaurant to earn cashback automatically"
+      "action": "Pay via the app at a participating restaurant to earn rewards automatically"
     }
   ],
   "prerequisites": ["AU mobile number", "18+"],
   "risks": [
     "Partner restaurant coverage is strongest in major cities (Sydney, Melbourne, Brisbane, Perth)",
-    "LivenCash can only be redeemed at Liven partner venues",
-    "Referral bonus terms vary — check at time of signup"
+    "Rewards are store credit redeemable only at partner venues — not withdrawable cash",
+    "Rebranded to Nomni; some venues drop in/out — confirm participation before relying on it"
   ],
   "region": "AU",
   "recommended_for_newcomer": true,
   "priority": 41,
-  "est_value": "~$5–10 signup bonus + 5–20% cashback on dining out at partner venues",
+  "est_value": "~$5–10 signup credit + 5–30% back on dining out at partner venues",
   "official_url": "https://www.liven.com.au",
   "sources": [
     "https://www.ozbargain.com.au/wiki/list_of_sign-up_bonuses",
-    "https://www.liven.com.au"
+    "https://help.liven.com.au/en/articles/9418782-what-is-nomni-loyalty"
   ],
   "valid_until": null,
-  "confidence": 0.65,
-  "generated_at": "2026-06-29T00:00:00+00:00"
+  "confidence": 0.6,
+  "generated_at": "2026-06-29T07:45:00+00:00"
 }
