@@ -19,7 +19,7 @@ from pathlib import Path
 from .collect import collect, load_all_posts
 from .config import load_strategy_config
 from .digest import write_digest
-from .onboarding import validate_programs
+from .onboarding import audit_programs, render_issue_body, validate_programs
 from .onboarding.collect import collect_onboarding, load_all_onboarding_posts
 from .validate import validate_guides
 
@@ -73,17 +73,23 @@ def main() -> None:
             "onboarding-validate",
             "onboarding-collect",
             "onboarding-digest",
+            "onboarding-audit",
         ],
         help=(
             "collect: fetch + store + digest; digest: rebuild digest from corpus; "
             "validate-guides: validate Stage 2 guide JSON; "
             "onboarding-validate: validate onboarding program JSON; "
             "onboarding-collect: fetch + store + digest onboarding material; "
-            "onboarding-digest: rebuild onboarding digest from corpus."
+            "onboarding-digest: rebuild onboarding digest from corpus; "
+            "onboarding-audit: flag stale catalog programs for review."
         ),
     )
     parser.add_argument(
         "--settings", type=Path, default=None, help="Path to settings.yaml."
+    )
+    parser.add_argument(
+        "--report", type=Path, default=None,
+        help="onboarding-audit: write issue-body markdown here when stale items exist.",
     )
     args = parser.parse_args()
 
@@ -141,6 +147,25 @@ def main() -> None:
             prompt_ref="prompts/extract_onboarding.md",
         )
         log.info("Rebuilt onboarding digest from %d posts: %s", len(posts), path)
+    elif args.command == "onboarding-audit":
+        result = audit_programs(
+            Path(cfg.onboarding.programs_dir),
+            now=now,
+            max_age_days=cfg.onboarding.staleness_days,
+        )
+        for err in result.errors:
+            log.error("audit error: %s", err)
+        for f in result.flags:
+            log.warning("stale program: %s (%s) — %s", f.id, f.reason, f.detail)
+        log.info(
+            "Audited %d programs: %d fresh, %d flagged.",
+            result.total, result.fresh, len(result.flags),
+        )
+        if args.report and result.stale:
+            body = render_issue_body(result, max_age_days=cfg.onboarding.staleness_days)
+            args.report.parent.mkdir(parents=True, exist_ok=True)
+            args.report.write_text(body, encoding="utf-8")
+            log.info("Wrote audit report: %s", args.report)
 
 
 if __name__ == "__main__":

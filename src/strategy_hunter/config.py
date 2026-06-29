@@ -92,6 +92,8 @@ class OnboardingConfig(StrictConfigModel):
     min_relevance: int = 1
     request_delay_seconds: float = 2.0
     retention_days: int = 90
+    # Programs older than this (by generated_at) are flagged for review by the audit.
+    staleness_days: int = 90
     sources: OnboardingSourcesConfig = Field(default_factory=OnboardingSourcesConfig)
 
 
