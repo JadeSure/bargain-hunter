@@ -1,8 +1,8 @@
 import type { KVNamespace } from "@cloudflare/workers-types";
 import type { SessionData } from "../types";
 
-const SESSION_TTL = 60 * 60 * 8; // 8 hours
-const MAGIC_LINK_TTL = 60 * 60 * 8; // 8 hours (link stays usable until it expires)
+const SESSION_TTL = 60 * 60 * 24 * 7; // 7 days
+const MAGIC_LINK_TTL = 60 * 60 * 24 * 7; // 7 days (link stays usable until it expires)
 const OAUTH_STATE_TTL = 60 * 10; // 10 minutes
 
 export function generateId(): string {
