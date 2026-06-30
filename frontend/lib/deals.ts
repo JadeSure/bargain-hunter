@@ -54,6 +54,16 @@ const RETENTION_HOURS = 72
 // Hot tiers ranked so the higher value wins when picking a deal's peak level.
 const LEVEL_RANK: Record<string, number> = { top: 3, great: 2, good: 1 }
 
+// Re-derive the displayed tier from peak score + current vote count.
+// Mirrors settings.yaml scoring.hot.tiers so the website stays in sync when
+// the pipeline's stored hot_level was written before votes grew enough for top.
+function deriveLevel(peakScore: number, currentVotes: number): string | null {
+  if (peakScore >= 7.0 && currentVotes >= 30) return 'top'
+  if (peakScore >= 4.0) return 'great'
+  if (peakScore >= 1.5) return 'good'
+  return null
+}
+
 type ObsRow = Awaited<ReturnType<typeof readObservationsFile>>[number]
 
 function aetDate(d: Date): string {
@@ -137,7 +147,7 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
         votesPos: r.votes_pos as number,
         commentCount: r.comment_count as number,
         hotScore: (peak.hot_score as number) ?? 0,
-        hotLevel: (peak.hot_level as string | null) ?? null,
+        hotLevel: deriveLevel((peak.hot_score as number) ?? 0, r.votes_pos as number),
         ageHours: r.age_hours as number,
         ts: r.ts as string,
       },
