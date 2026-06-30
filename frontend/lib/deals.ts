@@ -146,8 +146,12 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     })
   }
 
-  // Currently-hot deals first, then most-recently-hot, then by peak score.
+  // Highest tier first (Top > Great > Good); within a tier, currently-hot
+  // deals first, then most-recently-hot, then by peak score.
   entries.sort((a, b) => {
+    const ra = a.deal.hotLevel ? (LEVEL_RANK[a.deal.hotLevel] ?? 0) : 0
+    const rb = b.deal.hotLevel ? (LEVEL_RANK[b.deal.hotLevel] ?? 0) : 0
+    if (ra !== rb) return rb - ra
     if (a.currentlyHot !== b.currentlyHot) return a.currentlyHot ? -1 : 1
     if (a.lastHotTs !== b.lastHotTs) return a.lastHotTs > b.lastHotTs ? -1 : 1
     return b.deal.hotScore - a.deal.hotScore
