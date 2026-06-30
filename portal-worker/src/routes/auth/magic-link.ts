@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
 import { findSubscriberByEmail } from "../../lib/notion";
-import { createMagicToken, consumeMagicToken, createSession } from "../../lib/kv";
+import { createMagicToken, readMagicToken, createSession } from "../../lib/kv";
 import { sendMagicLink } from "../../lib/email";
 import { primaryFrontendUrl } from "../../lib/origins";
 import type { Env } from "../../types";
@@ -48,7 +48,7 @@ app.get("/verify", async (c) => {
   const token = c.req.query("token");
   if (!token) return c.redirect(`${frontend}/login?error=invalid`);
 
-  const email = await consumeMagicToken(c.env.PORTAL_KV, token);
+  const email = await readMagicToken(c.env.PORTAL_KV, token);
   if (!email) return c.redirect(`${frontend}/login?error=expired`);
 
   const found = await findSubscriberByEmail(
@@ -68,7 +68,7 @@ app.get("/verify", async (c) => {
     httpOnly: true,
     secure: true,
     sameSite: "Lax",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 60 * 60 * 8,
     path: "/",
   });
 
