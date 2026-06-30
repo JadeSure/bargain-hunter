@@ -579,7 +579,7 @@ html, body {
   .lp-hero-h1 { font-size: 38px; letter-spacing: -0.02em; }
   .lp-hero-sub { font-size: 15px; max-width: 100%; }
   .lp-hero-right { flex: unset; width: 100%; }
-  .lp-cards { height: 310px; width: 100%; }
+  .lp-cards { height: 440px; width: 100%; }
   .lp-how, .lp-features { padding: 64px 0; }
   .lp-section-inner { padding: 0 20px; }
   .lp-steps { flex-direction: column; gap: 16px; }
