@@ -54,16 +54,6 @@ const RETENTION_HOURS = 72
 // Hot tiers ranked so the higher value wins when picking a deal's peak level.
 const LEVEL_RANK: Record<string, number> = { top: 3, great: 2, good: 1 }
 
-// Re-derive the displayed tier from peak score + current vote count.
-// Mirrors settings.yaml scoring.hot.tiers so the website stays in sync when
-// the pipeline's stored hot_level was written before votes grew enough for top.
-function deriveLevel(peakScore: number, currentVotes: number): string | null {
-  if (peakScore >= 7.0 && currentVotes >= 30) return 'top'
-  if (peakScore >= 4.0) return 'great'
-  if (peakScore >= 1.5) return 'good'
-  return null
-}
-
 type ObsRow = Awaited<ReturnType<typeof readObservationsFile>>[number]
 
 function aetDate(d: Date): string {
@@ -98,13 +88,13 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
 
   // Retain a deal for RETENTION_HOURS after it was last hot, so good deals don't
   // vanish the moment their vote-velocity spike passes. Per deal we track the
-  // latest observation (for current stats) plus the peak score row — score and
-  // level always come from the same snapshot so they never mismatch.
+  // latest observation (for current score + stats) and the peak level ever
+  // classified by the pipeline (stable badge that doesn't decay with age).
   const cutoffMs = now.getTime() - RETENTION_HOURS * 3_600_000
 
   interface Agg {
     latest: ObsRow
-    peakRow: ObsRow | null  // row with the highest hot_score (score + level always paired)
+    peakLevel: string | null  // highest tier ever classified (badge, stable)
     lastHotTs: string
   }
   const byKey = new Map<string, Agg>()
@@ -115,25 +105,24 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     const key = r.deal_key as string
     let agg = byKey.get(key)
     if (!agg) {
-      agg = { latest: r, peakRow: null, lastHotTs: '' }
+      agg = { latest: r, peakLevel: null, lastHotTs: '' }
       byKey.set(key, agg)
     }
     if ((r.ts as string) > (agg.latest.ts as string)) agg.latest = r
     if (r.is_hot === true) {
       if ((r.ts as string) > agg.lastHotTs) agg.lastHotTs = r.ts as string
-      const score = (r.hot_score as number) ?? 0
-      if (!agg.peakRow || score > ((agg.peakRow.hot_score as number) ?? 0)) {
-        agg.peakRow = r
-      }
+      const lvl = (r.hot_level as string | null) ?? null
+      const lvlRank = lvl ? (LEVEL_RANK[lvl] ?? 0) : 0
+      const peakRank = agg.peakLevel ? (LEVEL_RANK[agg.peakLevel] ?? 0) : 0
+      if (lvlRank > peakRank) agg.peakLevel = lvl
     }
   }
 
   const entries: { deal: LiveDeal; currentlyHot: boolean; lastHotTs: string }[] = []
   for (const [key, agg] of byKey) {
-    if (!agg.lastHotTs || !agg.peakRow) continue // never hot within the window
+    if (!agg.lastHotTs || !agg.peakLevel) continue // never hot within the window
     if (!liveKeys.has(key)) continue // expired / out of stock → drop
     const r = agg.latest
-    const peak = agg.peakRow
     entries.push({
       currentlyHot: r.is_hot === true,
       lastHotTs: agg.lastHotTs,
@@ -146,8 +135,8 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
         discountPercent: r.discount_percent ? (r.discount_percent as number) : null,
         votesPos: r.votes_pos as number,
         commentCount: r.comment_count as number,
-        hotScore: (peak.hot_score as number) ?? 0,
-        hotLevel: deriveLevel((peak.hot_score as number) ?? 0, r.votes_pos as number),
+        hotScore: (r.hot_score as number) ?? 0,  // current score (reflects actual heat now)
+        hotLevel: agg.peakLevel,                  // peak level badge (stable, doesn't decay)
         ageHours: r.age_hours as number,
         ts: r.ts as string,
       },
