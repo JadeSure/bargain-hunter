@@ -55,3 +55,54 @@ def test_render_email_hides_low_confidence_price():
     html = render_email(subscriber, [DealItem(deal=deal, track="hot")])
 
     assert "$150.00" not in html
+
+
+def _sample_item() -> DealItem:
+    deal = Deal(
+        source="ozbargain",
+        deal_id="9",
+        title="Sample Deal",
+        url="https://www.ozbargain.com.au/node/9",
+        posted_at=datetime.now(UTC),
+    )
+    return DealItem(deal=deal, track="hot")
+
+
+def test_render_email_includes_website_links(monkeypatch):
+    monkeypatch.setenv("SITE_URL", "https://example.test")
+    subscriber = Subscriber(name="Test", email="test@example.com")
+
+    html = render_email(subscriber, [_sample_item()])
+
+    assert 'href="https://example.test"' in html
+    assert "https://example.test/deals" in html
+
+
+def test_render_email_site_url_defaults(monkeypatch):
+    monkeypatch.delenv("SITE_URL", raising=False)
+    subscriber = Subscriber(name="Test", email="test@example.com")
+
+    html = render_email(subscriber, [_sample_item()])
+
+    assert "https://bargain-hunter.sylvalume.online/deals" in html
+
+
+def test_render_email_shows_unsubscribe_when_configured(monkeypatch):
+    monkeypatch.setenv("UNSUBSCRIBE_BASE_URL", "https://worker.test/auth/unsubscribe")
+    monkeypatch.setenv("UNSUBSCRIBE_HMAC_SECRET", "s3cret")
+    subscriber = Subscriber(name="Test", email="user@example.com")
+
+    html = render_email(subscriber, [_sample_item()])
+
+    assert "Unsubscribe" in html
+    assert "https://worker.test/auth/unsubscribe?e=user%40example.com&t=" in html
+
+
+def test_render_email_no_unsubscribe_without_config(monkeypatch):
+    monkeypatch.delenv("UNSUBSCRIBE_BASE_URL", raising=False)
+    monkeypatch.delenv("UNSUBSCRIBE_HMAC_SECRET", raising=False)
+    subscriber = Subscriber(name="Test", email="user@example.com")
+
+    html = render_email(subscriber, [_sample_item()])
+
+    assert "Unsubscribe" not in html

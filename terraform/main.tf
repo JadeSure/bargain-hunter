@@ -90,6 +90,14 @@ resource "cloudflare_workers_script" "portal" {
       text = var.resend_api_key
     },
     {
+      name = "UNSUBSCRIBE_HMAC_SECRET"
+      type = "secret_text"
+      # Reuse the feedback signing secret so no new secret is needed; the email
+      # app signs "unsubscribe|<email>" while feedback signs a different message,
+      # so a token for one feature can't be replayed against the other.
+      text = var.feedback_hmac_secret
+    },
+    {
       name = "WORKER_URL"
       type = "plain_text"
       text = "https://${var.portal_worker_name}.${var.cloudflare_account_id}.workers.dev"
