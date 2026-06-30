@@ -94,8 +94,7 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
 
   interface Agg {
     latest: ObsRow
-    peakLevel: string | null
-    peakScore: number
+    lastHotRow: ObsRow | null  // most recent row where is_hot === true
     lastHotTs: string
   }
   const byKey = new Map<string, Agg>()
@@ -106,26 +105,22 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     const key = r.deal_key as string
     let agg = byKey.get(key)
     if (!agg) {
-      agg = { latest: r, peakLevel: null, peakScore: 0, lastHotTs: '' }
+      agg = { latest: r, lastHotRow: null, lastHotTs: '' }
       byKey.set(key, agg)
     }
     if ((r.ts as string) > (agg.latest.ts as string)) agg.latest = r
-    if (r.is_hot === true) {
-      const lvl = (r.hot_level as string | null) ?? null
-      const lvlRank = lvl ? (LEVEL_RANK[lvl] ?? 0) : 0
-      const peakRank = agg.peakLevel ? (LEVEL_RANK[agg.peakLevel] ?? 0) : 0
-      if (lvlRank > peakRank) agg.peakLevel = lvl
-      const score = (r.hot_score as number) ?? 0
-      if (score > agg.peakScore) agg.peakScore = score
-      if ((r.ts as string) > agg.lastHotTs) agg.lastHotTs = r.ts as string
+    if (r.is_hot === true && (r.ts as string) > agg.lastHotTs) {
+      agg.lastHotTs = r.ts as string
+      agg.lastHotRow = r
     }
   }
 
   const entries: { deal: LiveDeal; currentlyHot: boolean; lastHotTs: string }[] = []
   for (const [key, agg] of byKey) {
-    if (!agg.lastHotTs) continue // never hot within the window
+    if (!agg.lastHotTs || !agg.lastHotRow) continue // never hot within the window
     if (!liveKeys.has(key)) continue // expired / out of stock → drop
     const r = agg.latest
+    const hotRow = agg.lastHotRow
     entries.push({
       currentlyHot: r.is_hot === true,
       lastHotTs: agg.lastHotTs,
@@ -138,8 +133,8 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
         discountPercent: r.discount_percent ? (r.discount_percent as number) : null,
         votesPos: r.votes_pos as number,
         commentCount: r.comment_count as number,
-        hotScore: agg.peakScore,
-        hotLevel: agg.peakLevel,
+        hotScore: (hotRow.hot_score as number) ?? 0,
+        hotLevel: (hotRow.hot_level as string | null) ?? null,
         ageHours: r.age_hours as number,
         ts: r.ts as string,
       },
