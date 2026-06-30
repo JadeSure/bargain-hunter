@@ -88,13 +88,13 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
 
   // Retain a deal for RETENTION_HOURS after it was last hot, so good deals don't
   // vanish the moment their vote-velocity spike passes. Per deal we track the
-  // latest observation (for current stats) plus the peak tier/score it reached
-  // while hot within the window.
+  // latest observation (for current stats) plus the peak score row — score and
+  // level always come from the same snapshot so they never mismatch.
   const cutoffMs = now.getTime() - RETENTION_HOURS * 3_600_000
 
   interface Agg {
     latest: ObsRow
-    lastHotRow: ObsRow | null  // most recent row where is_hot === true
+    peakRow: ObsRow | null  // row with the highest hot_score (score + level always paired)
     lastHotTs: string
   }
   const byKey = new Map<string, Agg>()
@@ -105,22 +105,25 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     const key = r.deal_key as string
     let agg = byKey.get(key)
     if (!agg) {
-      agg = { latest: r, lastHotRow: null, lastHotTs: '' }
+      agg = { latest: r, peakRow: null, lastHotTs: '' }
       byKey.set(key, agg)
     }
     if ((r.ts as string) > (agg.latest.ts as string)) agg.latest = r
-    if (r.is_hot === true && (r.ts as string) > agg.lastHotTs) {
-      agg.lastHotTs = r.ts as string
-      agg.lastHotRow = r
+    if (r.is_hot === true) {
+      if ((r.ts as string) > agg.lastHotTs) agg.lastHotTs = r.ts as string
+      const score = (r.hot_score as number) ?? 0
+      if (!agg.peakRow || score > ((agg.peakRow.hot_score as number) ?? 0)) {
+        agg.peakRow = r
+      }
     }
   }
 
   const entries: { deal: LiveDeal; currentlyHot: boolean; lastHotTs: string }[] = []
   for (const [key, agg] of byKey) {
-    if (!agg.lastHotTs || !agg.lastHotRow) continue // never hot within the window
+    if (!agg.lastHotTs || !agg.peakRow) continue // never hot within the window
     if (!liveKeys.has(key)) continue // expired / out of stock → drop
     const r = agg.latest
-    const hotRow = agg.lastHotRow
+    const peak = agg.peakRow
     entries.push({
       currentlyHot: r.is_hot === true,
       lastHotTs: agg.lastHotTs,
@@ -133,8 +136,8 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
         discountPercent: r.discount_percent ? (r.discount_percent as number) : null,
         votesPos: r.votes_pos as number,
         commentCount: r.comment_count as number,
-        hotScore: (hotRow.hot_score as number) ?? 0,
-        hotLevel: (hotRow.hot_level as string | null) ?? null,
+        hotScore: (peak.hot_score as number) ?? 0,
+        hotLevel: (peak.hot_level as string | null) ?? null,
         ageHours: r.age_hours as number,
         ts: r.ts as string,
       },
