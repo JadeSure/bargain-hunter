@@ -107,6 +107,7 @@ function RequestAccessModal({ onClose }: { onClose: () => void }) {
 
 export default function LandingPage() {
   const [showModal, setShowModal] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const openModal = useCallback(() => setShowModal(true), [])
   const closeModal = useCallback(() => setShowModal(false), [])
 
@@ -133,6 +134,30 @@ export default function LandingPage() {
             Request Access
           </button>
         </div>
+        <button
+          className="lp-nav-toggle"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+        >
+          <span className="lp-nav-toggle-bar" />
+          <span className="lp-nav-toggle-bar" />
+          <span className="lp-nav-toggle-bar" />
+        </button>
+        {menuOpen && (
+          <div className="lp-nav-mobile">
+            <Link className="lp-nav-mobile-link" href="/deals" onClick={() => setMenuOpen(false)}>Hot Deals</Link>
+            <Link className="lp-nav-mobile-link" href="/start-here" onClick={() => setMenuOpen(false)}>Start Here</Link>
+            <Link className="lp-nav-mobile-link" href="/guides" onClick={() => setMenuOpen(false)}>Saving Guides</Link>
+            <button
+              className="btn-orange lp-nav-mobile-cta"
+              onClick={() => { setMenuOpen(false); openModal() }}
+              aria-haspopup="dialog"
+            >
+              Request Access
+            </button>
+          </div>
+        )}
       </nav>
 
       {/* HERO */}
