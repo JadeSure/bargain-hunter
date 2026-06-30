@@ -39,11 +39,13 @@ export default async function DealsPage() {
   return (
     <main className="deals-page">
       <header className="deals-header">
-        <Link href="/" className="deals-brand">
-          <BrandMark size={24} />
-          <span>Bargain Hunter</span>
-        </Link>
-        <Link href="/" className="deals-back">← Back to home</Link>
+        <div className="deals-header-inner">
+          <Link href="/" className="deals-brand">
+            <BrandMark size={24} />
+            <span>Bargain Hunter</span>
+          </Link>
+          <Link href="/" className="deals-back">← Back to home</Link>
+        </div>
       </header>
 
       <section className="deals-hero">
