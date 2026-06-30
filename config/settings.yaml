@@ -47,7 +47,7 @@ scoring:
     # value gate (min_votes) so it captures genuinely strong deals, not just velocity.
     universal_top: true              # top tier reaches every hot subscriber, bypassing category filter
     tiers:
-      - {name: top,   min_score: 7.0, min_votes: 30}
+      - {name: top,   min_score: 7.0, min_votes: 40}
       - {name: great, min_score: 4.0}
       - {name: good,  min_score: 1.5}   # = the original hot floor
   watch:
