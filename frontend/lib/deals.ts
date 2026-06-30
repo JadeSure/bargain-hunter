@@ -13,6 +13,7 @@ export interface LiveDeal {
   votesPos: number
   commentCount: number
   hotScore: number
+  peakScore: number
   hotLevel: string | null
   ageHours: number
   ts: string
@@ -95,6 +96,7 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
   interface Agg {
     latest: ObsRow
     peakLevel: string | null  // highest tier ever classified (badge, stable)
+    peakScore: number         // highest hot_score ever seen (for display)
     lastHotTs: string
   }
   const byKey = new Map<string, Agg>()
@@ -105,12 +107,14 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     const key = r.deal_key as string
     let agg = byKey.get(key)
     if (!agg) {
-      agg = { latest: r, peakLevel: null, lastHotTs: '' }
+      agg = { latest: r, peakLevel: null, peakScore: 0, lastHotTs: '' }
       byKey.set(key, agg)
     }
     if ((r.ts as string) > (agg.latest.ts as string)) agg.latest = r
     if (r.is_hot === true) {
       if ((r.ts as string) > agg.lastHotTs) agg.lastHotTs = r.ts as string
+      const score = (r.hot_score as number) ?? 0
+      if (score > agg.peakScore) agg.peakScore = score
       const lvl = (r.hot_level as string | null) ?? null
       const lvlRank = lvl ? (LEVEL_RANK[lvl] ?? 0) : 0
       const peakRank = agg.peakLevel ? (LEVEL_RANK[agg.peakLevel] ?? 0) : 0
@@ -136,6 +140,7 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
         votesPos: r.votes_pos as number,
         commentCount: r.comment_count as number,
         hotScore: (r.hot_score as number) ?? 0,  // current score (reflects actual heat now)
+        peakScore: agg.peakScore,                  // highest score ever seen in retention window
         hotLevel: agg.peakLevel,                  // peak level badge (stable, doesn't decay)
         ageHours: r.age_hours as number,
         ts: r.ts as string,

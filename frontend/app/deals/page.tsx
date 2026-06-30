@@ -107,7 +107,7 @@ export default async function DealsPage() {
                       {deal.commentCount > 0 && <> · {deal.commentCount} comments</>}
                     </span>
                   )}
-                  <span className="deal-live-score">score {deal.hotScore.toFixed(2)}</span>
+                  <span className="deal-live-score">peak {deal.peakScore.toFixed(2)}</span>
                   <span className="deal-live-link-hint">View deal ↗</span>
                 </div>
               </a>
