@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 function HotLevelBadge({ level }: { level: string | null }) {
   if (!level) return null
-  const labels: Record<string, string> = { top: '🔥 Top', great: '⚡ Great', good: '✓ Good' }
+  const labels: Record<string, string> = { top: '🔥 Top', great: '⚡ Great', good: '✅ Good' }
   const classes: Record<string, string> = {
     top: 'deals-badge-top',
     great: 'deals-badge-great',
