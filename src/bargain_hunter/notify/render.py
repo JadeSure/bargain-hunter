@@ -76,6 +76,9 @@ def render_email(
     hmac_secret = (os.environ.get("FEEDBACK_HMAC_SECRET") or "").strip() or None
     unsubscribe_base = (os.environ.get("UNSUBSCRIBE_BASE_URL") or "").strip() or None
     unsubscribe_secret = (os.environ.get("UNSUBSCRIBE_HMAC_SECRET") or "").strip() or None
+    site_url = (
+        os.environ.get("SITE_URL") or "https://bargain-hunter.sylvalume.online"
+    ).strip().rstrip("/")
 
     if feedback_base and hmac_secret and subscriber.email:
         for item in items:
@@ -99,4 +102,5 @@ def render_email(
         source_labels=SOURCE_LABELS,
         sent_at=sent_at,
         unsubscribe_url=unsubscribe_url,
+        site_url=site_url,
     )

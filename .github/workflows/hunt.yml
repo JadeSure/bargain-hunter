@@ -55,6 +55,12 @@ jobs:
           MAINTAINER_EMAIL: ${{ secrets.MAINTAINER_EMAIL }}
           FEEDBACK_BASE_URL: ${{ vars.FEEDBACK_BASE_URL }}   # public worker URL (repo variable)
           FEEDBACK_HMAC_SECRET: ${{ secrets.FEEDBACK_HMAC_SECRET }}
+          SITE_URL: https://bargain-hunter.sylvalume.online   # website link in the digest
+          # One-click unsubscribe via the portal worker. Reuses the feedback HMAC
+          # secret — messages are namespaced ("unsubscribe|<email>") so tokens
+          # can't be replayed across features.
+          UNSUBSCRIBE_BASE_URL: https://bargain-portal-api.jadesure17.workers.dev/auth/unsubscribe
+          UNSUBSCRIBE_HMAC_SECRET: ${{ secrets.FEEDBACK_HMAC_SECRET }}
           HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL }}    # dead-man's-switch ping
         run: python -m bargain_hunter.main
 
