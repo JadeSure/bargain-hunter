@@ -5,16 +5,16 @@ import { StartHereFilter } from './StartHereFilter'
 import { BrandMark } from '../components/BrandMark'
 
 export const metadata: Metadata = {
-  title: 'Start Here · New to Australia',
+  title: 'Savings Onboarding · Bargain Hunter',
   description:
-    'New to Australia? Join these programs to start saving — cashback portals, high-interest banks, loyalty programs, and referral bonuses.',
+    'New arrival or long-time resident — set yourself up with cashback portals, high-interest bank accounts, loyalty programs, and referral bonuses.',
   alternates: {
     canonical: '/start-here',
   },
   openGraph: {
-    title: 'Start Here · New to Australia · Bargain Hunter',
+    title: 'Savings Onboarding · Bargain Hunter',
     description:
-      'New to Australia? Join these programs to start saving — cashback portals, high-interest banks, loyalty programs, and referral bonuses.',
+      'New arrival or long-time resident — set yourself up with cashback portals, high-interest bank accounts, loyalty programs, and referral bonuses.',
     url: '/start-here',
   },
 }
@@ -33,9 +33,9 @@ export default async function StartHerePage() {
       </header>
 
       <section className="guides-hero">
-        <h1 className="guides-hero-title">New to Australia? Start Here</h1>
+        <h1 className="guides-hero-title">Your AU Savings Onboarding</h1>
         <p className="guides-hero-sub">
-          Join these programs to start saving from day one — cashback portals, high-interest bank accounts, loyalty points, and referral bonuses.
+          New arrival or long-time resident — set yourself up with these programs to start saving: cashback portals, high-interest bank accounts, loyalty points, and referral bonuses.
         </p>
       </section>
 
