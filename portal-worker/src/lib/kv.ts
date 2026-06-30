@@ -1,8 +1,8 @@
 import type { KVNamespace } from "@cloudflare/workers-types";
 import type { SessionData } from "../types";
 
-const SESSION_TTL = 60 * 60 * 24 * 7; // 7 days
-const MAGIC_LINK_TTL = 60 * 15; // 15 minutes
+const SESSION_TTL = 60 * 60 * 8; // 8 hours
+const MAGIC_LINK_TTL = 60 * 60 * 8; // 8 hours (link stays usable until it expires)
 const OAUTH_STATE_TTL = 60 * 10; // 10 minutes
 
 export function generateId(): string {
@@ -49,13 +49,16 @@ export async function createMagicToken(
   return token;
 }
 
-export async function consumeMagicToken(
+// Read a magic-link token without consuming it. The token stays valid until it
+// expires (MAGIC_LINK_TTL), so the same login link keeps working for the whole
+// window — clicking it again (or an email scanner pre-fetching it) no longer
+// locks the user out with an "expired" error.
+export async function readMagicToken(
   kv: KVNamespace,
   token: string
 ): Promise<string | null> {
   const raw = await kv.get(`magic:${token}`);
   if (!raw) return null;
-  await kv.delete(`magic:${token}`);
   const { email } = JSON.parse(raw) as { email: string };
   return email;
 }

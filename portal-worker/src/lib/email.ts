@@ -34,7 +34,7 @@ export async function sendMagicLink(
     to,
     "Your Bargain Hunter login link",
     `<p>Hi,</p>
-     <p>Click the link below to log in to your Bargain Hunter portal. This link expires in 15 minutes.</p>
+     <p>Click the link below to log in to your Bargain Hunter portal. This link stays valid for 8 hours.</p>
      <p><a href="${magicLinkUrl}" style="background:#ea580c;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;">Log in to Bargain Hunter</a></p>
      <p>If you didn't request this, you can safely ignore this email.</p>`
   );
@@ -50,7 +50,7 @@ export async function sendActivationEmail(
     to,
     "You've been approved — log in to Bargain Hunter",
     `<p>Hi,</p>
-     <p>Your Bargain Hunter access has been approved. Click the link below to log in — it expires in 15 minutes.</p>
+     <p>Your Bargain Hunter access has been approved. Click the link below to log in — it stays valid for 8 hours.</p>
      <p><a href="${magicLinkUrl}" style="background:#ea580c;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;">Log in to Bargain Hunter</a></p>
      <p>If you didn't request access, you can safely ignore this email.</p>`
   );
