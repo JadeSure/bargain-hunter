@@ -31,6 +31,9 @@ bargain-hunter/
   frontend/                    <- Next.js project (Cloudflare Pages)
     app/
       page.tsx                 <- Landing page (public) + "Request Access" modal
+      deals/
+        page.tsx               <- "Hot Deals Right Now" board (public, static;
+                                  built from data/observations/*.jsonl via lib/deals.ts)
       login/
         page.tsx               <- Magic-link login (email only)
         check-email/page.tsx   <- "check your inbox" confirmation
@@ -51,6 +54,9 @@ bargain-hunter/
     lib/api.ts                 <- Frontend wrapper for portal-worker calls (server-side
                                   uses absolute worker URL + forwarded cookie; client-side
                                   updateMe uses the relative /api/me proxy)
+    lib/deals.ts               <- Build-time loader for /deals: reads the deal pipeline's
+                                  observations, keeps each still-active deal for 72h after
+                                  it last went hot, orders by tier (Top > Great > Good)
     middleware.ts              <- Protect /portal/* routes
     next.config.ts
     wrangler.toml              <- Cloudflare Pages config
@@ -93,6 +99,10 @@ bargain-hunter/
 - [x] Magic-link login page (email field; no Google button yet)
 - [x] Portal (keyword management, notification settings, account info)
 - [x] Strategy guide pages (`/guides`, `/guides/[slug]`)
+- [x] Hot Deals board (`/deals`) — static, built from the deal pipeline's
+      observations; retains each still-active deal 72h after it last went hot,
+      ordered by tier (Top > Great > Good). Refreshed via `workflow_run` off the
+      `bargain-hunter` pipeline (gated ~30 min) + a throttled cron backup.
 
 ### Phase 2 — Infrastructure ✅
 - [x] Terraform: Cloudflare KV namespace (sessions + magic-link tokens)

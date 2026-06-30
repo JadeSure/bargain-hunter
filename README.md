@@ -281,9 +281,12 @@ terraform apply
 
 ## Website & access portal
 
-A Next.js site (`frontend/`, Cloudflare Pages) presents the project to subscribers
-and renders the strategy guides at `/guides`. A separate Hono API Worker
-(`portal-worker/`) backs it:
+A Next.js site (`frontend/`, Cloudflare Pages) presents the project to subscribers,
+renders the strategy guides at `/guides`, and shows a live **Hot Deals** board at
+`/deals` — statically rebuilt from the pipeline's deal observations, listing each
+still-active deal for up to 72h after it last trended, ordered 🔥 Top → ⚡ Great →
+✅ Good (expired/out-of-stock deals drop off at the next rebuild). A separate Hono
+API Worker (`portal-worker/`) backs the account features:
 
 - **Magic-link login** (`/login`) — passwordless email sign-in via Resend; only
   emails already in the Notion **Subscribers** DB can log in.
