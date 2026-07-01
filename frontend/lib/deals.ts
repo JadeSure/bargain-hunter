@@ -33,7 +33,6 @@ async function isOzbargainExpired(url: string): Promise<boolean> {
     const res = await fetch(url, {
       signal: AbortSignal.timeout(6000),
       headers: { 'User-Agent': OZB_USER_AGENT },
-      cache: 'no-store',
     })
     if (!res.ok) {
       console.warn(`[deals] expiry check ${url} -> HTTP ${res.status}`)
