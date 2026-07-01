@@ -114,11 +114,10 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     if (r.is_hot === true) {
       if ((r.ts as string) > agg.lastHotTs) agg.lastHotTs = r.ts as string
       const score = (r.hot_score as number) ?? 0
-      if (score > agg.peakScore) agg.peakScore = score
-      const lvl = (r.hot_level as string | null) ?? null
-      const lvlRank = lvl ? (LEVEL_RANK[lvl] ?? 0) : 0
-      const peakRank = agg.peakLevel ? (LEVEL_RANK[agg.peakLevel] ?? 0) : 0
-      if (lvlRank > peakRank) agg.peakLevel = lvl
+      if (score > agg.peakScore) {
+        agg.peakScore = score
+        agg.peakLevel = (r.hot_level as string | null) ?? null  // level at peak score
+      }
     }
   }
 
