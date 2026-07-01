@@ -127,15 +127,13 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     }
   }
 
-  const entries: { deal: LiveDeal; currentlyHot: boolean; lastHotTs: string }[] = []
+  const entries: { deal: LiveDeal }[] = []
   for (const [key, agg] of byKey) {
     if (!agg.lastHotTs || !agg.peakLevel) continue // never hot within the window
     if (agg.peakLevel === 'good') continue          // only show top and great
     if (!liveKeys.has(key)) continue // expired / out of stock → drop
     const r = agg.latest
     entries.push({
-      currentlyHot: r.is_hot === true,
-      lastHotTs: agg.lastHotTs,
       deal: {
         key,
         title: r.title as string,
@@ -155,15 +153,12 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     })
   }
 
-  // Highest tier first (Top > Great > Good); within a tier, currently-hot
-  // deals first, then most-recently-hot, then by peak score.
+  // Highest tier first (Top > Great > Good); within a tier, by peak score.
   entries.sort((a, b) => {
     const ra = a.deal.hotLevel ? (LEVEL_RANK[a.deal.hotLevel] ?? 0) : 0
     const rb = b.deal.hotLevel ? (LEVEL_RANK[b.deal.hotLevel] ?? 0) : 0
     if (ra !== rb) return rb - ra
-    if (a.currentlyHot !== b.currentlyHot) return a.currentlyHot ? -1 : 1
-    if (a.lastHotTs !== b.lastHotTs) return a.lastHotTs > b.lastHotTs ? -1 : 1
-    return b.deal.hotScore - a.deal.hotScore
+    return b.deal.peakScore - a.deal.peakScore
   })
 
   return entries.map((e) => e.deal)
