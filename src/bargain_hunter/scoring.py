@@ -48,7 +48,9 @@ _NON_PRICE_BEFORE_RE = re.compile(
     r")\W*$",
     re.IGNORECASE,
 )
-_NON_PRICE_TITLE_RE = re.compile(r"^\s*\$[\d,.]+\s*(?:off|bonus)\b", re.IGNORECASE)
+_FREE_DEAL_RE = re.compile(r"^\s*free\b", re.IGNORECASE)
+
+
 _LOW_CONFIDENCE_CONTEXT_RE = re.compile(
     r"\b(?:"
     r"cash\s*back|cashback|bonus|"
@@ -152,6 +154,8 @@ def extract_price_signals(text: str) -> tuple[float | None, float | None, float 
     Returns None for any signal we can't confidently extract.
     """
     if _NON_PRICE_TITLE_RE.match(text):
+        return None, None, None
+    if _FREE_DEAL_RE.match(text):
         return None, None, None
 
     # 1. Explicit "X% off"
