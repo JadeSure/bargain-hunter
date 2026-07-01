@@ -20,6 +20,28 @@ export interface LiveDeal {
   ts: string
 }
 
+// OzBargain marks an expired deal's page with this class — checked below on the
+// small number of currently-displayed deals to catch expiry the observation log
+// can't see (a deal quietly expiring doesn't necessarily drop out of the RSS
+// feed or stop being re-observed within the retention window).
+const OZB_EXPIRED_MARKER = 'nodeexpiry expired'
+const OZB_USER_AGENT =
+  'bargain-hunter/0.1 (personal deal alerter; +https://github.com/versent-shawn/bargain-hunter)'
+
+async function isOzbargainExpired(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(6000),
+      headers: { 'User-Agent': OZB_USER_AGENT },
+    })
+    if (!res.ok) return false // fail open — a transient fetch error shouldn't hide a live deal
+    const html = await res.text()
+    return html.includes(OZB_EXPIRED_MARKER)
+  } catch {
+    return false // fail open — network hiccups shouldn't hide a live deal
+  }
+}
+
 function dealUrl(key: string): string {
   const colon = key.indexOf(':')
   const source = key.slice(0, colon)
@@ -140,15 +162,22 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     })
   }
 
+  // Drop deals OzBargain itself now shows as expired, even within the retention
+  // window — only a handful of top-tier deals are ever checked here.
+  const expired = await Promise.all(
+    entries.map((e) => (e.deal.source === 'ozbargain' ? isOzbargainExpired(e.deal.url) : false)),
+  )
+  const live = entries.filter((_, i) => !expired[i])
+
   // Highest tier first (Top > Great > Good); within a tier, by peak score.
-  entries.sort((a, b) => {
+  live.sort((a, b) => {
     const ra = a.deal.hotLevel ? (LEVEL_RANK[a.deal.hotLevel] ?? 0) : 0
     const rb = b.deal.hotLevel ? (LEVEL_RANK[b.deal.hotLevel] ?? 0) : 0
     if (ra !== rb) return rb - ra
     return b.deal.peakScore - a.deal.peakScore
   })
 
-  return entries.map((e) => e.deal)
+  return live.map((e) => e.deal)
 }
 
 export function formatAge(ageHours: number): string {
