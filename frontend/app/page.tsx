@@ -13,6 +13,14 @@ function ArrowRight() {
   )
 }
 
+function PillarArrow() {
+  return (
+    <svg className="lp-pillar-link-arrow" width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+      <path d="M2 7.5H13M13 7.5L8.5 3M13 7.5L8.5 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 function RequestAccessModal({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -180,7 +188,7 @@ export default function LandingPage() {
               <span className="lp-hero-h1-accent">before the crowd.</span>
             </h1>
             <p className="lp-hero-sub">
-              Bargain Hunter monitors OzBargain and CamelCamelCamel AU every 5 minutes, scores trending deals by vote velocity, and sends personalised alerts — only for what you actually care about.
+              Bargain Hunter monitors OzBargain and CamelCamelCamel AU every 5 minutes, scoring trending deals by vote velocity and alerting you only to the ones you care about — backed by saving guides and an Australian setup playbook to help you pay less on everything.
             </p>
             <div className="lp-hero-cta-row">
               <button className="btn-hero" onClick={openModal} aria-haspopup="dialog">
@@ -277,6 +285,64 @@ export default function LandingPage() {
           ))}
         </div>
       </div>
+
+      {/* EXPLORE — three pillars */}
+      <section className="lp-pillars">
+        <div className="lp-section-inner">
+          <div className="lp-pillars-head">
+            <div className="lp-section-eyebrow">Explore</div>
+            <h2>More than deal alerts.</h2>
+            <p>Live deals, saving playbooks, and a setup guide for Australia — three ways Bargain Hunter helps you spend less.</p>
+          </div>
+          <div className="lp-pillars-grid">
+
+            <Link className="lp-pillar-card" href="/deals" aria-label="Browse live Hot Deals">
+              <div className="lp-pillar-glow lp-pillar-glow-orange" aria-hidden="true" />
+              <div className="lp-pillar-icon lp-pillar-icon-orange" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2C12 2 7 7.5 7 12C7 14.8 8.9 17.5 12 17.5C15.1 17.5 17 14.8 17 12C17 12 19.5 15.5 19.5 18.5C19.5 21.8 16.1 24.5 12 24.5C7.9 24.5 4.5 21.8 4.5 18.5C4.5 11 12 2 12 2Z" fill="#f97316" />
+                </svg>
+              </div>
+              <h3>Hot Deals</h3>
+              <p>Live OzBargain and CamelCamelCamel AU deals, scored by vote velocity. Browse what&apos;s trending right now, or get them in your inbox.</p>
+              <span className="lp-pillar-link lp-pillar-link-orange">
+                Browse deals <PillarArrow />
+              </span>
+            </Link>
+
+            <Link className="lp-pillar-card" href="/guides" aria-label="Read the Saving Guides">
+              <div className="lp-pillar-glow lp-pillar-glow-teal" aria-hidden="true" />
+              <div className="lp-pillar-icon lp-pillar-icon-teal" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 4.5C4 3.7 4.7 3 5.5 3H12V20H5.5C4.7 20 4 19.3 4 18.5V4.5Z" stroke="#2dd4bf" strokeWidth="1.6" strokeLinejoin="round" />
+                  <path d="M20 4.5C20 3.7 19.3 3 18.5 3H12V20H18.5C19.3 20 20 19.3 20 18.5V4.5Z" stroke="#2dd4bf" strokeWidth="1.6" strokeLinejoin="round" opacity="0.55" />
+                </svg>
+              </div>
+              <h3>Saving Guides</h3>
+              <p>Step-by-step playbooks — cashback stacking, discounted gift cards, education stores, and more ways to pay less.</p>
+              <span className="lp-pillar-link lp-pillar-link-teal">
+                Read guides <PillarArrow />
+              </span>
+            </Link>
+
+            <Link className="lp-pillar-card" href="/start-here" aria-label="Open the Start Here onboarding">
+              <div className="lp-pillar-glow lp-pillar-glow-green" aria-hidden="true" />
+              <div className="lp-pillar-icon lp-pillar-icon-green" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M6 3V21" stroke="#4ade80" strokeWidth="1.6" strokeLinecap="round" />
+                  <path d="M6 4H17L14.5 7.5L17 11H6" stroke="#4ade80" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+                </svg>
+              </div>
+              <h3>Start Here</h3>
+              <p>New to saving in Australia? Set up cashback portals, high-interest accounts, loyalty programs, and referral bonuses.</p>
+              <span className="lp-pillar-link lp-pillar-link-green">
+                Get set up <PillarArrow />
+              </span>
+            </Link>
+
+          </div>
+        </div>
+      </section>
 
       {/* HOW IT WORKS */}
       <section className="lp-how">
