@@ -129,6 +129,7 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
   const entries: { deal: LiveDeal; currentlyHot: boolean; lastHotTs: string }[] = []
   for (const [key, agg] of byKey) {
     if (!agg.lastHotTs || !agg.peakLevel) continue // never hot within the window
+    if (agg.peakLevel === 'good') continue          // only show top and great
     if (!liveKeys.has(key)) continue // expired / out of stock → drop
     const r = agg.latest
     entries.push({
