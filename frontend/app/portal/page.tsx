@@ -122,7 +122,7 @@ export default function PortalOverview() {
         <div style={{ marginTop: '36px' }}>
           <p className="portal-section-heading">Active channels</p>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
-            {user.channels.map((ch) => (
+            {[...new Map(user.channels.map((ch) => [ch.trim().toLowerCase(), ch.trim()])).values()].map((ch) => (
               <span key={ch} className="status-chip status-chip-on">{ch}</span>
             ))}
           </div>

@@ -3,9 +3,13 @@
 import { useState } from 'react'
 import { useUser } from '../context'
 
+// ids must match the canonical Notion "Channels" multi-select values exactly
+// (see valid set in portal-worker/src/routes/subscriber.ts) — lowercase ids
+// here would never match, so the checkboxes would show unchecked even when
+// the channel is actually on, and toggling would be silently dropped server-side.
 const CHANNEL_OPTIONS = [
-  { id: 'telegram', label: 'Telegram' },
-  { id: 'email', label: 'Email' },
+  { id: 'Telegram', label: 'Telegram' },
+  { id: 'Email', label: 'Email' },
 ]
 
 const CATEGORY_OPTIONS = [
