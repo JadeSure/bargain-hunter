@@ -1,0 +1,110 @@
+name: aws-backup
+
+# Builds the Lambda zip and deploys the AWS serverless *backup* for the deal
+# pipeline (Lambda + EventBridge + S3 state). This mirrors hunt.yml but runs on
+# AWS as a failover; the EventBridge schedule stays DISABLED unless you set
+# TF_VAR_schedule_enabled=true (see aws/README.md).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "aws/**"
+      - "src/bargain_hunter/**"
+      - "config/settings.yaml"
+      - ".github/workflows/aws-backup.yml"
+  pull_request:
+    paths:
+      - "aws/**"
+      - "src/bargain_hunter/**"
+      - "config/settings.yaml"
+      - ".github/workflows/aws-backup.yml"
+  workflow_dispatch:
+
+# Serialize so two applies never touch the Terraform state at once.
+concurrency:
+  group: aws-backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: aws
+    env:
+      TF_IN_AUTOMATION: "true"
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ vars.AWS_REGION || 'ap-southeast-2' }}
+      # Pipeline secrets/config — mirrors hunt.yml's env block.
+      TF_VAR_aws_region: ${{ vars.AWS_REGION || 'ap-southeast-2' }}
+      TF_VAR_schedule_enabled: ${{ vars.AWS_SCHEDULE_ENABLED || 'false' }}
+      TF_VAR_notion_token: ${{ secrets.NOTION_TOKEN }}
+      TF_VAR_notion_subscribers_db_id: ${{ secrets.NOTION_SUBSCRIBERS_DB_ID }}
+      TF_VAR_notion_sent_log_db_id: ${{ secrets.NOTION_SENT_LOG_DB_ID }}
+      TF_VAR_smtp_host: ${{ secrets.SMTP_HOST }}
+      TF_VAR_smtp_port: ${{ secrets.SMTP_PORT }}
+      TF_VAR_smtp_username: ${{ secrets.SMTP_USERNAME }}
+      TF_VAR_smtp_password: ${{ secrets.SMTP_PASSWORD }}
+      TF_VAR_email_from: ${{ secrets.EMAIL_FROM }}
+      TF_VAR_maintainer_email: ${{ secrets.MAINTAINER_EMAIL }}
+      TF_VAR_feedback_base_url: ${{ vars.FEEDBACK_BASE_URL }}
+      TF_VAR_feedback_hmac_secret: ${{ secrets.FEEDBACK_HMAC_SECRET }}
+      TF_VAR_healthcheck_url: ${{ secrets.HEALTHCHECK_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build Lambda zip
+        run: ./build.sh
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+          terraform_wrapper: false
+
+      # Inject an S3 backend only in CI; local dev keeps the default local state.
+      # Requires repo variable AWS_TF_STATE_BUCKET (an existing S3 bucket).
+      - name: Write CI backend override
+        working-directory: aws/terraform
+        run: |
+          cat > ci_backend_override.tf <<'EOF'
+          terraform {
+            backend "s3" {}
+          }
+          EOF
+
+      - name: Terraform init
+        working-directory: aws/terraform
+        run: |
+          terraform init -input=false \
+            -backend-config="bucket=${{ vars.AWS_TF_STATE_BUCKET }}" \
+            -backend-config="key=bargain-hunter/aws-backup.tfstate" \
+            -backend-config="region=${AWS_REGION}"
+
+      - name: Terraform fmt check
+        working-directory: aws/terraform
+        run: terraform fmt -check -recursive
+
+      - name: Terraform validate
+        working-directory: aws/terraform
+        run: terraform validate
+
+      - name: Terraform plan
+        working-directory: aws/terraform
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Terraform apply
+        if: github.event_name != 'pull_request'
+        working-directory: aws/terraform
+        run: terraform apply -input=false -auto-approve tfplan
