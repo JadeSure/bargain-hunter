@@ -34,16 +34,10 @@ async function isOzbargainExpired(url: string): Promise<boolean> {
       signal: AbortSignal.timeout(6000),
       headers: { 'User-Agent': OZB_USER_AGENT },
     })
-    if (!res.ok) {
-      console.warn(`[deals] expiry check ${url} -> HTTP ${res.status}`)
-      return false // fail open — a transient fetch error shouldn't hide a live deal
-    }
+    if (!res.ok) return false // fail open — a transient fetch error shouldn't hide a live deal
     const html = await res.text()
-    const expired = html.includes(OZB_EXPIRED_MARKER)
-    console.log(`[deals] expiry check ${url} -> ${html.length} bytes, expired=${expired}`)
-    return expired
-  } catch (err) {
-    console.warn(`[deals] expiry check ${url} failed:`, err)
+    return html.includes(OZB_EXPIRED_MARKER)
+  } catch {
     return false // fail open — network hiccups shouldn't hide a live deal
   }
 }
