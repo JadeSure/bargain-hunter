@@ -1,0 +1,13 @@
+# Build artifacts
+build/
+dist/
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/terraform.tfvars
+terraform/*.auto.tfvars
+terraform/backend.hcl
+terraform/crash.log

@@ -1,0 +1,27 @@
+# Copy to terraform.tfvars (git-ignored) and fill in, OR supply via TF_VAR_* env
+# vars in CI. These mirror the secrets/variables used by .github/workflows/hunt.yml.
+
+# --- Deployment ---
+aws_region          = "ap-southeast-2"
+lambda_architecture = "x86_64"
+schedule_enabled    = false # leave false; flip to true only on Actions outage
+
+# --- Notion ---
+notion_token             = "ntn_xxxxx"
+notion_subscribers_db_id = ""
+notion_sent_log_db_id    = ""
+
+# --- Email (SMTP) ---
+smtp_host     = "smtp.gmail.com"
+smtp_port     = "587"
+smtp_username = "you@gmail.com"
+smtp_password = "" # Gmail app password
+email_from    = "Bargain Hunter Bot <you@gmail.com>"
+
+# --- Maintainer alerts ---
+maintainer_email = "you@example.com"
+
+# --- Feedback worker + heartbeat (optional) ---
+feedback_base_url    = ""
+feedback_hmac_secret = ""
+healthcheck_url      = ""
