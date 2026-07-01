@@ -10,6 +10,7 @@ export interface LiveDeal {
   source: 'ozbargain' | 'camelcamelcamel' | string
   price: number | null
   discountPercent: number | null
+  isFree: boolean
   votesPos: number
   commentCount: number
   hotScore: number
@@ -140,8 +141,9 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
         title: r.title as string,
         url: dealUrl(key),
         source: key.split(':')[0],
-        price: r.price && r.price > 0 ? (r.price as number) : null,
-        discountPercent: r.discount_percent ? (r.discount_percent as number) : null,
+        isFree: /^\s*free\b/i.test(r.title as string),
+        price: /^\s*free\b/i.test(r.title as string) ? null : (r.price && r.price > 0 ? (r.price as number) : null),
+        discountPercent: /^\s*free\b/i.test(r.title as string) ? null : (r.discount_percent ? (r.discount_percent as number) : null),
         votesPos: r.votes_pos as number,
         commentCount: r.comment_count as number,
         hotScore: (r.hot_score as number) ?? 0,  // current score (reflects actual heat now)

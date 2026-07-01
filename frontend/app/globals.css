@@ -220,6 +220,40 @@ html, body {
 }
 .lp-ticker-dot { color: rgba(249,115,22,0.5); }
 
+/* ── Explore pillars ─────────────────────────────────────── */
+.lp-pillars { background: var(--ground); padding: 100px 0; border-top: 1px solid var(--border-subtle); }
+.lp-pillars-head { text-align: center; margin-bottom: 56px; }
+.lp-pillars-head h2 { font-size: 40px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.15; text-wrap: balance; }
+.lp-pillars-head p {
+  margin: 14px auto 0; max-width: 540px;
+  font-size: 16px; color: rgba(232,233,236,0.5); line-height: 1.6; text-wrap: balance;
+}
+.lp-pillars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.lp-pillar-card {
+  display: flex; flex-direction: column; align-items: flex-start;
+  background: var(--surface-2); border: 1px solid var(--border-low);
+  border-radius: 16px; padding: 30px 28px; text-decoration: none; color: inherit;
+  position: relative; overflow: hidden; transition: border-color 0.15s, transform 0.15s;
+}
+.lp-pillar-card:hover { border-color: var(--border-high); transform: translateY(-3px); }
+.lp-pillar-card:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.lp-pillar-glow { position: absolute; top: 0; right: 0; width: 130px; height: 130px; pointer-events: none; }
+.lp-pillar-glow-orange { background: radial-gradient(ellipse at top right, rgba(249,115,22,0.09) 0%, transparent 70%); }
+.lp-pillar-glow-teal   { background: radial-gradient(ellipse at top right, rgba(45,212,191,0.08) 0%, transparent 70%); }
+.lp-pillar-glow-green  { background: radial-gradient(ellipse at top right, rgba(74,222,128,0.07) 0%, transparent 70%); }
+.lp-pillar-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+.lp-pillar-icon-orange { background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.18); }
+.lp-pillar-icon-teal   { background: rgba(45,212,191,0.08); border: 1px solid rgba(45,212,191,0.18); }
+.lp-pillar-icon-green  { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.18); }
+.lp-pillar-card h3 { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 10px; }
+.lp-pillar-card p { font-size: 14px; color: rgba(232,233,236,0.5); line-height: 1.6; margin-bottom: 22px; }
+.lp-pillar-link { margin-top: auto; display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; }
+.lp-pillar-link-orange { color: var(--orange); }
+.lp-pillar-link-teal   { color: var(--teal); }
+.lp-pillar-link-green  { color: var(--green); }
+.lp-pillar-link-arrow { transition: transform 0.15s; }
+.lp-pillar-card:hover .lp-pillar-link-arrow { transform: translateX(3px); }
+
 /* ── Sections shared ─────────────────────────────────────── */
 .lp-section-eyebrow {
   font-size: 11px; font-weight: 700; color: var(--orange);
@@ -581,6 +615,9 @@ html, body {
   .lp-hero-right { flex: unset; width: 100%; }
   .lp-cards { height: 440px; width: 100%; }
   .lp-how, .lp-features { padding: 64px 0; }
+  .lp-pillars { padding: 64px 0; }
+  .lp-pillars-grid { grid-template-columns: 1fr; }
+  .lp-pillars-head { margin-bottom: 40px; }
   .lp-section-inner { padding: 0 20px; }
   .lp-steps { flex-direction: column; gap: 16px; }
   .lp-step-arrow { display: none; }
@@ -621,6 +658,7 @@ html, body {
   .lp-hero-right { flex: 0 0 310px; }
   .lp-section-inner { padding: 0 32px; }
   .lp-features-grid { grid-template-columns: repeat(2, 1fr); }
+  .lp-pillars-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* ── Supplementary portal classes ────────────────────────── */
@@ -832,6 +870,7 @@ html, body {
 .deal-live-title { font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--text-primary); }
 .deal-live-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .deal-live-price { font-size: 18px; font-weight: 700; color: #4ade80; }
+.deal-live-free { font-size: 18px; font-weight: 700; color: #4ade80; }
 .deal-live-discount {
   font-size: 13px; font-weight: 600; color: #f87171;
   background: rgba(248,113,113,0.12); border-radius: 6px; padding: 3px 8px;

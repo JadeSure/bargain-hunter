@@ -86,13 +86,19 @@ export default async function DealsPage() {
 
                 <h2 className="deal-live-title">{deal.title}</h2>
 
-                {(deal.price !== null || deal.discountPercent !== null) && (
+                {(deal.isFree || deal.price !== null || deal.discountPercent !== null) && (
                   <div className="deal-live-meta">
-                    {deal.price !== null && (
-                      <span className="deal-live-price">${deal.price.toFixed(2)}</span>
-                    )}
-                    {deal.discountPercent !== null && (
-                      <span className="deal-live-discount">{Math.round(deal.discountPercent)}% off</span>
+                    {deal.isFree ? (
+                      <span className="deal-live-free">Free</span>
+                    ) : (
+                      <>
+                        {deal.price !== null && (
+                          <span className="deal-live-price">${deal.price.toFixed(2)}</span>
+                        )}
+                        {deal.discountPercent !== null && (
+                          <span className="deal-live-discount">{Math.round(deal.discountPercent)}% off</span>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
