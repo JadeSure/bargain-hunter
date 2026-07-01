@@ -48,6 +48,7 @@ _NON_PRICE_BEFORE_RE = re.compile(
     r")\W*$",
     re.IGNORECASE,
 )
+_NON_PRICE_TITLE_RE = re.compile(r"^\s*\$[\d,.]+\s*(?:off|bonus)\b", re.IGNORECASE)
 _FREE_DEAL_RE = re.compile(r"^\s*free\b", re.IGNORECASE)
 
 
