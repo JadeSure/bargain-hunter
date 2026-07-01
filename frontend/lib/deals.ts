@@ -81,18 +81,6 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
   const all = fileRows.flat()
   if (!all.length) return []
 
-  // A deal is considered "live" (not expired/out-of-stock) if it appeared in any
-  // scan within the last 6 hours. Using a window rather than only the most-recent
-  // batch prevents deals from being evicted just because the RSS feed (which only
-  // returns the latest ~50 items) naturally scrolls them off after a day or two,
-  // even while the deal is still active on OzBargain.
-  const maxTs = all.reduce((m, r) => (r.ts > m ? r.ts : m), '')
-  const liveWindowMs = 6 * 3_600_000
-  const liveWindowCutoff = new Date(Date.parse(maxTs) - liveWindowMs).toISOString()
-  const liveKeys = new Set(
-    all.filter((r) => (r.ts as string) >= liveWindowCutoff).map((r) => r.deal_key as string),
-  )
-
   // Retain a deal for RETENTION_HOURS after it was last hot, so good deals don't
   // vanish the moment their vote-velocity spike passes. Per deal we track the
   // latest observation (for current score + stats) and the peak level ever
@@ -131,7 +119,6 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
   for (const [key, agg] of byKey) {
     if (!agg.lastHotTs || !agg.peakLevel) continue // never hot within the window
     if (agg.peakLevel === 'good') continue          // only show top and great
-    if (!liveKeys.has(key)) continue // expired / out of stock → drop
     const r = agg.latest
     entries.push({
       deal: {
