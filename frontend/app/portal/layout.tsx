@@ -8,7 +8,6 @@ import { UserProvider } from './context'
 import { logoutAction } from './actions'
 import type { ReactNode } from 'react'
 import { BrandMark } from '../components/BrandMark'
-import { ThemeToggle } from '../components/ThemeToggle'
 
 export default async function PortalLayout({ children }: { children: ReactNode }) {
   const cookieStore = await cookies()
@@ -76,9 +75,6 @@ export default async function PortalLayout({ children }: { children: ReactNode }
             <form action={logoutAction}>
               <button type="submit" className="btn-logout">Sign out</button>
             </form>
-            <div style={{ marginTop: 10 }}>
-              <ThemeToggle />
-            </div>
           </div>
         </nav>
 

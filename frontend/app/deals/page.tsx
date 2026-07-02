@@ -2,7 +2,6 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getLiveDeals, formatAge, sourceLabel } from '@/lib/deals'
 import { BrandMark } from '../components/BrandMark'
-import { ThemeToggle } from '../components/ThemeToggle'
 
 export const metadata: Metadata = {
   title: 'Hot Deals · Bargain Hunter',
@@ -45,10 +44,7 @@ export default async function DealsPage() {
             <BrandMark size={24} />
             <span>Bargain Hunter</span>
           </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <ThemeToggle />
-            <Link href="/" className="deals-back">← Back to home</Link>
-          </div>
+          <Link href="/" className="deals-back">← Back to home</Link>
         </div>
       </header>
 

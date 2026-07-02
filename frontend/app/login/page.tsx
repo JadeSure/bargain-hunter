@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { sendMagicLink } from '@/lib/api'
 import { BrandMark } from '../components/BrandMark'
-import { ThemeToggle } from '../components/ThemeToggle'
 
 const ERROR_MESSAGES: Record<string, string> = {
   expired: 'That link has expired. Request a new one below.',
@@ -40,12 +39,9 @@ function LoginForm() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <div className="login-logo" style={{ justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-            <BrandMark size={24} />
-            <span className="login-logo-text">Bargain Hunter</span>
-          </div>
-          <ThemeToggle />
+        <div className="login-logo">
+          <BrandMark size={24} />
+          <span className="login-logo-text">Bargain Hunter</span>
         </div>
 
         <h1 className="login-h1">Welcome back.</h1>
