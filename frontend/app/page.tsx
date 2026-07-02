@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { requestAccess } from '@/lib/api'
 import { BrandMark } from './components/BrandMark'
+import { ThemeToggle } from './components/ThemeToggle'
 
 function ArrowRight() {
   return (
@@ -138,6 +139,7 @@ export default function LandingPage() {
           <Link className="lp-nav-link" href="/start-here">Start Here</Link>
           <Link className="lp-nav-link" href="/guides">Saving Guides</Link>
           <span className="lp-nav-tagline">Invite-only · Australia</span>
+          <ThemeToggle />
           <button className="btn-orange" onClick={openModal} aria-haspopup="dialog">
             Request Access
           </button>
@@ -157,6 +159,9 @@ export default function LandingPage() {
             <Link className="lp-nav-mobile-link" href="/deals" onClick={() => setMenuOpen(false)}>Hot Deals</Link>
             <Link className="lp-nav-mobile-link" href="/start-here" onClick={() => setMenuOpen(false)}>Start Here</Link>
             <Link className="lp-nav-mobile-link" href="/guides" onClick={() => setMenuOpen(false)}>Saving Guides</Link>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '10px 4px' }}>
+              <ThemeToggle />
+            </div>
             <button
               className="btn-orange lp-nav-mobile-cta"
               onClick={() => { setMenuOpen(false); openModal() }}

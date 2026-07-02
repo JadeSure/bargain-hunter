@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { getGuides, getAllTechniques } from '@/lib/guides'
 import { GuidesFilter } from './GuidesFilter'
 import { BrandMark } from '../components/BrandMark'
+import { ThemeToggle } from '../components/ThemeToggle'
 
 export const metadata: Metadata = {
   title: 'Saving Guides',
@@ -29,7 +30,10 @@ export default async function GuidesPage() {
           <BrandMark size={24} />
           <span>Bargain Hunter</span>
         </Link>
-        <Link href="/" className="guides-back">← Back to home</Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <ThemeToggle />
+          <Link href="/" className="guides-back">← Back to home</Link>
+        </div>
       </header>
 
       <section className="guides-hero">

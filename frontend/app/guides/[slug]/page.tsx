@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { techniqueLabel } from '@/lib/guide-labels'
 import { getGuide, getGuides } from '@/lib/guides'
+import { ThemeToggle } from '../../components/ThemeToggle'
 
 export const dynamicParams = false
 
@@ -63,6 +64,7 @@ export default async function GuideDetailPage({
         <Link href="/guides" className="guides-brand">
           ← Guides
         </Link>
+        <ThemeToggle />
       </header>
 
       <article className="guide-article">
