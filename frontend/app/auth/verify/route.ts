@@ -26,13 +26,13 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL('/login?error=server', reqUrl.origin))
   }
 
-  const setCookie = upstream.headers.get('set-cookie')
+  const setCookies = upstream.headers.getSetCookie()
   const upstreamLocation = upstream.headers.get('location')
 
   // Reissue the worker's redirect on our own origin so the session cookie set
   // below is sent on the follow-up navigation. Default to /portal on success
   // (cookie present) or the login page on failure.
-  let target = setCookie ? '/portal' : '/login?error=invalid'
+  let target = setCookies.length > 0 ? '/portal' : '/login?error=invalid'
   if (upstreamLocation) {
     try {
       const u = new URL(upstreamLocation, reqUrl.origin)
@@ -43,6 +43,6 @@ export async function GET(req: Request) {
   }
 
   const res = NextResponse.redirect(new URL(target, reqUrl.origin))
-  if (setCookie) res.headers.append('set-cookie', setCookie)
+  for (const cookie of setCookies) res.headers.append('set-cookie', cookie)
   return res
 }

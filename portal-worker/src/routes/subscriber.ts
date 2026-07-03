@@ -43,19 +43,29 @@ app.put("/me", async (c) => {
       .filter(Boolean);
   }
   if (body.minDiscountPercent !== undefined) {
-    update.minDiscountPercent =
-      body.minDiscountPercent === null
-        ? null
-        : Math.max(0, Math.min(100, Number(body.minDiscountPercent)));
+    if (body.minDiscountPercent === null) {
+      update.minDiscountPercent = null;
+    } else {
+      const n = Number(body.minDiscountPercent);
+      if (!Number.isFinite(n)) {
+        return c.json({ error: "minDiscountPercent must be a number" }, 400);
+      }
+      update.minDiscountPercent = Math.max(0, Math.min(100, n));
+    }
   }
   if (body.maxAlertsPerDay !== undefined) {
-    update.maxAlertsPerDay = Math.max(1, Math.min(50, Number(body.maxAlertsPerDay)));
+    const n = Number(body.maxAlertsPerDay);
+    if (!Number.isFinite(n)) {
+      return c.json({ error: "maxAlertsPerDay must be a number" }, 400);
+    }
+    update.maxAlertsPerDay = Math.max(1, Math.min(50, n));
   }
   if (body.maxWatchAlertsPerDay !== undefined) {
-    update.maxWatchAlertsPerDay = Math.max(
-      1,
-      Math.min(50, Number(body.maxWatchAlertsPerDay))
-    );
+    const n = Number(body.maxWatchAlertsPerDay);
+    if (!Number.isFinite(n)) {
+      return c.json({ error: "maxWatchAlertsPerDay must be a number" }, 400);
+    }
+    update.maxWatchAlertsPerDay = Math.max(1, Math.min(50, n));
   }
   if (Array.isArray(body.channels)) {
     const valid = new Set(["Email", "Telegram"]);

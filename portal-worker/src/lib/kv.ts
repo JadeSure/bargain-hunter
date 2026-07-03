@@ -1,9 +1,8 @@
 import type { KVNamespace } from "@cloudflare/workers-types";
 import type { SessionData } from "../types";
 
-const SESSION_TTL = 60 * 60 * 24 * 7; // 7 days
-const MAGIC_LINK_TTL = 60 * 60 * 24 * 7; // 7 days (link stays usable until it expires)
-const OAUTH_STATE_TTL = 60 * 10; // 10 minutes
+const SESSION_TTL = 60 * 60 * 8; // 8 hours (must match the session cookie's maxAge)
+const MAGIC_LINK_TTL = 60 * 30; // 30 minutes (link stays usable until it expires)
 
 export function generateId(): string {
   const bytes = new Uint8Array(32);
@@ -49,10 +48,15 @@ export async function createMagicToken(
   return token;
 }
 
-// Read a magic-link token without consuming it. The token stays valid until it
-// expires (MAGIC_LINK_TTL), so the same login link keeps working for the whole
-// window — clicking it again (or an email scanner pre-fetching it) no longer
-// locks the user out with an "expired" error.
+// Read a magic-link token without consuming it. The token stays valid for the
+// full MAGIC_LINK_TTL window rather than being deleted on first use: this was
+// previously single-use, but that regressed under email security scanners
+// (Microsoft Safe Links, Proofpoint, etc.) that pre-fetch links before the
+// user clicks — the scanner's fetch would burn the token and lock the real
+// user out with an "expired" error (see commit 053961ec). The short 30-minute
+// TTL bounds the exposure instead. A proper single-use fix would need a
+// POST-confirm step so GET requests (including scanner prefetches) can't
+// consume the token — left as future work.
 export async function readMagicToken(
   kv: KVNamespace,
   token: string
@@ -61,20 +65,4 @@ export async function readMagicToken(
   if (!raw) return null;
   const { email } = JSON.parse(raw) as { email: string };
   return email;
-}
-
-export async function createOAuthState(kv: KVNamespace): Promise<string> {
-  const state = generateId();
-  await kv.put(`oauth:${state}`, "1", { expirationTtl: OAUTH_STATE_TTL });
-  return state;
-}
-
-export async function verifyOAuthState(
-  kv: KVNamespace,
-  state: string
-): Promise<boolean> {
-  const val = await kv.get(`oauth:${state}`);
-  if (!val) return false;
-  await kv.delete(`oauth:${state}`);
-  return true;
 }
