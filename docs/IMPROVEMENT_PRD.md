@@ -9,9 +9,9 @@ be picked up independently by a future session without re-deriving context.
 
 ## Context / current state
 
-- The deal pipeline is triggered **externally by cron-job.org every 2 minutes**
-  (not by GitHub Actions' own unreliable cron). Scheduling is NOT a problem and
-  needs no redesign.
+- The deal pipeline is triggered **externally by cron-job.org every 5 minutes**
+  (not by GitHub Actions' own unreliable cron; briefly ran at 2-minute cadence
+  until 2026-07-03). Scheduling is NOT a problem and needs no redesign.
 - Scoring thresholds in `config/settings.yaml` were hand-calibrated on early
   observation data. Observation rows (every active deal, every run) accumulate
   in `data/observations/*.jsonl`; Sent Log and 👍/👎 feedback accumulate in
