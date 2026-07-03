@@ -1,0 +1,6 @@
+[
+  {"deal_key": "ozbargain:A", "feedback": "up"},
+  {"deal_key": "ozbargain:B", "feedback": "down"},
+  {"deal_key": "ozbargain:D", "feedback": "up"},
+  {"deal_key": "ozbargain:unrelated", "feedback": "up"}
+]

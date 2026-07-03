@@ -1,0 +1,22 @@
+scoring:
+  window_minutes: 60
+  hot:
+    min_votes_gain_per_window: 15
+    early_burst_age_hours: 2.0
+    early_burst_min_votes: 25
+    velocity_top_percent: 10.0
+    neg_vote_penalty_weight: 0.5
+    age_penalty_half_life_hours: 12.0
+    min_votes_for_percentile: 5
+    min_votes_to_candidate: 10
+    comment_velocity_weight: 0.25
+    quality_min_discount_pct: 20
+    quality_high_votes_threshold: 40
+    tiers:
+      - name: good
+        min_score: 1.5
+      - name: great
+        min_score: 4.0
+      - name: top
+        min_score: 7.0
+        min_votes: 40
