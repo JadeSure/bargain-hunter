@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import logging
 import os
 from datetime import UTC, datetime
 from pathlib import Path
@@ -14,12 +15,16 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from ..models import Deal, Subscriber
 
+log = logging.getLogger(__name__)
+
 TEMPLATES_DIR = Path(__file__).resolve().parents[1] / "templates"
 _AET = ZoneInfo("Australia/Sydney")
 SOURCE_LABELS = {
     "camelcamelcamel": "CamelCamelCamel",
     "ozbargain": "OzBargain",
 }
+
+_warned_missing_unsubscribe_config = False
 
 _env = Environment(
     loader=FileSystemLoader(str(TEMPLATES_DIR)),
@@ -61,6 +66,35 @@ def _feedback_url(
     return url
 
 
+def build_unsubscribe_url(email: str) -> str | None:
+    """Return the signed one-click unsubscribe URL for this email, or None.
+
+    Reads UNSUBSCRIBE_BASE_URL / UNSUBSCRIBE_HMAC_SECRET from the environment.
+    If either is unset, returns None (callers must degrade gracefully — omit
+    the footer link and List-Unsubscribe headers) and logs a warning once per
+    process so a missing config doesn't crash or spam logs every send.
+    """
+    global _warned_missing_unsubscribe_config
+    base = (os.environ.get("UNSUBSCRIBE_BASE_URL") or "").strip()
+    secret = (os.environ.get("UNSUBSCRIBE_HMAC_SECRET") or "").strip()
+    if not base or not secret:
+        if not _warned_missing_unsubscribe_config:
+            log.warning(
+                "UNSUBSCRIBE_BASE_URL / UNSUBSCRIBE_HMAC_SECRET not set — "
+                "digests will be sent without unsubscribe links or headers."
+            )
+            _warned_missing_unsubscribe_config = True
+        return None
+    if not email:
+        return None
+    # Normalise casing before signing/encoding: the worker lowercases the `e=`
+    # query param before reconstructing the HMAC, so a mixed-case address here
+    # would otherwise produce a token that never verifies.
+    email = email.strip().lower()
+    token = _unsubscribe_token(secret, email)
+    return f"{base}?e={quote(email)}&t={token}"
+
+
 def render_email(
     subscriber: Subscriber,
     items: list[DealItem],
@@ -74,8 +108,6 @@ def render_email(
     sent_at = datetime.now(UTC).astimezone(_AET).strftime("%d %b %Y %H:%M AEST")
     feedback_base = (os.environ.get("FEEDBACK_BASE_URL") or "").strip() or None
     hmac_secret = (os.environ.get("FEEDBACK_HMAC_SECRET") or "").strip() or None
-    unsubscribe_base = (os.environ.get("UNSUBSCRIBE_BASE_URL") or "").strip() or None
-    unsubscribe_secret = (os.environ.get("UNSUBSCRIBE_HMAC_SECRET") or "").strip() or None
     site_url = (
         os.environ.get("SITE_URL") or "https://bargain-hunter.sylvalume.online"
     ).strip().rstrip("/")
@@ -89,12 +121,7 @@ def render_email(
                 feedback_base, hmac_secret, item.deal.key, "down", subscriber.email, item.deal.title
             )
 
-    unsubscribe_url: str | None = None
-    if unsubscribe_base and unsubscribe_secret and subscriber.email:
-        token = _unsubscribe_token(unsubscribe_secret, subscriber.email)
-        unsubscribe_url = (
-            f"{unsubscribe_base}?e={quote(subscriber.email)}&t={token}"
-        )
+    unsubscribe_url = build_unsubscribe_url(subscriber.email) if subscriber.email else None
 
     return tmpl.render(
         subscriber=subscriber,

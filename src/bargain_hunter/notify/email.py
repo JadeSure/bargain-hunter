@@ -13,7 +13,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from ..models import Subscriber
-from .render import DealItem, render_email
+from .render import DealItem, build_unsubscribe_url, render_email
 
 log = logging.getLogger(__name__)
 
@@ -73,6 +73,14 @@ class EmailSender:
             msg["Subject"] = subject
             msg["From"] = self.cfg.from_addr
             msg["To"] = subscriber.email
+
+            unsubscribe_url = build_unsubscribe_url(subscriber.email)
+            if unsubscribe_url:
+                # RFC 8058 one-click unsubscribe: mail clients that support it POST
+                # directly to this URL instead of showing our link to the user.
+                msg["List-Unsubscribe"] = f"<{unsubscribe_url}>"
+                msg["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
+
             msg.attach(MIMEText(html, "html", "utf-8"))
 
             with smtplib.SMTP(self.cfg.host, self.cfg.port, timeout=30) as server:
