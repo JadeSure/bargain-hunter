@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1umgcai",
+  "url": "https://www.reddit.com/r/fiaustralia/comments/1umgcai/i_built_a_privacyfirst_personal_finance_app_for/",
+  "title": "I built a privacy-first personal finance app for Aussies — no bank login, free demo, no signup. Looking for a few people to break it.",
+  "author": "/u/kaozH_",
+  "body": "I got sick of finance apps that (a) want to connect to your bank, and (b) are built for the US and have no idea what a franking credit or EOFY is. So I built my own for the Australian setup, and it's now at the point where I'd love some real people to poke holes in it. What it does: - Budgeting (50/30/20 + adaptive suggestions), cash-flow forecasting with \"what if I lose income / buy a car in August\" scenarios - Subscription tracker that flags price rises and forgotten subs - Investments with franking credits + CGT (the AU 50% discount), and an EOFY tax pack you can hand to your accountant (PDF/CSV) - Goals + savings round-ups, spending anomaly alerts, a household view (joint goals + bill splitting) - An AI assistant you can ask about your own money On the trust stuff (it's finance, fair question): - No bank connection — it's manual / CSV import, so you're never handing over logins - Try the full demo with zero signup 👉 https://ash-finance-app.fly.dev/dashboard - Privacy-first: encryption at rest, 2FA, no third-party trackers It's free, I'm not selling anything — I just want 5–10 people to use it for real and tell me what's confusing, broken, or missing. Brutal feedback genuinely welcome. Thanks Ash submitted by /u/kaozH_ [link] [comments]",
+  "board": "r/fiaustralia",
+  "created_at": "2026-07-03T14:42:54Z",
+  "fetched_at": "2026-07-03T16:55:15.332941Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "b38eeec8421cc75b",
+  "key": "reddit:1umgcai"
+}

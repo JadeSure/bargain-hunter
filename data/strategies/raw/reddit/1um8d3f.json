@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1um8d3f",
+  "url": "https://www.reddit.com/r/fiaustralia/comments/1um8d3f/debt_recycling_yes_again/",
+  "title": "Debt recycling (yes, again)",
+  "author": "/u/antonrenus",
+  "body": "I've been trying to work through the maths of debt recycling vs simply keeping cash in an offset account, and I'm wondering if I'm missing something. Let's assume: *PPOR mortgage rate: 6.1% *Investment loan rate: 6.5% (interest only, fully deductible) *Marginal tax rate: 37% + 2% Medicare = 39% *ETF: DHHF *Distribution yield: 2.2% Using $600,000 cash for the example. Option 1 – Leave $600k in the offset *Guaranteed tax-free saving = $36,600/year (6.1%). Option 2 – Debt recycle and invest $600k *Interest: $600,000 × 6.5% = $39,000 *Distributions: $600,000 × 2.2% = $13,200 *Net deductible loss: $39,000 − $13,200 = $25,800 *Tax benefit: $25,800 × 39% = $10,062 *After-tax interest cost: $39,000 − $10,062 = $28,938 *After-tax distributions: $13,200 × (1 − 39%) = $8,052 *Net annual cash flow: $8,052 − $28,938 = −$20,886 Compared with the offset, you're giving up a guaranteed +$36,600/year in interest saved and instead receiving −$20,886/year in annual cash flow. That's a difference of $57,486/year. On a $600,000 investment, that means you need about 9.58% capital growth, or roughly 11.8% total annual return (2.2% yield + 9.6% growth), just to break even with leaving the money in the offset. Am I missing something? It doesn't seem worth it at today's interest rates. *Edit: apologies for formatting. I've tried. submitted by /u/antonrenus [link] [comments]",
+  "board": "r/fiaustralia",
+  "created_at": "2026-07-03T08:09:57Z",
+  "fetched_at": "2026-07-03T16:55:15.332941Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "986db88f3bc99bba",
+  "key": "reddit:1um8d3f"
+}
