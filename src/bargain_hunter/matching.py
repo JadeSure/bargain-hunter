@@ -101,13 +101,27 @@ def match_watch(
 
     reason_string is a short human-readable note for notification text and logs.
     """
+    matched, reason, _ = _match_watch_with_target(deal, subscriber, cfg, now=now)
+    return matched, reason
+
+
+def _match_watch_with_target(
+    deal: Deal,
+    subscriber: Subscriber,
+    cfg: WatchConfig,
+    now: datetime | None = None,
+) -> tuple[bool, str, float | None]:
+    """Like `match_watch`, but also returns the matching keyword's `<=PRICE` target
+    (None if the matched keyword has no price ceiling), so callers can tell dedup
+    whether a re-alert is due to a *newly* satisfied ceiling.
+    """
     now = now or datetime.now(UTC)
 
     # Reject stale deals up-front — prevents old tracked deals from filling the daily cap.
     if deal.posted_at is not None:
         age_hours = (now - deal.posted_at).total_seconds() / 3600
         if age_hours > cfg.max_deal_age_hours:
-            return False, ""
+            return False, "", None
 
     search_text = deal.title + " " + (deal.description or "")
 
@@ -136,13 +150,14 @@ def match_watch(
         if target_price is not None:
             if deal.price is None or deal.price > target_price:
                 continue
-            return True, f'"{keyword}" matched, ${deal.price:.2f} ≤ ${target_price:.2f}'
+            reason = f'"{keyword}" matched, ${deal.price:.2f} ≤ ${target_price:.2f}'
+            return True, reason, target_price
 
         if passes_votes:
-            return True, f'"{keyword}" matched ({deal.votes_pos} votes)'
-        return True, f'"{keyword}" matched, {deal.discount_percent:.0f}% off'
+            return True, f'"{keyword}" matched ({deal.votes_pos} votes)', None
+        return True, f'"{keyword}" matched, {deal.discount_percent:.0f}% off', None
 
-    return False, ""
+    return False, "", None
 
 
 def filter_watch_matches(
@@ -150,11 +165,15 @@ def filter_watch_matches(
     subscriber: Subscriber,
     cfg: WatchConfig,
     now: datetime | None = None,
-) -> list[tuple[Deal, str]]:
-    """Return list of (deal, reason) that match this subscriber's watch list."""
+) -> list[tuple[Deal, str, float | None]]:
+    """Return list of (deal, reason, watch_target_price) for this subscriber's watch list.
+
+    `watch_target_price` is the `<=PRICE` ceiling of the matching keyword (or None if
+    the keyword has no ceiling) — dedup needs it to detect a *newly* satisfied ceiling.
+    """
     results = []
     for deal in deals:
-        matched, reason = match_watch(deal, subscriber, cfg, now=now)
+        matched, reason, target_price = _match_watch_with_target(deal, subscriber, cfg, now=now)
         if matched:
-            results.append((deal, reason))
+            results.append((deal, reason, target_price))
     return results

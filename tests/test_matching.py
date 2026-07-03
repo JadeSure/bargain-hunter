@@ -121,10 +121,23 @@ def test_filter_returns_matching_deals():
     ]
     sub = _sub(watch_keywords=["iPhone 17 Pro <=2000", "Macbook Air"])
     results = filter_watch_matches(deals, sub, _cfg())
-    keys = {d.deal_id for d, _ in results}
+    keys = {d.deal_id for d, _, _ in results}
     assert "1" in keys
     assert "2" in keys
     assert "3" not in keys
+
+
+def test_filter_returns_price_ceiling_target_for_dedup():
+    """dedup needs the matched keyword's <=PRICE target to detect a newly
+    satisfied ceiling; a keyword without a ceiling reports target=None."""
+    deals = [
+        _deal(deal_id="1", title="Sony WH-1000XM5 $290", price=290.0),
+        _deal(deal_id="2", title="Macbook Air M4 $1,299", price=1299.0),
+    ]
+    sub = _sub(watch_keywords=["Sony WH <=300", "Macbook Air"])
+    results = {d.deal_id: target for d, _, target in filter_watch_matches(deals, sub, _cfg())}
+    assert results["1"] == 300.0
+    assert results["2"] is None
 
 
 # ---------------------------------------------------------------------------

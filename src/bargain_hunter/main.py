@@ -298,7 +298,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
 
         # Watch track (independent cap — does not share quota with hot)
         watch_hits = filter_watch_matches(active_deals, sub, settings.scoring.watch, now=now)
-        for deal, reason in watch_hits:
+        for deal, reason, watch_target_price in watch_hits:
             if deal.key in notified_keys:
                 # Already queued via hot — annotate as mixed (no watch cap cost)
                 for item in hot_items:
@@ -317,8 +317,13 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 now=now,
             ):
                 continue
-            if dedup.already_sent(deal, sub):
+            skip, realert_label = dedup.realert_check(
+                deal, sub, watch_target_price=watch_target_price
+            )
+            if skip:
                 continue
+            if realert_label:
+                reason = f"{reason} · {realert_label}"
             watch_items.append(DealItem(deal, track="watch", reason=reason))
             notified_keys.add(deal.key)
 

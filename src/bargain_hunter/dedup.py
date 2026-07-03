@@ -112,24 +112,69 @@ class DedupStore:
         log.info("Loaded %d Sent Log entries (last %d days).", count, self.cfg.lookback_days)
 
     def already_sent(self, deal: Deal, subscriber: Subscriber) -> bool:
-        """Return True if deal was already sent to this subscriber and no re-alert is due."""
+        """Return True if this (deal, subscriber) pair has already been sent.
+
+        Plain dedup only — never grants a re-alert. Used by the hot track, which
+        per PRD P0.3 FR2 does not re-alert (only the watch track does, via
+        `realert_check`, since only watch keywords carry a price-ceiling target
+        worth re-notifying on).
+        """
+        email = subscriber.email or ""
+        return bool(self._log.get((deal.key, email)))
+
+    def realert_check(
+        self,
+        deal: Deal,
+        subscriber: Subscriber,
+        watch_target_price: float | None = None,
+    ) -> tuple[bool, str | None]:
+        """Watch-track-only re-alert decision. Return (skip, realert_label).
+
+        `skip=True` means the deal was already sent and no re-alert is due — the
+        caller should not notify. `skip=False` means either this is the first send
+        (`realert_label` is None) or a price-triggered re-alert is due
+        (`realert_label` is a short, user-facing string, e.g. "Price drop: $350 →
+        $290").
+
+        Per PRD P0.3 FR1, a re-alert fires ONLY on (a) a watch price ceiling newly
+        satisfied, or (b) a significant price drop — both capped at
+        `max_realerts_per_deal`. The vote-heat-band jump is *not* a re-alert
+        trigger (retired deliberately: it fired on ordinary hot-deal vote growth,
+        which is far too common to justify a re-email) — `_heat_band` is still
+        computed and recorded in the Sent Log for calibration data, just not acted
+        on here.
+
+        `watch_target_price` is the `<=PRICE` ceiling of the watch keyword that
+        matched this deal (None if not matched via a price-ceiling keyword) — pass
+        it from `matching.filter_watch_matches` so a re-alert can fire the moment a
+        subscriber's ceiling is *newly* satisfied, even without a further price drop.
+        """
         email = subscriber.email or ""
         entries = self._log.get((deal.key, email), [])
         if not entries:
-            return False
-        # Check re-alert eligibility
+            return False, None
         latest = max(entries, key=lambda e: e.sent_at)
         realert_count = sum(1 for e in entries if e.realert_count > 0)
         if realert_count >= self.cfg.max_realerts_per_deal:
-            return True
-        # Substantial price drop?
-        if deal.price and latest.price:
+            return True, None
+
+        # Never fire a price-based re-alert when price is unknown on either side.
+        if deal.price is not None and latest.price is not None:
+            # Newly satisfied watch ceiling: was above the target at last send,
+            # now at or below it.
+            if (
+                watch_target_price is not None
+                and latest.price > watch_target_price
+                and deal.price <= watch_target_price
+            ):
+                return False, f"Price drop: ${latest.price:.0f} → ${deal.price:.0f}"
+
+            # Substantial price drop vs. last send, regardless of any ceiling.
             drop_pct = (latest.price - deal.price) / latest.price * 100
             if drop_pct >= self.cfg.significant_price_drop_percent:
-                return False
-        # Vote band jump?
-        current_band = _heat_band(deal.votes_pos, self.cfg.heat_band_size_votes)
-        return not current_band > latest.heat_band
+                return False, f"Price drop: ${latest.price:.0f} → ${deal.price:.0f}"
+
+        return True, None
 
     def daily_count(
         self,

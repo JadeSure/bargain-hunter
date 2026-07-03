@@ -62,7 +62,9 @@ def _store_with(entries: list[SentEntry], cfg: DedupConfig | None = None) -> Ded
 
 
 # ---------------------------------------------------------------------------
-# already_sent
+# already_sent — plain dedup, hot track. Never grants a re-alert (PRD P0.3 FR2:
+# re-alerts are watch-track-only), regardless of price drop, ceiling, or vote
+# growth.
 # ---------------------------------------------------------------------------
 
 
@@ -83,13 +85,48 @@ def test_already_sent_with_no_realerts_allowed_is_always_deduped():
     assert store.already_sent(deal, sub)
 
 
-def test_heat_band_jump_triggers_realert():
-    """A vote-count jump into a higher heat band re-triggers, within the cap."""
+def test_already_sent_ignores_price_drop_hot_track_never_realerts():
+    """Regression: the hot track must not re-alert on price drops even though
+    `realert_check` (watch-only) would. `already_sent` always blocks a second
+    send once one exists."""
+    entry = _entry(realert_count=0, price=100.0, heat_band=0, votes_pos=10)
+    store = _store_with(
+        [entry], cfg=_cfg(max_realerts_per_deal=1, significant_price_drop_percent=5.0)
+    )
+    deal = _deal(price=50.0, votes_pos=10)  # 50% drop — would fire via realert_check
+    sub = _sub()
+    assert store.already_sent(deal, sub)
+    skip, label = store.realert_check(deal, sub)
+    assert not skip
+    assert label == "Price drop: $100 → $50"
+
+
+def test_already_sent_ignores_heat_band_jump():
     entry = _entry(realert_count=0, heat_band=0, votes_pos=10, price=None)
     store = _store_with([entry], cfg=_cfg(max_realerts_per_deal=1, heat_band_size_votes=50))
-    deal = _deal(votes_pos=60, price=None)  # band 60//50=1 > 0
+    deal = _deal(votes_pos=1000, price=None)  # huge band jump
     sub = _sub()
-    assert not store.already_sent(deal, sub)
+    assert store.already_sent(deal, sub)
+
+
+# ---------------------------------------------------------------------------
+# realert_check — watch-track-only re-alerts (PRD P0.3 FR1/FR2).
+# ---------------------------------------------------------------------------
+
+
+def test_heat_band_jump_no_longer_triggers_realert():
+    """Retired per IMPROVEMENT_PRD P0.3 review: a vote-band jump used to
+    re-trigger, but that fires on ordinary hot-deal vote growth (e.g. 45 -> 60
+    votes) far too often to justify a re-email. `_heat_band` is still computed
+    and recorded in the Sent Log for calibration, it just no longer gates a
+    re-alert — only a watch ceiling or a significant price drop does."""
+    entry = _entry(realert_count=0, heat_band=0, votes_pos=10, price=None)
+    store = _store_with([entry], cfg=_cfg(max_realerts_per_deal=1, heat_band_size_votes=50))
+    deal = _deal(votes_pos=60, price=None)  # band 60//50=1 > 0 — no longer matters
+    sub = _sub()
+    skip, label = store.realert_check(deal, sub)
+    assert skip
+    assert label is None
 
 
 def test_no_heat_band_jump_stays_deduped():
@@ -97,7 +134,8 @@ def test_no_heat_band_jump_stays_deduped():
     store = _store_with([entry], cfg=_cfg(max_realerts_per_deal=1, heat_band_size_votes=50))
     deal = _deal(votes_pos=20, price=None)  # still band 0
     sub = _sub()
-    assert store.already_sent(deal, sub)
+    skip, _ = store.realert_check(deal, sub)
+    assert skip
 
 
 def test_significant_price_drop_triggers_realert():
@@ -107,7 +145,8 @@ def test_significant_price_drop_triggers_realert():
     )
     deal = _deal(price=90.0, votes_pos=10)  # 10% drop >= 5%
     sub = _sub()
-    assert not store.already_sent(deal, sub)
+    skip, _ = store.realert_check(deal, sub)
+    assert not skip
 
 
 def test_insignificant_price_drop_stays_deduped():
@@ -117,12 +156,77 @@ def test_insignificant_price_drop_stays_deduped():
     )
     deal = _deal(price=98.0, votes_pos=10)  # 2% drop < 5%
     sub = _sub()
-    assert store.already_sent(deal, sub)
+    skip, _ = store.realert_check(deal, sub)
+    assert skip
+
+
+def test_newly_satisfied_watch_ceiling_triggers_realert():
+    """Acceptance scenario: sent at $350 with watch `Sony <=300`; price drops to
+    $290 (at/below the ceiling for the first time) → exactly one re-alert."""
+    entry = _entry(realert_count=0, price=350.0, heat_band=0, votes_pos=10)
+    store = _store_with([entry], cfg=_cfg(max_realerts_per_deal=1))
+    deal = _deal(price=290.0, votes_pos=10)
+    sub = _sub()
+    skip, _ = store.realert_check(deal, sub, watch_target_price=300.0)
+    assert not skip
+
+
+def test_ceiling_already_satisfied_at_last_send_is_not_newly_satisfied():
+    """If the ceiling was already met at the last send, a further small drop that
+    stays under `significant_price_drop_percent` is not a *new* ceiling event."""
+    entry = _entry(realert_count=0, price=290.0, heat_band=0, votes_pos=10)
+    store = _store_with(
+        [entry], cfg=_cfg(max_realerts_per_deal=1, significant_price_drop_percent=5.0)
+    )
+    deal = _deal(price=285.0, votes_pos=10)  # already <=300 at last send; ~1.7% drop
+    sub = _sub()
+    skip, _ = store.realert_check(deal, sub, watch_target_price=300.0)
+    assert skip
+
+
+def test_ceiling_realert_never_fires_when_last_sent_price_unknown():
+    entry = _entry(realert_count=0, price=None, heat_band=0, votes_pos=10)
+    store = _store_with([entry], cfg=_cfg(max_realerts_per_deal=1))
+    deal = _deal(price=290.0, votes_pos=10)
+    sub = _sub()
+    skip, _ = store.realert_check(deal, sub, watch_target_price=300.0)
+    assert skip
+
+
+def test_ceiling_realert_never_fires_when_current_price_unknown():
+    entry = _entry(realert_count=0, price=350.0, heat_band=0, votes_pos=10)
+    store = _store_with([entry], cfg=_cfg(max_realerts_per_deal=1))
+    deal = _deal(price=None, votes_pos=10)
+    sub = _sub()
+    skip, _ = store.realert_check(deal, sub, watch_target_price=300.0)
+    assert skip
+
+
+def test_realert_check_labels_ceiling_price_drop():
+    entry = _entry(realert_count=0, price=350.0, heat_band=0, votes_pos=10)
+    store = _store_with([entry], cfg=_cfg(max_realerts_per_deal=1))
+    deal = _deal(price=290.0, votes_pos=10)
+    sub = _sub()
+    skip, label = store.realert_check(deal, sub, watch_target_price=300.0)
+    assert not skip
+    assert label == "Price drop: $350 → $290"
+
+
+def test_realert_check_labels_significant_price_drop_without_ceiling():
+    entry = _entry(realert_count=0, price=100.0, heat_band=0, votes_pos=10)
+    store = _store_with(
+        [entry], cfg=_cfg(max_realerts_per_deal=1, significant_price_drop_percent=5.0)
+    )
+    deal = _deal(price=90.0, votes_pos=10)
+    sub = _sub()
+    skip, label = store.realert_check(deal, sub)
+    assert not skip
+    assert label == "Price drop: $100 → $90"
 
 
 def test_realert_cap_exhausted_forces_dedup():
     """Once max_realerts_per_deal re-alerts have already fired, further
-    price drops / band jumps no longer matter."""
+    price drops no longer matter."""
     entries = [
         _entry(realert_count=0, price=100.0, heat_band=0, votes_pos=10),
         _entry(realert_count=1, price=50.0, heat_band=1, votes_pos=60),
@@ -130,7 +234,8 @@ def test_realert_cap_exhausted_forces_dedup():
     store = _store_with(entries, cfg=_cfg(max_realerts_per_deal=1))
     deal = _deal(price=1.0, votes_pos=1000)  # would otherwise qualify for another re-alert
     sub = _sub()
-    assert store.already_sent(deal, sub)
+    skip, _ = store.realert_check(deal, sub)
+    assert skip
 
 
 # ---------------------------------------------------------------------------

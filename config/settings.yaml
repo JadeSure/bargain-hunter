@@ -57,7 +57,7 @@ scoring:
 
 dedup:
   lookback_days: 7                 # read recent Sent Log window for local dedup
-  max_realerts_per_deal: 0         # 0 = no re-alerts; each deal notifies each subscriber once
+  max_realerts_per_deal: 1         # allow one re-alert per (deal, subscriber): newly-satisfied watch ceiling or a significant price drop
   significant_price_drop_percent: 5.0
   heat_band_size_votes: 50
 
