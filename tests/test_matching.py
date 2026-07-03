@@ -3,7 +3,7 @@
 from datetime import UTC, datetime, timedelta
 
 from bargain_hunter.config import WatchConfig
-from bargain_hunter.matching import _parse_keyword, filter_watch_matches, match_watch
+from bargain_hunter.matching import _keyword_hits, _parse_keyword, filter_watch_matches, match_watch
 from bargain_hunter.models import Deal, Subscriber
 
 
@@ -270,4 +270,42 @@ def test_no_posted_at_skips_age_filter():
     deal = _deal(title="iPhone deal", votes_pos=20)  # no posted_at
     sub = _sub(watch_keywords=["iPhone"])
     matched, _ = match_watch(deal, sub, _cfg(min_votes=5, max_deal_age_hours=1), now=now)
+    assert matched
+
+
+# ---------------------------------------------------------------------------
+# Word-boundary matching (avoid substring false positives)
+# ---------------------------------------------------------------------------
+
+
+def test_keyword_hits_does_not_match_substring():
+    """Watch keyword "TV" must not match inside "TVC"."""
+    assert not _keyword_hits("TV", "Telstra TVC ad campaign")
+
+
+def test_keyword_hits_matches_whole_word():
+    """Watch keyword "TV" must match as a standalone word."""
+    assert _keyword_hits("TV", "4K TV $500")
+
+
+def test_keyword_hits_matches_multiword_phrase():
+    assert _keyword_hits("iPhone 17 Pro", "Apple iPhone 17 Pro Max 256GB")
+
+
+def test_keyword_hits_symbol_boundary_still_matches():
+    """A keyword ending in a non-word character (e.g. "C&C") still matches."""
+    assert _keyword_hits("C&C", "Bunnings C&C pickup deal")
+
+
+def test_watch_keyword_tv_does_not_match_tvc():
+    deal = _deal(title="Telstra TVC bundle deal", votes_pos=20)
+    sub = _sub(watch_keywords=["TV"])
+    matched, _ = match_watch(deal, sub, _cfg(min_votes=5))
+    assert not matched
+
+
+def test_watch_keyword_tv_matches_standalone():
+    deal = _deal(title="4K TV $500", votes_pos=20)
+    sub = _sub(watch_keywords=["TV"])
+    matched, _ = match_watch(deal, sub, _cfg(min_votes=5))
     assert matched

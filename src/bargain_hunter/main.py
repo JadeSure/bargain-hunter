@@ -22,7 +22,7 @@ from .alert_throttle import AlertThrottle
 from .categories import deal_matches_categories
 from .config import Settings, effective_tiers, load_dotenv, load_settings
 from .dedup import DedupStore
-from .matching import filter_watch_matches
+from .matching import _keyword_pattern, filter_watch_matches
 from .models import Deal, Subscriber
 from .notify.email import EmailSender, send_maintainer_alert
 from .notify.render import DealItem
@@ -193,7 +193,9 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
 
     notion = make_notion_client()
     try:
-        subscribers = fetch_subscribers(notion, subscribers_db)
+        subscribers = fetch_subscribers(
+            notion, subscribers_db, settings.run.max_alerts_per_user_per_day
+        )
     except Exception as exc:
         msg = f"Subscriber fetch failed: {exc}"
         log.error(msg)
@@ -404,7 +406,7 @@ def _is_blocked(deal: Deal, block_keywords: list[str]) -> bool:
         return False
     import re
     text = deal.title + " " + (deal.description or "")
-    return any(re.search(re.escape(kw), text, re.IGNORECASE) for kw in block_keywords)
+    return any(re.search(_keyword_pattern(kw), text, re.IGNORECASE) for kw in block_keywords)
 
 
 def _passes_quality_gate(deal: Deal, hot_cfg, vote_velocity: float = 0.0) -> bool:
@@ -535,8 +537,8 @@ def main() -> None:
     try:
         now = datetime.now(UTC)
         summary = run(settings, dry_run=dry_run, force=getattr(args, "force", False))
-        _alert_if_needed(summary, settings, now)
         if not dry_run:
+            _alert_if_needed(summary, settings, now)
             _heartbeat(summary)
     except Exception:
         tb = traceback.format_exc()

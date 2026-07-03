@@ -299,6 +299,19 @@ def test_no_candidacy_for_old_low_vote_deal():
     assert not is_hot_candidate(d, snaps, cfg)
 
 
+def test_percentile_gate_rejects_zero_velocity_on_quiet_night():
+    """Gate 3 must not pass when every active deal (including this one) has zero
+    vote velocity — a flat 0 >= 0 comparison must not grant candidacy."""
+    cfg = _cfg()
+    # Old enough to miss early burst, below early_burst_min_votes, flat votes
+    # across snapshots so velocity is 0.
+    d = _deal(votes_pos=10, posted_at=datetime.now(UTC) - timedelta(hours=6))
+    snaps = _snaps(10, 10, spacing_minutes=10)
+    other = _deal(deal_id="2", votes_pos=10, posted_at=datetime.now(UTC) - timedelta(hours=6))
+    other_snaps = _snaps(10, 10, spacing_minutes=10)
+    assert not is_hot_candidate(d, snaps, cfg, all_active_deals=[(other, other_snaps)])
+
+
 def test_hot_score_decreases_with_age():
     cfg = _cfg()
     snaps = _snaps(0, 20, 40, spacing_minutes=20)

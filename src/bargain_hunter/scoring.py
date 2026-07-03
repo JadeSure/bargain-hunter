@@ -374,7 +374,9 @@ def is_hot_candidate(
         if velocities:
             velocities.sort(reverse=True)
             cutoff_idx = max(0, int(len(velocities) * hot.velocity_top_percent / 100) - 1)
-            if my_vel >= velocities[cutoff_idx]:
+            # my_vel > 0 (not >=) so a quiet night where every active deal has zero
+            # velocity doesn't let any 10+-vote deal in on a 0 >= 0 cutoff.
+            if my_vel > 0 and my_vel >= velocities[cutoff_idx]:
                 return True
 
     return False

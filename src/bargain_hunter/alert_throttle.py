@@ -12,12 +12,29 @@ Policy:
 
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
+import os
+import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 
 log = logging.getLogger(__name__)
+
+
+def _atomic_write_json(path: Path, payload: dict) -> None:
+    """Write JSON via a same-directory temp file + os.replace so a crash mid-write
+    can't corrupt the target."""
+    fd, tmp_name = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2)
+        os.replace(tmp_name, path)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.unlink(tmp_name)
+        raise
 
 DEFAULT_PATH = Path("data/alert_state.json")
 
@@ -46,7 +63,13 @@ class AlertThrottle:
             raw = json.loads(self.path.read_text(encoding="utf-8"))
             self._failures = int(raw.get("consecutive_failures", 0))
             ts = raw.get("last_sent")
-            self._last_sent = datetime.fromisoformat(ts) if ts else None
+            if ts:
+                dt = datetime.fromisoformat(ts)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=UTC)
+                self._last_sent = dt
+            else:
+                self._last_sent = None
         except (OSError, json.JSONDecodeError, ValueError) as exc:
             log.warning("Alert state unreadable (%s) — starting fresh.", exc)
 
@@ -56,7 +79,7 @@ class AlertThrottle:
             "consecutive_failures": self._failures,
             "last_sent": self._last_sent.isoformat() if self._last_sent else None,
         }
-        self.path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        _atomic_write_json(self.path, payload)
 
     # ------------------------------------------------------------------
     # State transitions

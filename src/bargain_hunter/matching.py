@@ -72,8 +72,23 @@ def _parse_keyword(
     return phrase, target, expiry
 
 
+def _keyword_pattern(keyword: str) -> str:
+    """Build a word-boundary-aware regex for `keyword`.
+
+    `\\b` only anchors correctly next to a word character, so it's only added on
+    the side(s) where the phrase actually starts/ends with one (e.g. "C&C" gets
+    no trailing boundary, but still matches as a whole phrase via the escaping).
+    """
+    pattern = re.escape(keyword)
+    if keyword[:1].isalnum() or keyword[:1] == "_":
+        pattern = r"\b" + pattern
+    if keyword[-1:].isalnum() or keyword[-1:] == "_":
+        pattern = pattern + r"\b"
+    return pattern
+
+
 def _keyword_hits(keyword: str, text: str) -> bool:
-    return bool(re.search(re.escape(keyword), text, re.IGNORECASE))
+    return bool(re.search(_keyword_pattern(keyword), text, re.IGNORECASE))
 
 
 def match_watch(

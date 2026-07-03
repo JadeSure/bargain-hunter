@@ -22,12 +22,28 @@ from __future__ import annotations
 import contextlib
 import json
 import logging
+import os
+import tempfile
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from .models import Deal, DealSnapshot
 
 log = logging.getLogger(__name__)
+
+
+def _atomic_write_json(path: Path, payload: dict) -> None:
+    """Write JSON via a same-directory temp file + os.replace so a crash mid-write
+    can't corrupt the target (a partial write would otherwise force cold-start)."""
+    fd, tmp_name = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2)
+        os.replace(tmp_name, path)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.unlink(tmp_name)
+        raise
 
 DEFAULT_STATE_PATH = Path("data/deals_state.json")
 DEFAULT_RETENTION_HOURS = 24
@@ -109,7 +125,7 @@ class StateStore:
             "first_seen": {key: ts.isoformat() for key, ts in self._first_seen.items()},
         }
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        _atomic_write_json(self.path, payload)
         log.info("Saved state: %d deals.", len(self._data))
 
     # ------------------------------------------------------------------

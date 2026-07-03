@@ -62,8 +62,14 @@ def _parse_keywords(raw: str) -> list[str]:
 def fetch_subscribers(
     notion: Client,
     db_id: str,
+    default_max_alerts_per_day: int = 10,
 ) -> list[Subscriber]:
-    """Query the Subscribers DB and return active subscribers."""
+    """Query the Subscribers DB and return active subscribers.
+
+    `default_max_alerts_per_day` (from settings.yaml `run.max_alerts_per_user_per_day`)
+    is used only when a subscriber leaves the Notion "Max Alerts/Day" field empty;
+    an explicit Notion value always overrides it.
+    """
     results: list[Subscriber] = []
     cursor = None
     while True:
@@ -74,7 +80,7 @@ def fetch_subscribers(
         for page in resp.get("results", []):
             props = page.get("properties", {})
             try:
-                sub = _parse_subscriber(props)
+                sub = _parse_subscriber(props, default_max_alerts_per_day)
             except Exception as exc:
                 log.warning("Skipping malformed subscriber page %s: %s", page.get("id"), exc)
                 continue
@@ -87,7 +93,7 @@ def fetch_subscribers(
     return results
 
 
-def _parse_subscriber(props: dict) -> Subscriber:
+def _parse_subscriber(props: dict, default_max_alerts_per_day: int = 10) -> Subscriber:
     name = _text(props.get(_P_NAME, {}))
     email = _email(props.get(_P_EMAIL, {}))
     telegram = _text(props.get(_P_TELEGRAM, {})) or None
@@ -99,7 +105,10 @@ def _parse_subscriber(props: dict) -> Subscriber:
     min_discount = _number(props.get(_P_MIN_DISCOUNT, {}))
     categories = _multiselect(props.get(_P_CATEGORIES, {}))
     min_hot_level = (_select(props.get(_P_HOT_LEVEL, {})) or "").strip().lower() or None
-    max_alerts = int(_number(props.get(_P_MAX_ALERTS, {}), default=10) or 10)
+    max_alerts = int(
+        _number(props.get(_P_MAX_ALERTS, {}), default=default_max_alerts_per_day)
+        or default_max_alerts_per_day
+    )
     max_watch_alerts = int(_number(props.get(_P_MAX_WATCH_ALERTS, {}), default=10) or 10)
     block_keywords_raw = _text(props.get(_P_BLOCK_KEYWORDS, {}))
     block_keywords = _parse_keywords(block_keywords_raw)
