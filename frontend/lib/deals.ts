@@ -137,37 +137,65 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     }
   }
 
-  const entries: { deal: LiveDeal }[] = []
-  for (const [key, agg] of byKey) {
-    if (!agg.lastHotTs || !agg.peakLevel) continue // never hot within the window
-    if (agg.peakLevel !== 'top') continue           // only show top deals
-    const r = agg.latest
-    entries.push({
-      deal: {
-        key,
-        title: r.title as string,
-        url: dealUrl(key),
-        source: key.split(':')[0],
-        isFree: /^\s*free\b/i.test(r.title as string),
-        price: /^\s*free\b/i.test(r.title as string) ? null : (r.price && r.price > 0 ? (r.price as number) : null),
-        discountPercent: /^\s*free\b/i.test(r.title as string) ? null : (r.discount_percent ? (r.discount_percent as number) : null),
-        votesPos: r.votes_pos as number,
-        commentCount: r.comment_count as number,
-        hotScore: (r.hot_score as number) ?? 0,  // current score (reflects actual heat now)
-        peakScore: agg.peakScore,                  // highest score ever seen in retention window
-        hotLevel: agg.peakLevel,                  // peak level badge (stable, doesn't decay)
-        ageHours: r.age_hours as number,
-        ts: r.ts as string,
-      },
+  function toEntries(candidates: [string, Agg][]): { deal: LiveDeal }[] {
+    return candidates.map(([key, agg]) => {
+      const r = agg.latest
+      return {
+        deal: {
+          key,
+          title: r.title as string,
+          url: dealUrl(key),
+          source: key.split(':')[0],
+          isFree: /^\s*free\b/i.test(r.title as string),
+          price: /^\s*free\b/i.test(r.title as string) ? null : (r.price && r.price > 0 ? (r.price as number) : null),
+          discountPercent: /^\s*free\b/i.test(r.title as string) ? null : (r.discount_percent ? (r.discount_percent as number) : null),
+          votesPos: r.votes_pos as number,
+          commentCount: r.comment_count as number,
+          hotScore: (r.hot_score as number) ?? 0,  // current score (reflects actual heat now)
+          peakScore: agg.peakScore,                  // highest score ever seen in retention window
+          hotLevel: agg.peakLevel,                  // peak level badge (stable, doesn't decay)
+          ageHours: r.age_hours as number,
+          ts: r.ts as string,
+        },
+      }
     })
   }
 
   // Drop deals OzBargain itself now shows as expired, even within the retention
-  // window — only a handful of top-tier deals are ever checked here.
-  const expired = await Promise.all(
-    entries.map((e) => (e.deal.source === 'ozbargain' ? isOzbargainExpired(e.deal.url) : false)),
-  )
-  const live = entries.filter((_, i) => !expired[i])
+  // window — only a handful of deals are ever checked here.
+  async function keepLive(entries: { deal: LiveDeal }[]): Promise<{ deal: LiveDeal }[]> {
+    const expired = await Promise.all(
+      entries.map((e) => (e.deal.source === 'ozbargain' ? isOzbargainExpired(e.deal.url) : false)),
+    )
+    return entries.filter((_, i) => !expired[i])
+  }
+
+  // Top-tier deals are the main event. Top-tier supply is bursty (it clusters
+  // around big sale days, e.g. EOFY) and individual deals sell out fast, so on
+  // quieter days there may be none genuinely live — fall back to a handful of
+  // the best "great" deals (by peak score) rather than showing an empty page.
+  // The fallback check happens AFTER the live-expiry filter, not on the raw
+  // candidate count, so a page that would otherwise render zero live top
+  // deals (even if some are still technically inside the retention window)
+  // still gets the great-tier fallback.
+  const FALLBACK_GREAT_LIMIT = 8
+
+  const topCandidates: [string, Agg][] = []
+  const greatCandidates: [string, Agg][] = []
+  for (const entry of byKey) {
+    const [, agg] = entry
+    if (!agg.lastHotTs || !agg.peakLevel) continue // never hot within the window
+    if (agg.peakLevel === 'top') topCandidates.push(entry)
+    else if (agg.peakLevel === 'great') greatCandidates.push(entry)
+  }
+
+  let live = await keepLive(toEntries(topCandidates))
+  if (live.length === 0) {
+    const greatEntries = toEntries(
+      greatCandidates.sort((a, b) => b[1].peakScore - a[1].peakScore).slice(0, FALLBACK_GREAT_LIMIT),
+    )
+    live = await keepLive(greatEntries)
+  }
 
   // Highest tier first (Top > Great > Good); within a tier, by peak score.
   live.sort((a, b) => {
