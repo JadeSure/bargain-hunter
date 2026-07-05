@@ -138,6 +138,7 @@ export default function LandingPage() {
           <Link className="lp-nav-link" href="/start-here">Start Here</Link>
           <Link className="lp-nav-link" href="/guides">Saving Guides</Link>
           <span className="lp-nav-tagline">Invite-only · Australia</span>
+          <Link className="lp-nav-link" href="/login">Log in</Link>
           <button className="btn-orange" onClick={openModal} aria-haspopup="dialog">
             Request Access
           </button>
@@ -157,6 +158,7 @@ export default function LandingPage() {
             <Link className="lp-nav-mobile-link" href="/deals" onClick={() => setMenuOpen(false)}>Hot Deals</Link>
             <Link className="lp-nav-mobile-link" href="/start-here" onClick={() => setMenuOpen(false)}>Start Here</Link>
             <Link className="lp-nav-mobile-link" href="/guides" onClick={() => setMenuOpen(false)}>Saving Guides</Link>
+            <Link className="lp-nav-mobile-link" href="/login" onClick={() => setMenuOpen(false)}>Log in</Link>
             <button
               className="btn-orange lp-nav-mobile-cta"
               onClick={() => { setMenuOpen(false); openModal() }}
