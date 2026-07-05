@@ -1,0 +1,126 @@
+name: calibrate
+
+on:
+  schedule:
+    # Monday ~09:00 AET. GitHub cron is UTC and AET flips between AEST (UTC+10)
+    # and AEDT (UTC+11), so 23:05 UTC Sunday = 09:05 AEST / 10:05 AEDT Monday —
+    # close enough for a weekly report. Non-:00 minute to dodge GitHub's
+    # top-of-hour scheduling delay.
+    - cron: "5 23 * * 0"
+  workflow_dispatch:        # manual trigger for testing
+
+concurrency:
+  group: calibrate
+  cancel-in-progress: false
+
+permissions:
+  contents: write           # to commit the weekly report to data/calibration/
+  issues: write             # to open/refresh the "Weekly calibration report" issue
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so the rebase-on-push retry works
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -e . --quiet
+
+      # The calibrate CLI itself degrades gracefully (exits 0, writes nothing)
+      # when Notion credentials are unset — this guard just makes the skip
+      # explicit in the workflow log and skips the commit/issue steps too.
+      - name: Check Notion credentials
+        id: creds
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_SENT_LOG_DB_ID: ${{ secrets.NOTION_SENT_LOG_DB_ID }}
+          NOTION_FEEDBACK_DB_ID: ${{ secrets.NOTION_FEEDBACK_DB_ID }}
+        run: |
+          if [ -z "$NOTION_TOKEN" ] || [ -z "$NOTION_SENT_LOG_DB_ID" ] || [ -z "$NOTION_FEEDBACK_DB_ID" ]; then
+            echo "Notion secrets not fully configured — skipping calibration."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run calibration report
+        if: steps.creds.outputs.available == 'true'
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_SENT_LOG_DB_ID: ${{ secrets.NOTION_SENT_LOG_DB_ID }}
+          NOTION_FEEDBACK_DB_ID: ${{ secrets.NOTION_FEEDBACK_DB_ID }}
+        run: |
+          # Capture the one-screen summary for the GitHub issue body.
+          python -m bargain_hunter.calibration | tee /tmp/calibration-summary.txt
+
+      - name: Commit report
+        if: steps.creds.outputs.available == 'true'
+        run: |
+          if [ -z "$(git status --porcelain data/calibration 2>/dev/null)" ]; then
+            echo "No new calibration report to commit."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # main moves often (the deal pipeline commits every few minutes), so
+          # every push needs a rebase-and-retry. Report files are named by AET
+          # date and only written by this weekly job, so they never conflict.
+          push_with_retry() {
+            for attempt in 1 2 3 4 5; do
+              if git push; then
+                echo "Pushed on attempt $attempt."
+                return 0
+              fi
+              echo "Push rejected (attempt $attempt); rebasing on latest main."
+              if ! git pull --rebase -X theirs origin main; then
+                git rebase --abort 2>/dev/null || true
+              fi
+            done
+            return 1
+          }
+
+          git add data/calibration/
+          git diff --staged --quiet || git commit -m "chore(calibration): weekly report [skip ci]"
+          push_with_retry || { echo "Could not push calibration report." >&2; exit 1; }
+
+      - name: Create or update calibration issue
+        if: steps.creds.outputs.available == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # One rolling issue, refreshed weekly — same pattern as the
+          # onboarding-audit issue in collect-strategies.yml. Human-in-the-loop:
+          # the report only *suggests* threshold changes, never applies them.
+          title="Weekly calibration report"
+          gh label create calibration --color 0E8A16 \
+            --description "Weekly feedback calibration report" 2>/dev/null || true
+          {
+            echo '```'
+            cat /tmp/calibration-summary.txt
+            echo '```'
+            echo ""
+            latest=$(ls data/calibration/*.md 2>/dev/null | sort | tail -1)
+            if [ -n "$latest" ]; then
+              echo "Full report: [\`$latest\`](https://github.com/${GITHUB_REPOSITORY}/blob/main/$latest)"
+            fi
+          } > /tmp/calibration-issue.md
+          num=$(gh issue list --state open --label calibration \
+            --search "$title" --json number --jq '.[0].number' 2>/dev/null || true)
+          if [ -n "$num" ]; then
+            gh issue edit "$num" --body-file /tmp/calibration-issue.md
+            echo "Refreshed calibration issue #$num."
+          else
+            gh issue create --title "$title" --label calibration \
+              --body-file /tmp/calibration-issue.md
+          fi
