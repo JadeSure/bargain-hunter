@@ -1,0 +1,60 @@
+[
+  {
+    "kind": "Listing",
+    "data": {
+      "children": [
+        {
+          "kind": "t3",
+          "data": {
+            "id": "abc123",
+            "title": "Cheapest way to buy a MacBook?",
+            "selftext": "What is the cheapest way to buy a MacBook?"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "kind": "Listing",
+    "data": {
+      "children": [
+        {
+          "kind": "t1",
+          "data": {
+            "author": "saver1",
+            "score": 20,
+            "body": "Stack the student discount at the Apple Education Store with a 5% discounted Coles gift card bought at Woolworths and you save around 12% overall."
+          }
+        },
+        {
+          "kind": "t1",
+          "data": {
+            "author": "saver2",
+            "score": 35,
+            "body": "Even better: buy the discounted gift card, then use ShopBack cashback on top of the education pricing for an extra 1-2% back."
+          }
+        },
+        {
+          "kind": "t1",
+          "data": {
+            "author": "lurker",
+            "score": 2,
+            "body": "same"
+          }
+        },
+        {
+          "kind": "t1",
+          "data": {
+            "author": "saver3",
+            "score": 8,
+            "body": "Also check JB Hi-Fi price match if they're running a concurrent sale on the same model, it can beat the Apple Store outright."
+          }
+        },
+        {
+          "kind": "more",
+          "data": {"count": 40}
+        }
+      ]
+    }
+  }
+]

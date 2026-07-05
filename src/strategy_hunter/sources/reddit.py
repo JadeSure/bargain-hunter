@@ -13,6 +13,11 @@ Two transports, chosen at runtime:
 Either way a single blocked/rate-limited subreddit is skipped (logged at
 WARNING) rather than failing the whole run — Reddit availability is an external
 condition, not a code error.
+
+When using the OAuth transport, a bounded top-up of top-comment excerpts is
+appended to the highest-traction posts' bodies (see ``_mine_comments``) — the
+"how to actually do it" detail is often in the replies, not the OP. RSS
+fallback mode has no comments endpoint, so this is skipped there.
 """
 
 from __future__ import annotations
@@ -34,6 +39,18 @@ log = logging.getLogger(__name__)
 _ATOM = "{http://www.w3.org/2005/Atom}"
 _TOKEN_URL = "https://www.reddit.com/api/v1/access_token"
 _OAUTH_BASE = "https://oauth.reddit.com"
+
+# Comment mining defaults. The daily strategy_hunter run has ample OAuth headroom
+# (~100 req/min), so a small, bounded top-up of comment requests per run is cheap.
+# A single comment that's too short is noise ("This", "Same"); skip it.
+_COMMENT_MIN_LEN = 80
+_MAX_COMMENTS_PER_POST = 15
+# Cap on how many posts (across all subreddits) get an extra comments request per
+# run, so comment mining can't blow out the request budget on a busy day.
+_MAX_POSTS_WITH_COMMENTS_PER_RUN = 5
+# Only bother mining comments on posts with some traction — a 0-score post rarely
+# has useful stacking discussion underneath it.
+_COMMENT_MIN_SCORE = 5
 
 
 class RedditUnavailable(Exception):
@@ -64,6 +81,11 @@ class RedditSource(StrategySource):
         timeout: float = 20.0,
         max_retries: int = 4,
         max_backoff_seconds: float = 90.0,
+        fetch_comments: bool = True,
+        comment_min_len: int = _COMMENT_MIN_LEN,
+        max_comments_per_post: int = _MAX_COMMENTS_PER_POST,
+        max_posts_with_comments: int = _MAX_POSTS_WITH_COMMENTS_PER_RUN,
+        comment_min_score: int = _COMMENT_MIN_SCORE,
     ) -> None:
         self.subreddits = subreddits
         self.listing = listing
@@ -72,7 +94,15 @@ class RedditSource(StrategySource):
         self.timeout = timeout
         self.max_retries = max_retries
         self.max_backoff_seconds = max_backoff_seconds
+        # Comment mining only applies to the OAuth transport; RSS has no comments
+        # endpoint, so this is silently a no-op in RSS-fallback mode (see fetch()).
+        self.fetch_comments = fetch_comments
+        self.comment_min_len = comment_min_len
+        self.max_comments_per_post = max_comments_per_post
+        self.max_posts_with_comments = max_posts_with_comments
+        self.comment_min_score = comment_min_score
         self._token: str | None = None
+        self._comments_budget = 0
 
     # -- transport ------------------------------------------------------------
 
@@ -153,6 +183,7 @@ class RedditSource(StrategySource):
         posts: list[CapturedPost] = []
         now = datetime.now(UTC)
         token = self._get_token()
+        self._comments_budget = self.max_posts_with_comments
         log.info(
             "reddit: using %s",
             "OAuth app-only API (oauth.reddit.com)"
@@ -184,7 +215,45 @@ class RedditSource(StrategySource):
             url,
             headers={"Authorization": f"bearer {token}", "User-Agent": self._user_agent()},
         )
-        return self.parse_json(resp.json(), subreddit=sub, now=now)
+        posts = self.parse_json(resp.json(), subreddit=sub, now=now)
+        if self.fetch_comments:
+            self._mine_comments(posts, token)
+        return posts
+
+    def _mine_comments(self, posts: list[CapturedPost], token: str) -> None:
+        """Append top-comment excerpts to the highest-traction posts, in place.
+
+        Bounded by ``max_posts_with_comments`` per run (across all subreddits) so
+        this stays a small, predictable top-up on the base listing requests.
+        """
+        candidates = sorted(
+            (p for p in posts if (p.num_comments or 0) > 0),
+            key=lambda p: p.score or 0,
+            reverse=True,
+        )
+        for post in candidates:
+            if self._comments_budget <= 0:
+                break
+            if (post.score or 0) < self.comment_min_score:
+                continue
+            time.sleep(self.request_delay_seconds)
+            try:
+                comments = self._fetch_comments_json(post.post_id, token)
+            except RedditUnavailable as exc:
+                log.warning("reddit: comment fetch failed for %s — %s", post.post_id, exc)
+                continue
+            self._comments_budget -= 1
+            if comments:
+                post.body = self._append_comments(post.body, comments)
+
+    def _fetch_comments_json(self, post_id: str, token: str) -> list[tuple[str | None, int, str]]:
+        url = f"{_OAUTH_BASE}/comments/{post_id}?limit={self.max_comments_per_post}&sort=top"
+        resp = self._request(
+            "GET",
+            url,
+            headers={"Authorization": f"bearer {token}", "User-Agent": self._user_agent()},
+        )
+        return self.parse_comments_json(resp.json())
 
     # -- parsing (testable, no network) ---------------------------------------
 
@@ -230,6 +299,38 @@ class RedditSource(StrategySource):
                 )
             )
         return posts
+
+    def parse_comments_json(self, data: object) -> list[tuple[str | None, int, str]]:
+        """Return [(author, score, body), ...] for top-level comments, top-comments-first.
+
+        ``data`` is the two-``Listing`` array the comments JSON endpoint returns
+        (``[post_listing, comments_listing]``); only the second listing's
+        top-level (``kind == "t1"``) comments are considered — replies-to-replies
+        add noise without much extra signal for a money-saving guide.
+        """
+        if not isinstance(data, list) or len(data) < 2:
+            return []
+        children = data[1].get("data", {}).get("children", [])
+        results: list[tuple[str | None, int, str]] = []
+        for child in children:
+            if child.get("kind") != "t1":
+                continue
+            d = child.get("data", {})
+            body = clean_html(d.get("body") or "")
+            if len(body) < self.comment_min_len:
+                continue
+            score = d.get("score") or 0
+            results.append((d.get("author"), score, body))
+        results.sort(key=lambda c: c[1], reverse=True)
+        return results[: self.max_comments_per_post]
+
+    @staticmethod
+    def _append_comments(body: str, comments: list[tuple[str | None, int, str]]) -> str:
+        lines = [body, "", "---- top comments ----"]
+        for author, _score, text in comments:
+            who = author or "anon"
+            lines.append(f"[{who}] {text}")
+        return "\n".join(lines).strip()
 
     def _parse_entry(self, entry, subreddit: str, now: datetime) -> CapturedPost | None:
         title = (entry.findtext(f"{_ATOM}title") or "").strip()

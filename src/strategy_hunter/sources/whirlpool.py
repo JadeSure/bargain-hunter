@@ -2,8 +2,10 @@
 
 Whirlpool has no public API; we parse the board listing HTML for thread links
 (``<a class="title" href="/thread/ID">``) and each thread page for the original
-post body (``<div class="replytext bodytext">``, first occurrence = OP).
-Boards default to Shopping / Finance / Travel, the richest in money-saving talk.
+post body (``<div class="replytext bodytext">``, first occurrence = OP), plus
+substantive replies from that same page (no extra request) — the "how to
+actually do it" detail often lives in the replies, not the OP. Boards default
+to Shopping / Finance / Travel, the richest in money-saving talk.
 """
 
 from __future__ import annotations
@@ -20,6 +22,9 @@ from ..models import CapturedPost
 from .base import USER_AGENT, StrategySource, clean_html
 
 _THREAD_HREF_RE = re.compile(r"^/thread/([0-9a-z]+)$")
+# A single reply that's too short is noise ("Bump", "Thanks!"); skip it.
+_MIN_REPLY_LEN = 80
+_MAX_REPLIES = 15
 
 
 class WhirlpoolSource(StrategySource):
@@ -99,7 +104,41 @@ class WhirlpoolSource(StrategySource):
         return board_name, threads
 
     def parse_thread(self, html: str) -> str:
-        """Return the original post body text (first post) from a thread page."""
+        """Return the OP body plus substantive replies from page 1 of a thread.
+
+        Each ``<div class="reply">`` wraps one post; the first is the OP, the
+        rest are replies. Only the thread's first page is fetched (no extra
+        requests), and only replies ``>= _MIN_REPLY_LEN`` chars are kept, capped
+        at ``_MAX_REPLIES``, preserving their on-page (chronological) order.
+        """
         soup = BeautifulSoup(html, "html.parser")
-        body = soup.find("div", class_="replytext")
-        return clean_html(str(body)) if body else ""
+        reply_blocks = soup.find_all("div", class_="reply")
+        if not reply_blocks:
+            el = soup.find("div", class_="replytext")
+            return clean_html(str(el)) if el else ""
+
+        op_el = reply_blocks[0].find("div", class_="replytext")
+        op_body = clean_html(str(op_el)) if op_el else ""
+
+        replies: list[tuple[str | None, str]] = []
+        for block in reply_blocks[1:]:
+            text_el = block.find("div", class_="replytext")
+            text = clean_html(str(text_el)) if text_el else ""
+            if len(text) < _MIN_REPLY_LEN:
+                continue
+            author_el = block.find(class_="replyuser")
+            author = author_el.get_text(strip=True) if author_el else None
+            replies.append((author, text))
+            if len(replies) >= _MAX_REPLIES:
+                break
+        return self._build_body(op_body, replies)
+
+    @staticmethod
+    def _build_body(op_body: str, replies: list[tuple[str | None, str]]) -> str:
+        if not replies:
+            return op_body
+        lines = [op_body, "", "---- replies ----"]
+        for author, text in replies:
+            who = author or "anon"
+            lines.append(f"[{who}] {text}")
+        return "\n".join(lines).strip()
