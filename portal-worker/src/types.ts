@@ -39,6 +39,9 @@ export interface SubscriberData {
   channels: string[]
   categories: string[]
   hotLevel: string | null
+  // "HH:MM" local time (run.timezone), or null to use the pipeline's global default.
+  quietHoursStart: string | null
+  quietHoursEnd: string | null
 }
 
 export interface SubscriberUpdate {
@@ -51,4 +54,6 @@ export interface SubscriberUpdate {
   channels?: string[]
   categories?: string[]
   hotLevel?: string | null
+  quietHoursStart?: string | null
+  quietHoursEnd?: string | null
 }

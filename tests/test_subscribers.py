@@ -39,3 +39,22 @@ def test_max_alerts_explicit_notion_value_overrides_default():
 def test_max_alerts_uses_builtin_default_when_not_passed():
     sub = _parse_subscriber(_props())
     assert sub.max_alerts_per_day == 10
+
+
+def test_quiet_hours_unset_by_default():
+    sub = _parse_subscriber(_props())
+    assert sub.quiet_hours_start is None
+    assert sub.quiet_hours_end is None
+
+
+def test_quiet_hours_parsed_when_present():
+    sub = _parse_subscriber(
+        _props(
+            **{
+                "Quiet Hours Start": {"rich_text": [{"plain_text": "22:00"}]},
+                "Quiet Hours End": {"rich_text": [{"plain_text": "07:00"}]},
+            }
+        )
+    )
+    assert sub.quiet_hours_start == "22:00"
+    assert sub.quiet_hours_end == "07:00"

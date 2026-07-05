@@ -65,6 +65,10 @@ class Subscriber(BaseModel):
     max_alerts_per_day: int = 10        # hot track daily cap
     max_watch_alerts_per_day: int = 10  # watch track daily cap (independent)
     block_keywords: list[str] = Field(default_factory=list)
+    # Per-subscriber quiet-hours override, "HH:MM" local time (run.timezone).
+    # None/empty = fall back to the global run.quiet_hours_start/end config.
+    quiet_hours_start: str | None = None
+    quiet_hours_end: str | None = None
 
     @property
     def ref(self) -> str:

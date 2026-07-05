@@ -18,6 +18,8 @@ const P = {
   MAX_WATCH_ALERTS: "Max Watch Alerts/Day",
   BLOCK_KEYWORDS: "Block Keywords",
   HOT_LEVEL: "Hot Level",
+  QUIET_HOURS_START: "Quiet Hours Start",
+  QUIET_HOURS_END: "Quiet Hours End",
 } as const;
 
 function headers(token: string): Record<string, string> {
@@ -91,6 +93,9 @@ function parseSubscriber(
   };
   const maxWatchAlertsPerDay = maxWatchAlertsProp?.number ?? 10;
 
+  const quietHoursStart = richText(props, P.QUIET_HOURS_START) || null;
+  const quietHoursEnd = richText(props, P.QUIET_HOURS_END) || null;
+
   return {
     pageId: id,
     subscriber: {
@@ -106,6 +111,8 @@ function parseSubscriber(
       channels,
       categories,
       hotLevel,
+      quietHoursStart,
+      quietHoursEnd,
     },
   };
 }
@@ -275,6 +282,20 @@ export async function updateSubscriber(
   if (update.hotLevel !== undefined) {
     properties[P.HOT_LEVEL] =
       update.hotLevel === null ? { select: null } : { select: { name: update.hotLevel } };
+  }
+  if (update.quietHoursStart !== undefined) {
+    properties[P.QUIET_HOURS_START] = {
+      rich_text:
+        update.quietHoursStart === null
+          ? []
+          : [{ text: { content: update.quietHoursStart } }],
+    };
+  }
+  if (update.quietHoursEnd !== undefined) {
+    properties[P.QUIET_HOURS_END] = {
+      rich_text:
+        update.quietHoursEnd === null ? [] : [{ text: { content: update.quietHoursEnd } }],
+    };
   }
 
   if (!Object.keys(properties).length) return;

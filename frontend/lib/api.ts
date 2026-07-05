@@ -11,6 +11,9 @@ export interface SubscriberData {
   channels: string[]
   categories: string[]
   hotLevel: string | null
+  // "HH:MM" (24h) or null = use the pipeline's global quiet-hours default.
+  quietHoursStart: string | null
+  quietHoursEnd: string | null
 }
 
 export interface SubscriberUpdate {
@@ -23,6 +26,8 @@ export interface SubscriberUpdate {
   channels?: string[]
   categories?: string[]
   hotLevel?: string | null
+  quietHoursStart?: string | null
+  quietHoursEnd?: string | null
 }
 
 const WORKER = process.env.NEXT_PUBLIC_WORKER_URL ?? ''

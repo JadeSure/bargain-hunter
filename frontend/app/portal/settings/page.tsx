@@ -41,6 +41,11 @@ export default function SettingsPage() {
   const [channels, setChannels] = useState<string[]>(user.channels)
   const [categories, setCategories] = useState<string[]>(user.categories)
   const [hotLevel, setHotLevel] = useState<string>(user.hotLevel ?? '')
+  const [quietCustom, setQuietCustom] = useState<boolean>(
+    Boolean(user.quietHoursStart && user.quietHoursEnd)
+  )
+  const [quietStart, setQuietStart] = useState<string>(user.quietHoursStart ?? '22:00')
+  const [quietEnd, setQuietEnd] = useState<string>(user.quietHoursEnd ?? '07:00')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [dirty, setDirty] = useState(false)
@@ -68,6 +73,8 @@ export default function SettingsPage() {
         channels,
         categories,
         hotLevel: hotLevel === '' ? null : hotLevel,
+        quietHoursStart: quietCustom && quietStart ? quietStart : null,
+        quietHoursEnd: quietCustom && quietEnd ? quietEnd : null,
       })
       setDirty(false)
       setSaved(true)
@@ -167,6 +174,58 @@ export default function SettingsPage() {
             onChange={(e) => { setMaxWatchAlerts(e.target.value); markDirty() }}
           />
         </div>
+      </div>
+
+      {/* Quiet hours */}
+      <div className="settings-section">
+        <div className="settings-section-title">Quiet hours</div>
+        <div className="settings-row">
+          <div>
+            <div className="settings-field-label">Use custom quiet hours</div>
+            <div className="settings-field-sub">
+              No alerts are sent during quiet hours. Off = use the service default window.
+            </div>
+          </div>
+          <button
+            role="switch"
+            aria-checked={quietCustom}
+            className={`toggle-btn ${quietCustom ? 'toggle-btn-on' : 'toggle-btn-off'}`}
+            onClick={() => { setQuietCustom(!quietCustom); markDirty() }}
+            type="button"
+          >
+            <span className={`toggle-knob ${quietCustom ? 'toggle-knob-on' : 'toggle-knob-off'}`} />
+          </button>
+        </div>
+        {quietCustom && (
+          <div className="settings-row" style={{ marginBottom: 0 }}>
+            <div>
+              <div className="settings-field-label">Quiet from / until</div>
+              <div className="settings-field-sub">
+                Local Australian Eastern time. A window that ends before it starts wraps past
+                midnight (e.g. 22:00 – 07:00).
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                className="settings-number-input"
+                style={{ width: '110px', textAlign: 'left' }}
+                type="time"
+                value={quietStart}
+                onChange={(e) => { setQuietStart(e.target.value); markDirty() }}
+                aria-label="Quiet hours start"
+              />
+              <span style={{ fontSize: '13px', color: 'rgba(232,233,236,0.4)' }}>–</span>
+              <input
+                className="settings-number-input"
+                style={{ width: '110px', textAlign: 'left' }}
+                type="time"
+                value={quietEnd}
+                onChange={(e) => { setQuietEnd(e.target.value); markDirty() }}
+                aria-label="Quiet hours end"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Channels */}

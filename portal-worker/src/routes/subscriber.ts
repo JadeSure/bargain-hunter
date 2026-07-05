@@ -79,6 +79,32 @@ app.put("/me", async (c) => {
     const v = body.hotLevel === null ? null : String(body.hotLevel).trim().toLowerCase();
     update.hotLevel = v && valid.has(v) ? v : null;
   }
+  // Per-user quiet-hours override: "HH:MM" (24h) or null = use the pipeline's
+  // global default. Both must be set together for the override to take effect
+  // pipeline-side, but each field is validated/stored independently.
+  const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+  if (body.quietHoursStart !== undefined) {
+    if (body.quietHoursStart === null || body.quietHoursStart === "") {
+      update.quietHoursStart = null;
+    } else {
+      const v = String(body.quietHoursStart).trim();
+      if (!HHMM.test(v)) {
+        return c.json({ error: "quietHoursStart must be HH:MM (24h)" }, 400);
+      }
+      update.quietHoursStart = v;
+    }
+  }
+  if (body.quietHoursEnd !== undefined) {
+    if (body.quietHoursEnd === null || body.quietHoursEnd === "") {
+      update.quietHoursEnd = null;
+    } else {
+      const v = String(body.quietHoursEnd).trim();
+      if (!HHMM.test(v)) {
+        return c.json({ error: "quietHoursEnd must be HH:MM (24h)" }, 400);
+      }
+      update.quietHoursEnd = v;
+    }
+  }
 
   await updateSubscriber(c.env.NOTION_TOKEN, user.notionPageId, update);
   return c.json({ ok: true });

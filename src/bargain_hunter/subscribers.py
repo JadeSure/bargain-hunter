@@ -25,6 +25,8 @@ _P_HOT_LEVEL = "Hot Level"
 _P_MAX_ALERTS = "Max Alerts/Day"
 _P_MAX_WATCH_ALERTS = "Max Watch Alerts/Day"
 _P_BLOCK_KEYWORDS = "Block Keywords"
+_P_QUIET_START = "Quiet Hours Start"
+_P_QUIET_END = "Quiet Hours End"
 
 
 def _text(prop: dict) -> str:
@@ -112,6 +114,8 @@ def _parse_subscriber(props: dict, default_max_alerts_per_day: int = 10) -> Subs
     max_watch_alerts = int(_number(props.get(_P_MAX_WATCH_ALERTS, {}), default=10) or 10)
     block_keywords_raw = _text(props.get(_P_BLOCK_KEYWORDS, {}))
     block_keywords = _parse_keywords(block_keywords_raw)
+    quiet_hours_start = _text(props.get(_P_QUIET_START, {})) or None
+    quiet_hours_end = _text(props.get(_P_QUIET_END, {})) or None
 
     return Subscriber(
         name=name or "Unknown",
@@ -127,6 +131,8 @@ def _parse_subscriber(props: dict, default_max_alerts_per_day: int = 10) -> Subs
         min_hot_level=min_hot_level,
         max_alerts_per_day=max_alerts,
         max_watch_alerts_per_day=max_watch_alerts,
+        quiet_hours_start=quiet_hours_start,
+        quiet_hours_end=quiet_hours_end,
     )
 
 
