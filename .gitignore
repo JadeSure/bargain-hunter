@@ -19,3 +19,6 @@ venv/
 .claude/
 
 # Note: data/ is intentionally tracked (non-personal deal history powers velocity).
+# Exception: the quiet-hours queue holds subscriber emails (PII) — never commit it.
+# It persists between Actions runs via the hot cache only (see hunt.yml).
+data/queued_notifications.json

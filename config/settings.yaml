@@ -6,6 +6,7 @@ run:
   timezone: "Australia/Sydney"      # AET/AEDT — used for daily caps, quiet hours, and midnight boundary
   quiet_hours_start: "22:00"        # AEST — no alerts after 10pm
   quiet_hours_end: "07:00"          # AEST — no alerts before 7am (overnight window)
+  quiet_hours_queue_max_age_hours: 12  # overnight-queued notifications older than this are dropped at drain
 
 sources:
   ozbargain:

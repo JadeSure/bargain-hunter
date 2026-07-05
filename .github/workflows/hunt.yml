@@ -39,6 +39,7 @@ jobs:
             data/deals_state.json
             data/alert_state.json
             data/observations
+            data/queued_notifications.json
           key: deals-state-${{ github.run_id }}
           restore-keys: deals-state-
 
@@ -73,6 +74,7 @@ jobs:
             data/deals_state.json
             data/alert_state.json
             data/observations
+            data/queued_notifications.json
           key: deals-state-${{ github.run_id }}
 
       # Once per AET day: commit deals_state.json as a calibration seed / disaster-recovery baseline.

@@ -27,6 +27,7 @@ from .models import Deal, Subscriber
 from .notify.email import EmailSender, send_maintainer_alert
 from .notify.render import DealItem
 from .observations import ObservationLog, build_observation
+from .queue_store import NotificationQueue
 from .scoring import classify_hot, compute_vote_velocity, enrich_deal, is_voteless_source
 from .sources.camelcamelcamel import CamelCamelCamelSource
 from .sources.ozbargain import OzBargainSource
@@ -49,6 +50,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         "hot_deals": 0,
         "watch_matches": 0,
         "notifications_sent": 0,
+        "queued": 0,
         "errors": [],
         "cold_start": False,
     }
@@ -222,13 +224,21 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     # ------------------------------------------------------------------
     # 6. Match + notify each subscriber
     # ------------------------------------------------------------------
+    # During quiet hours we don't drop notifications — we queue them (per
+    # subscriber) and drain the queue into the first digest after quiet hours
+    # end, re-checking staleness and Sent Log dedup at drain time.
+    queue_mode = False
     if _is_quiet_hours(settings, now):
         if force:
             log.info("Quiet hours active but --force set; proceeding with notifications.")
         else:
-            log.info("Quiet hours — skipping notifications for this run.")
-            state.save()
-            return summary
+            log.info("Quiet hours — queueing notifications instead of sending.")
+            queue_mode = True
+
+    queue = NotificationQueue()
+    queue.load()
+    draining = not queue_mode and len(queue) > 0
+    max_age = settings.run.quiet_hours_queue_max_age_hours
 
     sender = EmailSender(dry_run=dry_run)
 
@@ -238,12 +248,14 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
 
         # Daily caps — hot and watch are independent quotas.
         # "mixed" deals (hot-qualified + watch keyword hit) count against hot cap only.
+        # In queue mode caps are NOT applied: the drain (usually the next AET
+        # day, when caps have reset) applies them instead.
         hot_daily = dedup.daily_count(sub, now=now, tracks={"hot", "mixed"})
         watch_daily = dedup.daily_count(sub, now=now, tracks={"watch"})
         remaining_hot = sub.max_alerts_per_day - hot_daily
         remaining_watch = sub.max_watch_alerts_per_day - watch_daily
 
-        if remaining_hot <= 0 and remaining_watch <= 0:
+        if not queue_mode and remaining_hot <= 0 and remaining_watch <= 0:
             log.info(
                 "Subscriber %s at daily caps (hot=%d/%d watch=%d/%d); skipping.",
                 sub.ref, hot_daily, sub.max_alerts_per_day,
@@ -251,9 +263,16 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             )
             continue
 
-        hot_items: list[DealItem] = []
-        watch_items: list[DealItem] = []
-        notified_keys: set[str] = set()
+        queued = (
+            queue.drain_for(sub.email or "", now=now, max_age_hours=max_age)
+            if draining
+            else []
+        )
+
+        # Candidates = passed every filter except the daily cap (applied after
+        # the queued-entry merge so tier sorting decides who wins cap slots).
+        hot_candidates: list[DealItem] = []
+        watch_candidates: list[DealItem] = []
         # Deals that passed every filter except a daily cap. Surfaced in the
         # digest footer so cap truncation is visible instead of silent.
         cap_suppressed = 0
@@ -300,16 +319,37 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                         sub.ref, deal.key, deal.votes_pos, deal.discount_percent, vel,
                     )
                     continue
-                # Cap check last: only deals that passed every other filter
-                # count as "suppressed by the cap" for the digest footer.
-                if len(hot_items) >= max(remaining_hot, 0):
-                    log.info("[%s] hot skip %s: daily cap", sub.ref, deal.key)
-                    cap_suppressed += 1
-                    continue
-                hot_items.append(
+                hot_candidates.append(
                     DealItem(deal, track="hot", reason=_hot_reason(deal), level=level)
                 )
-                notified_keys.add(deal.key)
+
+        # Merge queued (overnight) hot/mixed entries: staleness was already
+        # filtered by drain_for; re-check dedup and blocks at drain time.
+        hot_candidate_keys = {item.deal.key for item in hot_candidates}
+        for q in queued:
+            if q.track not in {"hot", "mixed"} or q.deal.key in hot_candidate_keys:
+                continue
+            if dedup.already_sent(q.deal, sub):
+                continue
+            if _is_blocked(q.deal, sub.block_keywords):
+                continue
+            hot_candidates.append(DealItem(q.deal, track=q.track, reason=q.reason, level=q.level))
+            hot_candidate_keys.add(q.deal.key)
+
+        # Best tiers first, then apply the daily cap (skipped in queue mode —
+        # the drain applies caps instead).
+        hot_candidates.sort(key=lambda item: tier_rank.get(item.level or "", 0), reverse=True)
+        if queue_mode:
+            hot_items = hot_candidates
+        else:
+            hot_items = hot_candidates[: max(remaining_hot, 0)]
+            if len(hot_candidates) > len(hot_items):
+                log.info(
+                    "[%s] hot: %d deal(s) held back by daily cap",
+                    sub.ref, len(hot_candidates) - len(hot_items),
+                )
+                cap_suppressed += len(hot_candidates) - len(hot_items)
+        notified_keys = {item.deal.key for item in hot_items}
 
         # Watch track (independent cap — does not share quota with hot)
         watch_hits = filter_watch_matches(active_deals, sub, settings.scoring.watch, now=now)
@@ -340,17 +380,40 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 continue
             if realert_label:
                 reason = f"{reason} · {realert_label}"
-            # Cap check last: only deals that passed every other filter count
-            # as "suppressed by the cap" for the digest footer.
-            if len(watch_items) >= max(remaining_watch, 0):
-                log.info("[%s] watch skip %s: daily cap", sub.ref, deal.key)
-                cap_suppressed += 1
-                continue
-            watch_items.append(DealItem(deal, track="watch", reason=reason))
+            watch_candidates.append(DealItem(deal, track="watch", reason=reason))
             notified_keys.add(deal.key)
+
+        # Merge queued (overnight) watch entries, then apply the watch cap.
+        for q in queued:
+            if q.track != "watch" or q.deal.key in notified_keys:
+                continue
+            if dedup.already_sent(q.deal, sub):
+                continue
+            if _is_blocked(q.deal, sub.block_keywords):
+                continue
+            watch_candidates.append(DealItem(q.deal, track="watch", reason=q.reason))
+            notified_keys.add(q.deal.key)
+
+        if queue_mode:
+            watch_items = watch_candidates
+        else:
+            watch_items = watch_candidates[: max(remaining_watch, 0)]
+            if len(watch_candidates) > len(watch_items):
+                log.info(
+                    "[%s] watch: %d deal(s) held back by daily cap",
+                    sub.ref, len(watch_candidates) - len(watch_items),
+                )
+                cap_suppressed += len(watch_candidates) - len(watch_items)
 
         items = hot_items + watch_items
         if not items:
+            continue
+
+        if queue_mode:
+            email = sub.email or ""
+            for item in items:
+                queue.add(email, item.deal, item.track, item.level, item.reason, now=now)
+            summary["queued"] += len(items)
             continue
 
         summary["watch_matches"] += len(watch_items)
@@ -381,8 +444,17 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                     summary["errors"].append(f"Sent log write error: {exc}")
 
     # ------------------------------------------------------------------
-    # 7. Save state
+    # 7. Save state (and the quiet-hours queue)
     # ------------------------------------------------------------------
+    if queue_mode:
+        queue.save()
+        log.info("Quiet hours: %d notification(s) queued for later delivery.", summary["queued"])
+    elif draining:
+        # Everything survivable was merged into this run's digests; drop the rest.
+        queue.clear()
+        queue.save()
+        log.info("Overnight notification queue drained and cleared.")
+
     state.save()
 
     log.info(
