@@ -111,11 +111,14 @@ def build_unsubscribe_url(email: str) -> str | None:
 def render_email(
     subscriber: Subscriber,
     items: list[DealItem],
+    cap_suppressed: int = 0,
 ) -> str:
     """Render the HTML email digest for one subscriber.
 
     If FEEDBACK_BASE_URL and FEEDBACK_HMAC_SECRET are set, the template renders
     per-deal 👍/👎 links with HMAC signatures; otherwise they are omitted.
+    ``cap_suppressed`` > 0 adds a footer note that N more deals qualified today
+    but were held back by the subscriber's daily cap.
     """
     tmpl = _env.get_template("email.html.j2")
     sent_at = datetime.now(UTC).astimezone(_AET).strftime("%d %b %Y %H:%M AEST")
@@ -143,4 +146,5 @@ def render_email(
         sent_at=sent_at,
         unsubscribe_url=unsubscribe_url,
         site_url=site_url,
+        cap_suppressed=cap_suppressed,
     )

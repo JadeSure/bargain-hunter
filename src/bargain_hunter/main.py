@@ -254,13 +254,13 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         hot_items: list[DealItem] = []
         watch_items: list[DealItem] = []
         notified_keys: set[str] = set()
+        # Deals that passed every filter except a daily cap. Surfaced in the
+        # digest footer so cap truncation is visible instead of silent.
+        cap_suppressed = 0
 
         # Hot track
-        if sub.subscribe_hot and hot_deals and remaining_hot > 0:
+        if sub.subscribe_hot and hot_deals:
             for deal in hot_deals:
-                if len(hot_items) >= remaining_hot:
-                    log.info("[%s] hot skip %s: daily cap", sub.ref, deal.key)
-                    break
                 if _is_blocked(deal, sub.block_keywords):
                     log.info("[%s] hot skip %s: blocked keyword", sub.ref, deal.key)
                     continue
@@ -300,6 +300,12 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                         sub.ref, deal.key, deal.votes_pos, deal.discount_percent, vel,
                     )
                     continue
+                # Cap check last: only deals that passed every other filter
+                # count as "suppressed by the cap" for the digest footer.
+                if len(hot_items) >= max(remaining_hot, 0):
+                    log.info("[%s] hot skip %s: daily cap", sub.ref, deal.key)
+                    cap_suppressed += 1
+                    continue
                 hot_items.append(
                     DealItem(deal, track="hot", reason=_hot_reason(deal), level=level)
                 )
@@ -317,8 +323,6 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 continue
             if _is_blocked(deal, sub.block_keywords):
                 continue
-            if len(watch_items) >= remaining_watch:
-                break
             if not state.should_notify(
                 deal,
                 settings.cold_start.ignore_deals_older_than_hours,
@@ -336,6 +340,12 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 continue
             if realert_label:
                 reason = f"{reason} · {realert_label}"
+            # Cap check last: only deals that passed every other filter count
+            # as "suppressed by the cap" for the digest footer.
+            if len(watch_items) >= max(remaining_watch, 0):
+                log.info("[%s] watch skip %s: daily cap", sub.ref, deal.key)
+                cap_suppressed += 1
+                continue
             watch_items.append(DealItem(deal, track="watch", reason=reason))
             notified_keys.add(deal.key)
 
@@ -346,7 +356,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         summary["watch_matches"] += len(watch_items)
 
         # Send
-        ok = sender.send_digest(sub, items)
+        ok = sender.send_digest(sub, items, cap_suppressed=cap_suppressed)
         if ok:
             summary["notifications_sent"] += len(items)
             for item in items:

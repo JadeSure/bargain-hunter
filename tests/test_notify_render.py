@@ -106,3 +106,33 @@ def test_render_email_no_unsubscribe_without_config(monkeypatch):
     html = render_email(subscriber, [_sample_item()])
 
     assert "Unsubscribe" not in html
+
+
+def test_render_email_shows_cap_suppression_footer():
+    html = render_email(
+        Subscriber(name="Test", email="test@example.com"),
+        [_sample_item()],
+        cap_suppressed=3,
+    )
+    assert "3 more deals matched today" in html
+    assert "held back by your daily cap" in html
+    assert "portal settings" in html
+
+
+def test_render_email_cap_footer_singular():
+    html = render_email(
+        Subscriber(name="Test", email="test@example.com"),
+        [_sample_item()],
+        cap_suppressed=1,
+    )
+    assert "1 more deal matched today" in html
+    assert "was held back by your daily cap" in html
+
+
+def test_render_email_no_cap_footer_when_zero():
+    html = render_email(
+        Subscriber(name="Test", email="test@example.com"),
+        [_sample_item()],
+        cap_suppressed=0,
+    )
+    assert "held back by your daily cap" not in html

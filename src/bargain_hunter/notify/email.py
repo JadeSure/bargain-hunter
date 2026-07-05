@@ -49,13 +49,18 @@ class EmailSender:
         subscriber: Subscriber,
         items: list[DealItem],
         subject: str | None = None,
+        cap_suppressed: int = 0,
     ) -> bool:
-        """Render and send a deal digest.  Returns True on success."""
+        """Render and send a deal digest.  Returns True on success.
+
+        ``cap_suppressed`` is how many additional deals qualified today but were
+        held back by the subscriber's daily cap — shown as a footer note.
+        """
         if not subscriber.email:
             log.warning("Subscriber %s has no email; skipping.", subscriber.ref)
             return False
 
-        html = render_email(subscriber, items)
+        html = render_email(subscriber, items, cap_suppressed=cap_suppressed)
         subject = subject or _build_subject(items)
 
         if self.dry_run:
