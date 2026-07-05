@@ -90,6 +90,10 @@ jobs:
     env:
       NEXT_PUBLIC_WORKER_URL: https://bargain-portal-api.jadesure17.workers.dev
       NEXT_PUBLIC_SITE_URL: https://bargain-hunter.sylvalume.online
+      # Optional: set the NEXT_PUBLIC_CF_ANALYTICS_TOKEN repo secret/var to enable
+      # the Cloudflare Web Analytics beacon (frontend/app/layout.tsx). Unset = no
+      # beacon is rendered; no other setup needed.
+      NEXT_PUBLIC_CF_ANALYTICS_TOKEN: ${{ secrets.NEXT_PUBLIC_CF_ANALYTICS_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

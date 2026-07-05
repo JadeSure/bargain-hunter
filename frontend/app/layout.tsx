@@ -65,6 +65,8 @@ export const metadata: Metadata = {
   },
 }
 
+const cfAnalyticsToken = process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -89,6 +91,16 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
+        {/* Cloudflare Web Analytics: zero-cookie, no consent banner needed.
+            Only rendered when a token is configured at build time — see
+            .github/workflows/deploy-frontend.yml for the env pass-through. */}
+        {cfAnalyticsToken && (
+          <script
+            defer
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={JSON.stringify({ token: cfAnalyticsToken })}
+          />
+        )}
       </body>
     </html>
   )
