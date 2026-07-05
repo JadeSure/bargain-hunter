@@ -22,3 +22,16 @@ export const requireAuth = createMiddleware<{
   c.set("user", session);
   return next();
 });
+
+// Must run after requireAuth (needs c.get("user") already set).
+export const requireOwner = createMiddleware<{
+  Bindings: Env;
+  Variables: Variables;
+}>(async (c, next) => {
+  const user = c.get("user");
+  const owner = c.env.OWNER_EMAIL?.toLowerCase().trim();
+  if (!owner || user.email.toLowerCase().trim() !== owner) {
+    return c.json({ error: "Forbidden" }, 403);
+  }
+  return next();
+});

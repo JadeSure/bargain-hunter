@@ -3,6 +3,7 @@ import type { SessionData } from "../types";
 
 const SESSION_TTL = 60 * 60 * 8; // 8 hours (must match the session cookie's maxAge)
 const MAGIC_LINK_TTL = 60 * 30; // 30 minutes (link stays usable until it expires)
+const RESUBSCRIBE_MARKER_TTL = 60 * 60 * 24 * 90; // 90 days — bounds how long a "you may reactivate" grant stays valid
 
 export function generateId(): string {
   const bytes = new Uint8Array(32);
@@ -65,4 +66,31 @@ export async function readMagicToken(
   if (!raw) return null;
   const { email } = JSON.parse(raw) as { email: string };
   return email;
+}
+
+// Marks an email as eligible for self-serve resubscribe. Set only when a
+// subscriber deactivates via the unsubscribe flow — this is what lets
+// /auth/resubscribe (and the reactivation branch in /auth/verify) tell a
+// "previously active, now unsubscribed" account apart from a still-pending
+// waitlist applicant who was never approved (both look like Active=false in
+// Notion, but only the former should ever be able to self-reactivate).
+export async function markResubscribeEligible(
+  kv: KVNamespace,
+  email: string
+): Promise<void> {
+  await kv.put(`resub:${email}`, "1", { expirationTtl: RESUBSCRIBE_MARKER_TTL });
+}
+
+export async function isResubscribeEligible(
+  kv: KVNamespace,
+  email: string
+): Promise<boolean> {
+  return (await kv.get(`resub:${email}`)) !== null;
+}
+
+export async function clearResubscribeEligible(
+  kv: KVNamespace,
+  email: string
+): Promise<void> {
+  await kv.delete(`resub:${email}`);
 }

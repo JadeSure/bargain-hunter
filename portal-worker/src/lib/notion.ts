@@ -140,8 +140,9 @@ export async function findSubscriberByEmail(
   }
 }
 
-// Finds a subscriber page regardless of active status; used for approval flow.
-async function findSubscriberPageAny(
+// Finds a subscriber page regardless of active status; used for approval and
+// resubscribe flows.
+export async function findSubscriberPageAny(
   token: string,
   dbId: string,
   email: string
@@ -398,7 +399,8 @@ export async function addToWaitlist(
 
 export async function listWaitlist(
   token: string,
-  dbId: string
+  dbId: string,
+  statusFilter?: string
 ): Promise<WaitlistEntry[]> {
   const entries: WaitlistEntry[] = [];
   let cursor: string | undefined;
@@ -407,6 +409,9 @@ export async function listWaitlist(
       method: "POST",
       headers: headers(token),
       body: JSON.stringify({
+        ...(statusFilter
+          ? { filter: { property: W.STATUS, select: { equals: statusFilter } } }
+          : {}),
         sorts: [{ property: W.LAST_SEEN, direction: "descending" }],
         page_size: 100,
         ...(cursor ? { start_cursor: cursor } : {}),
@@ -425,4 +430,29 @@ export async function listWaitlist(
     cursor = data.next_cursor;
   }
   return entries;
+}
+
+// Sets the Waitlist row's Status (approved/rejected). Returns false if no
+// matching row exists (e.g. WAITLIST_DB_ID wasn't set when the applicant
+// first requested access).
+export async function updateWaitlistStatus(
+  token: string,
+  dbId: string,
+  email: string,
+  status: "approved" | "rejected"
+): Promise<boolean> {
+  const existing = await findWaitlistPage(token, dbId, email);
+  if (!existing) return false;
+
+  const resp = await fetch(`${NOTION_API}/pages/${existing.pageId}`, {
+    method: "PATCH",
+    headers: headers(token),
+    body: JSON.stringify({
+      properties: { [W.STATUS]: { select: { name: status } } },
+    }),
+  });
+  if (!resp.ok) {
+    throw new Error(`Notion waitlist status update failed: ${resp.status}`);
+  }
+  return true;
 }

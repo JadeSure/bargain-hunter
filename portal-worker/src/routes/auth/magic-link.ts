@@ -1,7 +1,13 @@
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
-import { findSubscriberByEmail } from "../../lib/notion";
-import { createMagicToken, readMagicToken, createSession } from "../../lib/kv";
+import { findSubscriberByEmail, activateSubscriber } from "../../lib/notion";
+import {
+  createMagicToken,
+  readMagicToken,
+  createSession,
+  isResubscribeEligible,
+  clearResubscribeEligible,
+} from "../../lib/kv";
 import { sendMagicLink } from "../../lib/email";
 import { primaryFrontendUrl } from "../../lib/origins";
 import type { Env } from "../../types";
@@ -51,11 +57,24 @@ app.get("/verify", async (c) => {
   const email = await readMagicToken(c.env.PORTAL_KV, token);
   if (!email) return c.redirect(`${frontend}/login?error=expired`);
 
-  const found = await findSubscriberByEmail(
-    c.env.NOTION_TOKEN,
-    c.env.SUBSCRIBERS_DB_ID,
-    email
-  );
+  let found = await findSubscriberByEmail(c.env.NOTION_TOKEN, c.env.SUBSCRIBERS_DB_ID, email);
+
+  if (!found) {
+    // Not active. This could be a self-serve reactivation (see /auth/resubscribe):
+    // that route only ever emails a magic link to addresses it marked eligible
+    // when they unsubscribed, so a still-pending waitlist applicant (also
+    // Active=false, but never marked eligible, and never sent a link at all)
+    // can never reach this branch.
+    const eligible = await isResubscribeEligible(c.env.PORTAL_KV, email);
+    if (eligible) {
+      const activated = await activateSubscriber(c.env.NOTION_TOKEN, c.env.SUBSCRIBERS_DB_ID, email);
+      if (activated) {
+        await clearResubscribeEligible(c.env.PORTAL_KV, email);
+        found = await findSubscriberByEmail(c.env.NOTION_TOKEN, c.env.SUBSCRIBERS_DB_ID, email);
+      }
+    }
+  }
+
   if (!found) return c.redirect(`${frontend}/login?error=not_found`);
 
   const sessionId = await createSession(c.env.PORTAL_KV, {

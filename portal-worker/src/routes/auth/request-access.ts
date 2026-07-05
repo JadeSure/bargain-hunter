@@ -1,9 +1,9 @@
 import { Hono } from "hono";
-import { sendAccessRequest, sendActivationEmail } from "../../lib/email";
-import { addToWaitlist, listWaitlist, createInactiveSubscriber, activateSubscriber } from "../../lib/notion";
-import { requireAuth } from "../../middleware/auth";
+import { sendAccessRequest, sendActivationEmail, sendApplicantConfirmation } from "../../lib/email";
+import { addToWaitlist, listWaitlist, createInactiveSubscriber } from "../../lib/notion";
+import { approveApplicant, rejectApplicant } from "../../lib/waitlist";
+import { requireAuth, requireOwner } from "../../middleware/auth";
 import { primaryFrontendUrl } from "../../lib/origins";
-import { createMagicToken } from "../../lib/kv";
 import type { Env, SessionData } from "../../types";
 
 type Variables = { user: SessionData };
@@ -50,10 +50,21 @@ app.post("/", async (c) => {
           c.env.RESEND_API_KEY,
           c.env.OWNER_EMAIL,
           email,
-          `${primaryFrontendUrl(c.env)}/login`
+          `${primaryFrontendUrl(c.env)}/portal/admin`
         );
       } catch (err) {
         console.error("request-access email failed:", err);
+      }
+
+      try {
+        await sendApplicantConfirmation(
+          c.env.RESEND_API_KEY,
+          email,
+          `${primaryFrontendUrl(c.env)}/deals`,
+          `${primaryFrontendUrl(c.env)}/guides`
+        );
+      } catch (err) {
+        console.error("applicant confirmation email failed:", err);
       }
     })()
   );
@@ -62,12 +73,7 @@ app.post("/", async (c) => {
 });
 
 // GET /auth/request-access — owner-only: inspect the waitlist.
-app.get("/", requireAuth, async (c) => {
-  const user = c.get("user");
-  const owner = c.env.OWNER_EMAIL?.toLowerCase().trim();
-  if (!owner || user.email.toLowerCase().trim() !== owner) {
-    return c.json({ error: "Forbidden" }, 403);
-  }
+app.get("/", requireAuth, requireOwner, async (c) => {
   if (!c.env.WAITLIST_DB_ID) {
     return c.json({ count: 0, waitlist: [] });
   }
@@ -75,36 +81,39 @@ app.get("/", requireAuth, async (c) => {
   return c.json({ count: waitlist.length, waitlist });
 });
 
-// POST /auth/request-access/approve — owner-only: activate a subscriber and
-// send them a magic-link welcome email.
-app.post("/approve", requireAuth, async (c) => {
-  const user = c.get("user");
-  const owner = c.env.OWNER_EMAIL?.toLowerCase().trim();
-  if (!owner || user.email.toLowerCase().trim() !== owner) {
-    return c.json({ error: "Forbidden" }, 403);
-  }
-
+// POST /auth/request-access/approve — owner-only: activate a subscriber,
+// mark the waitlist row approved, and send a magic-link welcome email.
+app.post("/approve", requireAuth, requireOwner, async (c) => {
   const body = await c.req.json<{ email?: string }>().catch(() => ({ email: "" }));
   const email = (body.email ?? "").toLowerCase().trim();
   if (!email || !email.includes("@")) {
     return c.json({ error: "Invalid email" }, 400);
   }
 
-  const activated = await activateSubscriber(c.env.NOTION_TOKEN, c.env.SUBSCRIBERS_DB_ID, email);
-  if (!activated) {
+  const result = await approveApplicant(c.env, email);
+  if (!result.ok) {
     return c.json({ error: "Subscriber not found" }, 404);
   }
 
-  // Generate a magic link and email it to the newly activated user.
-  const token = await createMagicToken(c.env.PORTAL_KV, email);
-  const magicLinkUrl = `${primaryFrontendUrl(c.env)}/auth/verify?token=${token}`;
-
   c.executionCtx.waitUntil(
-    sendActivationEmail(c.env.RESEND_API_KEY, email, magicLinkUrl).catch((err) =>
+    sendActivationEmail(c.env.RESEND_API_KEY, email, result.magicLinkUrl).catch((err) =>
       console.error("activation email failed:", err)
     )
   );
 
+  return c.json({ ok: true, email });
+});
+
+// POST /auth/request-access/reject — owner-only: mark the waitlist row
+// rejected. Silent — rejected applicants get no email.
+app.post("/reject", requireAuth, requireOwner, async (c) => {
+  const body = await c.req.json<{ email?: string }>().catch(() => ({ email: "" }));
+  const email = (body.email ?? "").toLowerCase().trim();
+  if (!email || !email.includes("@")) {
+    return c.json({ error: "Invalid email" }, 400);
+  }
+
+  await rejectApplicant(c.env, email);
   return c.json({ ok: true, email });
 });
 

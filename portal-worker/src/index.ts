@@ -5,7 +5,9 @@ import magicLinkRoutes from "./routes/auth/magic-link";
 import requestAccessRoute from "./routes/auth/request-access";
 import logoutRoute from "./routes/auth/logout";
 import unsubscribeRoute from "./routes/auth/unsubscribe";
+import resubscribeRoute from "./routes/auth/resubscribe";
 import subscriberRoutes from "./routes/subscriber";
+import adminRoutes from "./routes/admin";
 import { allowedOrigins } from "./lib/origins";
 import type { Env } from "./types";
 
@@ -33,7 +35,9 @@ app.route("/auth/magic-link", magicLinkRoutes);
 app.route("/auth/request-access", requestAccessRoute);
 app.route("/auth/logout", logoutRoute);
 app.route("/auth/unsubscribe", unsubscribeRoute);
+app.route("/auth/resubscribe", resubscribeRoute);
 app.route("/api", subscriberRoutes);
+app.route("/api/admin", adminRoutes);
 
 app.onError((err, c) => {
   console.error(err);

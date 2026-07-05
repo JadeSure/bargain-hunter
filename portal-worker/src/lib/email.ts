@@ -60,7 +60,7 @@ export async function sendAccessRequest(
   resendApiKey: string,
   ownerEmail: string,
   applicantEmail: string,
-  loginUrl: string
+  adminUrl: string
 ): Promise<void> {
   await send(
     resendApiKey,
@@ -68,8 +68,29 @@ export async function sendAccessRequest(
     `Access request: ${applicantEmail}`,
     `<p>${applicantEmail} has requested access to Bargain Hunter.</p>
      <p>They've been added to the Subscribers DB with <b>Active = false</b>.</p>
-     <p>To approve and send them a login link, call:</p>
-     <pre style="background:#f4f4f4;padding:12px;border-radius:4px;">POST /auth/request-access/approve\n{"email":"${applicantEmail}"}</pre>
-     <p>Or log in to your portal and use the admin UI at <a href="${loginUrl}">${loginUrl}</a>.</p>`
+     <p>Review and approve or reject them from the admin page:</p>
+     <p><a href="${adminUrl}" style="background:#ea580c;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;">Open admin</a></p>`
+  );
+}
+
+export async function sendApplicantConfirmation(
+  resendApiKey: string,
+  to: string,
+  dealsUrl: string,
+  guidesUrl: string
+): Promise<void> {
+  await send(
+    resendApiKey,
+    to,
+    "You're on the Bargain Hunter waitlist",
+    `<p>Hi,</p>
+     <p>Thanks for your interest in Bargain Hunter. You're on the list — access is invite-only, and
+     we'll email you a login link as soon as you're approved.</p>
+     <p>While you wait, you can browse the deals board and money-saving guides, no account needed:</p>
+     <p>
+       <a href="${dealsUrl}" style="background:#ea580c;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;margin-right:8px;">Browse deals</a>
+       <a href="${guidesUrl}" style="background:#333;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;">Read guides</a>
+     </p>
+     <p>If you didn't request access, you can safely ignore this email.</p>`
   );
 }
