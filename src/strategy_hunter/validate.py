@@ -52,21 +52,39 @@ def validate_guides(guides_dir: Path) -> GuideValidationResult:
             result.errors.append(f"{rel}: cannot read/parse JSON — {exc}")
             continue
 
-        try:
-            guide = Guide.model_validate(data)
-        except ValidationError as exc:
-            for err in exc.errors():
-                loc = ".".join(str(p) for p in err["loc"]) or "(root)"
-                result.errors.append(f"{rel}: {loc}: {err['msg']}")
-            continue
-
-        file_errors = _check_semantics(rel, guide, seen_ids, result.warnings)
-        if file_errors:
-            result.errors.extend(file_errors)
+        guide, errors, warnings = validate_guide_data(rel, data, seen_ids)
+        result.warnings.extend(warnings)
+        if errors:
+            result.errors.extend(errors)
         else:
             result.valid_files += 1
 
     return result
+
+
+def validate_guide_data(
+    rel: str, data: dict, seen_ids: dict[str, str]
+) -> tuple[Guide | None, list[str], list[str]]:
+    """Validate one guide payload (schema + semantics).
+
+    ``seen_ids`` maps id -> filename of guides already accepted in this run; it is
+    consulted (but not mutated) to flag duplicates. Returns ``(guide, errors,
+    warnings)`` — ``guide`` is ``None`` whenever ``errors`` is non-empty. Shared by
+    the CLI validator and the automated Stage 2 extractor, so both apply the same
+    rules to guide JSON before it can reach disk.
+    """
+    warnings: list[str] = []
+    try:
+        guide = Guide.model_validate(data)
+    except ValidationError as exc:
+        errors = []
+        for err in exc.errors():
+            loc = ".".join(str(p) for p in err["loc"]) or "(root)"
+            errors.append(f"{rel}: {loc}: {err['msg']}")
+        return None, errors, warnings
+
+    errors = _check_semantics(rel, guide, seen_ids, warnings)
+    return (None if errors else guide), errors, warnings
 
 
 def _check_semantics(

@@ -5,6 +5,8 @@ Usage::
     python -m strategy_hunter collect          # fetch sources, store, write digest
     python -m strategy_hunter digest           # rebuild digest from the stored corpus
     python -m strategy_hunter validate-guides  # validate Stage 2 guide JSON
+    python -m strategy_hunter extract          # LLM-extract guides from the latest digest
+    python -m strategy_hunter audit-guides     # flag stale guides for review
     python -m strategy_hunter --help
 """
 
@@ -16,9 +18,12 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
+from .audit import audit_guides
+from .audit import render_issue_body as render_guide_issue_body
 from .collect import collect, load_all_posts
 from .config import load_strategy_config
 from .digest import write_digest
+from .extract import extract_guides
 from .onboarding import audit_programs, render_issue_body, validate_programs
 from .onboarding.collect import collect_onboarding, load_all_onboarding_posts
 from .validate import validate_guides
@@ -70,6 +75,8 @@ def main() -> None:
             "collect",
             "digest",
             "validate-guides",
+            "extract",
+            "audit-guides",
             "onboarding-validate",
             "onboarding-collect",
             "onboarding-digest",
@@ -78,6 +85,8 @@ def main() -> None:
         help=(
             "collect: fetch + store + digest; digest: rebuild digest from corpus; "
             "validate-guides: validate Stage 2 guide JSON; "
+            "extract: LLM-extract guides from the latest (or --date) digest; "
+            "audit-guides: flag stale/expired/source-pruned guides for review; "
             "onboarding-validate: validate onboarding program JSON; "
             "onboarding-collect: fetch + store + digest onboarding material; "
             "onboarding-digest: rebuild onboarding digest from corpus; "
@@ -89,7 +98,14 @@ def main() -> None:
     )
     parser.add_argument(
         "--report", type=Path, default=None,
-        help="onboarding-audit: write issue-body markdown here when stale items exist.",
+        help=(
+            "onboarding-audit/audit-guides: write issue-body markdown here when "
+            "stale items exist."
+        ),
+    )
+    parser.add_argument(
+        "--date", type=str, default=None,
+        help="extract: digest date (YYYY-MM-DD) to use; default is the latest digest.",
     )
     args = parser.parse_args()
 
@@ -120,6 +136,39 @@ def main() -> None:
         )
         if not result.ok:
             sys.exit(1)
+    elif args.command == "extract":
+        result = extract_guides(cfg, date=args.date, now=now)
+        if result.skipped:
+            log.info("Extraction skipped: %s", result.skip_reason)
+            return
+        for err in result.errors:
+            log.error("extract error: %s", err)
+        log.info(
+            "Extraction: %d written, %d unchanged, %d errors.",
+            len(result.written), len(result.unchanged), len(result.errors),
+        )
+        if result.written:
+            log.info("Written guides: %s", ", ".join(result.written))
+    elif args.command == "audit-guides":
+        result = audit_guides(
+            Path(cfg.guides_dir),
+            Path(cfg.raw_dir),
+            now=now,
+            staleness_days=cfg.staleness_days,
+        )
+        for err in result.errors:
+            log.error("audit error: %s", err)
+        for f in result.flags:
+            log.warning("stale guide: %s (%s) — %s", f.id, f.reason, f.detail)
+        log.info(
+            "Audited %d guides: %d fresh, %d flagged.",
+            result.total, result.fresh, len(result.flags),
+        )
+        if args.report and result.stale:
+            body = render_guide_issue_body(result, staleness_days=cfg.staleness_days)
+            args.report.parent.mkdir(parents=True, exist_ok=True)
+            args.report.write_text(body, encoding="utf-8")
+            log.info("Wrote audit report: %s", args.report)
     elif args.command == "onboarding-validate":
         result = validate_programs(Path(cfg.onboarding.programs_dir))
         for warn in result.warnings:

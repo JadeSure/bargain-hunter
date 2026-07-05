@@ -97,8 +97,11 @@ categories:
                 "Theme Park", "Cruise", "Holiday", "Airline"]
 
 # ---------------------------------------------------------------------------
-# Strategy guide collection (strategy_hunter). GitHub Actions harvests daily;
-# use the local extraction skill (strategy-extract) to distil into guides.
+# Strategy guide collection (strategy_hunter). GitHub Actions harvests daily
+# and runs `strategy-hunter extract` (Gemini) to distil the digest into guide
+# JSON, opened as a PR for human review — falls back to manual extraction
+# (feed digest/<date>.md + prompts/extract_guide.md to any LLM) if
+# GEMINI_API_KEY isn't configured.
 # ---------------------------------------------------------------------------
 strategy:
   enabled: true
@@ -106,6 +109,10 @@ strategy:
   request_delay_seconds: 1.0       # polite crawl delay when fetching thread bodies
   retention_days: 60               # raw corpus retention in days; pruned on each run (0 = keep forever)
   alert_on_failure: true           # email maintainer if a collection run errors or harvests nothing
+  staleness_days: 30               # guides older than this (generated_at) are flagged for review
+  extract:
+    model: "gemini-2.5-flash"      # Gemini model for automated Stage 2 guide extraction (free tier)
+    max_tokens: 8192
   onboarding:
     enabled: true
     programs_dir: "data/strategies/onboarding/programs"

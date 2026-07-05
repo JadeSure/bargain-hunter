@@ -97,6 +97,12 @@ class OnboardingConfig(StrictConfigModel):
     sources: OnboardingSourcesConfig = Field(default_factory=OnboardingSourcesConfig)
 
 
+class ExtractConfig(StrictConfigModel):
+    # Gemini model id used for automated Stage 2 guide extraction (free tier).
+    model: str = "gemini-2.5-flash"
+    max_tokens: int = 8192
+
+
 class StrategyConfig(StrictConfigModel):
     enabled: bool = True
     # Minimum money-saving keyword hits for a post to be kept (filters off-topic news).
@@ -107,11 +113,14 @@ class StrategyConfig(StrictConfigModel):
     retention_days: int = 60
     # Email the maintainer when a collection run errors or harvests nothing.
     alert_on_failure: bool = True
+    # Guides older than this (by generated_at) are flagged for review by the audit.
+    staleness_days: int = 30
     raw_dir: str = "data/strategies/raw"
     digest_dir: str = "data/strategies/digest"
     guides_dir: str = "data/strategies/guides"
     sources: StrategySourcesConfig = Field(default_factory=StrategySourcesConfig)
     onboarding: OnboardingConfig = Field(default_factory=OnboardingConfig)
+    extract: ExtractConfig = Field(default_factory=ExtractConfig)
 
 
 def load_strategy_config(path: Path | None = None) -> StrategyConfig:
