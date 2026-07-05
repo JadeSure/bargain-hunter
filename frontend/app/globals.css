@@ -514,6 +514,29 @@ html, body {
 }
 .btn-kw-add:hover { background: rgba(249,115,22,0.18); }
 .btn-kw-add:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.btn-kw-add:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.kw-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.kw-row { display: flex; align-items: center; gap: 6px; }
+.kw-row-op { font-size: 12px; color: rgba(232,233,236,0.35); flex-shrink: 0; }
+.kw-row-input {
+  background: var(--ground); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px; padding: 8px 10px; font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 13px; color: var(--text-primary); outline: none; transition: border-color 0.15s;
+}
+.kw-row-input:focus { border-color: rgba(249,115,22,0.4); }
+.kw-row-input-error { border-color: rgba(248,113,113,0.6); }
+.kw-row-phrase { flex: 1; min-width: 0; }
+.kw-row-price { width: 64px; }
+.kw-row-expiry { width: 110px; }
+.kw-row-raw { flex: 1; min-width: 0; border-color: rgba(249,115,22,0.3); }
+.kw-row-raw-tag {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--orange); background: rgba(249,115,22,0.1); border-radius: 4px; padding: 3px 6px; flex-shrink: 0;
+}
+.kw-row-remove { flex-shrink: 0; }
+.kw-add-row-structured { align-items: center; }
+.kw-row-error-hint { font-size: 11px; color: #f87171; margin-top: -4px; margin-bottom: 8px; }
 
 /* ── Settings ────────────────────────────────────────────── */
 .settings-section {
