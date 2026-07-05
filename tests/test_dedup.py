@@ -224,6 +224,47 @@ def test_realert_check_labels_significant_price_drop_without_ceiling():
     assert label == "Price drop: $100 → $90"
 
 
+def test_significant_price_drop_fires_exactly_one_realert():
+    """End-to-end re-alert lifecycle with the production config values
+    (max_realerts_per_deal=1, significant_price_drop_percent=5.0, matching
+    config/settings.yaml): a >=5% drop on a previously-sent watch deal fires
+    exactly one re-alert; a further big drop after that re-alert does not."""
+    first_send = _entry(realert_count=0, price=100.0, track="watch", votes_pos=10)
+    store = _store_with(
+        [first_send],
+        cfg=_cfg(max_realerts_per_deal=1, significant_price_drop_percent=5.0),
+    )
+    sub = _sub()
+
+    # 1st re-check after a 10% drop -> re-alert due.
+    dropped = _deal(price=90.0, votes_pos=10)
+    skip, label = store.realert_check(dropped, sub)
+    assert not skip
+    assert label == "Price drop: $100 → $90"
+
+    # Simulate the re-alert having been sent (mirrors record_sent's cache write:
+    # realert_count = number of prior entries for this pair).
+    store._log[(first_send.deal_key, first_send.subscriber_email)].append(
+        _entry(realert_count=1, price=90.0, track="watch", votes_pos=10)
+    )
+
+    # 2nd re-check after another huge drop -> cap exhausted, no second re-alert.
+    dropped_again = _deal(price=50.0, votes_pos=10)
+    skip, label = store.realert_check(dropped_again, sub)
+    assert skip
+    assert label is None
+
+
+def test_production_config_enables_price_drop_realert():
+    """Guard against the IMPROVEMENT_PRD-reported regression: the shipped
+    settings.yaml must keep max_realerts_per_deal >= 1, otherwise the
+    significant_price_drop_percent re-alert path is dead code."""
+    from bargain_hunter.config import load_settings
+
+    settings = load_settings()
+    assert settings.dedup.max_realerts_per_deal >= 1
+
+
 def test_realert_cap_exhausted_forces_dedup():
     """Once max_realerts_per_deal re-alerts have already fired, further
     price drops no longer matter."""
