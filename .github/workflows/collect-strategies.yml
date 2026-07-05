@@ -13,7 +13,8 @@ concurrency:
 
 permissions:
   contents: write           # to commit the harvested corpus + digest
-  issues: write             # to open/refresh the onboarding staleness review issue
+  issues: write             # to open/refresh the staleness review issues
+  pull-requests: write      # to open the auto-extracted guides review PR
 
 jobs:
   collect:
@@ -97,6 +98,44 @@ jobs:
             push_with_retry || { echo "Could not push digest." >&2; exit 1; }
           fi
 
+      - name: Extract guides via LLM
+        if: success()
+        env:
+          # Optional: without this secret set, `extract` prints a skip message
+          # and exits 0 — Stage 2 stays manual until the key is configured.
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python -m strategy_hunter extract
+
+      - name: Open PR for auto-extracted guides
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # LLM-extracted guides never land on main directly — a human reviews
+          # and merges the PR. Skip silently if extraction produced nothing.
+          if [ -z "$(git status --porcelain data/strategies/guides 2>/dev/null)" ]; then
+            echo "No new/changed guides."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          date_label=$(date -u +%Y-%m-%d)
+          branch="guides/auto-$date_label"
+          git checkout -b "$branch"
+          git add data/strategies/guides/
+          guide_ids=$(git diff --cached --name-only -- data/strategies/guides/ \
+            | xargs -n1 basename | sed 's/\.json$//')
+          git commit -m "feat(strategy): auto-extracted guides $date_label"
+          # --force: a same-day re-run legitimately replaces the branch tip.
+          git push -u origin "$branch" --force
+
+          body=$(printf 'Auto-extracted by `strategy-hunter extract` from the %s digest. Review before merging.\n\nGuides:\n%s\n' \
+            "$date_label" "$(echo "$guide_ids" | sed 's/^/- /')")
+          gh pr create --title "feat(strategy): auto-extracted guides $date_label" \
+            --base main --head "$branch" --body "$body" \
+            || echo "PR already open for $branch — branch updated by the push."
+
       - name: Audit onboarding catalog freshness
         if: always()
         env:
@@ -121,4 +160,29 @@ jobs:
             fi
           else
             echo "Catalog fresh — no audit issue needed."
+          fi
+
+      - name: Audit guide catalog freshness
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Flag guides past valid_until / undated / older than staleness_days /
+          # whose cited sources have all been pruned from the raw corpus.
+          python -m strategy_hunter audit-guides --report /tmp/guides-audit.md
+          title="Guide catalog: stale guides need review"
+          gh label create guides-audit --color BFD4F2 \
+            --description "Guide freshness review" 2>/dev/null || true
+          if [ -s /tmp/guides-audit.md ]; then
+            num=$(gh issue list --state open --label guides-audit \
+              --search "$title" --json number --jq '.[0].number' 2>/dev/null || true)
+            if [ -n "$num" ]; then
+              gh issue edit "$num" --body-file /tmp/guides-audit.md
+              echo "Refreshed audit issue #$num."
+            else
+              gh issue create --title "$title" --label guides-audit \
+                --body-file /tmp/guides-audit.md
+            fi
+          else
+            echo "Guide catalog fresh — no audit issue needed."
           fi
