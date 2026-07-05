@@ -11,7 +11,7 @@ import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
-from .config import ScoringConfig, effective_tiers
+from .config import HotConfig, ScoringConfig, effective_tiers
 from .models import Deal, DealSnapshot
 
 # ---------------------------------------------------------------------------
@@ -333,6 +333,15 @@ def compute_hot_score(
 # ---------------------------------------------------------------------------
 
 
+def is_voteless_source(deal: Deal, hot: HotConfig) -> bool:
+    """True if `deal.source` never carries vote signals (e.g. CamelCamelCamel).
+
+    Such deals can never pass the vote-based candidacy gates below (they never
+    accumulate votes), so they take a separate discount-only path instead.
+    """
+    return deal.source in hot.voteless_sources
+
+
 def is_hot_candidate(
     deal: Deal,
     snapshots: list[DealSnapshot],
@@ -340,9 +349,21 @@ def is_hot_candidate(
     all_active_deals: list[tuple[Deal, list[DealSnapshot]]] | None = None,
     now: datetime | None = None,
 ) -> bool:
-    """Return True if deal passes at least one of the three hot candidacy gates."""
+    """Return True if deal passes at least one of the hot candidacy gates.
+
+    Vote-based sources use the original any-one-of-three gates (window vote
+    gain / early burst / top-percentile velocity), untouched. Voteless sources
+    (no vote signal at all) instead qualify purely on discount depth.
+    """
     now = now or datetime.now(UTC)
     hot = cfg.hot
+
+    if is_voteless_source(deal, hot):
+        return (
+            hot.discount_candidate_min is not None
+            and deal.discount_percent is not None
+            and deal.discount_percent >= hot.discount_candidate_min
+        )
 
     # Absolute floor: no deal with fewer votes than this can be a hot candidate.
     # Data-backed: prevents 2-3 vote posts with high comment velocity from scoring high.
@@ -382,6 +403,22 @@ def is_hot_candidate(
     return False
 
 
+def classify_discount_tier(discount_percent: float | None, hot: HotConfig) -> str | None:
+    """Map a voteless-source deal's discount % to a hot-ladder tier, or None.
+
+    Walks the ladder best-first (same order as `effective_tiers`) and returns
+    the first tier whose `discount_tiers` threshold is met. A tier absent from
+    `discount_tiers` is simply skipped (unreachable via this path).
+    """
+    if discount_percent is None:
+        return None
+    for tier in effective_tiers(hot):
+        threshold = hot.discount_tiers.get(tier.name)
+        if threshold is not None and discount_percent >= threshold:
+            return tier.name
+    return None
+
+
 def classify_hot(
     deal: Deal,
     snapshots: list[DealSnapshot],
@@ -391,13 +428,18 @@ def classify_hot(
 ) -> str | None:
     """Return the name of the highest hot tier the deal earns, or None.
 
-    The deal must first pass hot candidacy; then it earns the best tier whose
+    The deal must first pass hot candidacy. Voteless-source deals (no vote
+    signal at all) are then classified purely on discount depth via
+    `classify_discount_tier` — there is no velocity to score. Vote-based deals
+    keep the original scored-ladder logic: the deal earns the best tier whose
     ``min_score`` is met and whose optional value gates (``min_votes`` /
     ``min_discount_percent``) pass. A deal that clears a tier's score but fails
     its value gate falls through to the next-best tier rather than being dropped.
     """
     if not is_hot_candidate(deal, snapshots, cfg, all_active_deals, now):
         return None
+    if is_voteless_source(deal, cfg.hot):
+        return classify_discount_tier(deal.discount_percent, cfg.hot)
     score = compute_hot_score(deal, snapshots, cfg, now)
     for tier in effective_tiers(cfg.hot):
         if score < tier.min_score:

@@ -417,3 +417,83 @@ def test_click_velocity_zero_for_single_snapshot():
 def test_click_velocity_growing():
     # 0 -> 10 -> 30 clicks: positive rate
     assert compute_click_velocity(_click_snaps(0, 10, 30), window_minutes=60) > 0
+
+
+# ---------------------------------------------------------------------------
+# Discount-based hot candidacy for voteless sources (e.g. CamelCamelCamel)
+# ---------------------------------------------------------------------------
+
+
+def _ccc_deal(**kwargs) -> Deal:
+    defaults = dict(
+        source="camelcamelcamel",
+        deal_id="ccc-1",
+        title="Widget",
+        url="https://au.camelcamelcamel.com/product/1",
+        votes_pos=0,
+        votes_neg=0,
+        comment_count=0,
+        posted_at=datetime.now(UTC) - timedelta(hours=1),
+    )
+    defaults.update(kwargs)
+    return Deal(**defaults)
+
+
+def test_voteless_deal_never_candidate_via_vote_gates():
+    """A CCC-style deal with 0 votes and no discount never qualifies — the
+    vote-based gates are untouched and votes_pos=0 always fails them anyway."""
+    d = _ccc_deal(discount_percent=None)
+    assert not is_hot_candidate(d, [], _cfg())
+
+
+def test_voteless_deal_below_discount_floor_not_candidate():
+    d = _ccc_deal(discount_percent=39.9)
+    assert not is_hot_candidate(d, [], _cfg())
+
+
+def test_voteless_deal_at_discount_floor_is_candidate():
+    d = _ccc_deal(discount_percent=40.0)
+    assert is_hot_candidate(d, [], _cfg())
+
+
+def test_vote_based_source_ignores_discount_candidacy_path():
+    """A vote-based deal (e.g. OzBargain) with a huge discount but 0 votes must
+    still fail candidacy — the discount path is voteless-sources-only."""
+    d = _deal(source="ozbargain", votes_pos=0, discount_percent=90.0)
+    assert not is_hot_candidate(d, [], _cfg())
+
+
+def _ladder_cfg() -> ScoringConfig:
+    """A hot ladder shaped like production settings.yaml (good/great/top),
+    needed because classify_discount_tier maps discount % to *named* tiers —
+    the default single synthesised "hot" tier has no discount mapping."""
+    return ScoringConfig(
+        hot=HotConfig(
+            tiers=[
+                HotTier(name="top", min_score=7.0, min_votes=40),
+                HotTier(name="great", min_score=4.0),
+                HotTier(name="good", min_score=1.5),
+            ]
+        )
+    )
+
+
+def test_voteless_deal_classifies_good_tier():
+    d = _ccc_deal(discount_percent=42.0)
+    assert classify_hot(d, [], _ladder_cfg()) == "good"
+
+
+def test_voteless_deal_classifies_great_tier():
+    d = _ccc_deal(discount_percent=60.0)
+    assert classify_hot(d, [], _ladder_cfg()) == "great"
+
+
+def test_voteless_deal_classifies_top_tier():
+    d = _ccc_deal(discount_percent=75.0)
+    assert classify_hot(d, [], _ladder_cfg()) == "top"
+
+
+def test_voteless_deal_discount_candidate_min_disabled():
+    cfg = ScoringConfig(hot=HotConfig(discount_candidate_min=None))
+    d = _ccc_deal(discount_percent=99.0)
+    assert not is_hot_candidate(d, [], cfg)

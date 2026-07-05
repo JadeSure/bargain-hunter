@@ -78,6 +78,21 @@ class HotConfig(StrictConfigModel):
     # subscriber (the universal best-of-best). When False, every tier — including
     # top — is restricted to a subscriber's chosen categories.
     universal_top: bool = True
+    # Sources with no vote signal at all (e.g. CamelCamelCamel, which is a pure
+    # price tracker) can never clear the vote-based candidacy gates below, so they
+    # get a second, discount-only candidacy path instead. Vote-based sources are
+    # untouched by this path.
+    voteless_sources: list[str] = Field(default_factory=lambda: ["camelcamelcamel"])
+    # Minimum discount % for a voteless-source deal to become a hot candidate.
+    # None disables the discount candidacy path entirely.
+    discount_candidate_min: float | None = 40.0
+    # Discount % thresholds mapped to hot-ladder tier names, used to classify a
+    # voteless-source candidate directly (no hot score is computed for these —
+    # there is no velocity signal to score). A tier absent from this mapping is
+    # simply unreachable via the discount path.
+    discount_tiers: dict[str, float] = Field(
+        default_factory=lambda: {"good": 40.0, "great": 55.0, "top": 70.0}
+    )
 
 
 def effective_tiers(hot: HotConfig) -> list[HotTier]:
@@ -139,6 +154,10 @@ class RunConfig(StrictConfigModel):
     # If start > end, the window wraps midnight (e.g. 22:00–07:00).
     quiet_hours_start: str | None = None
     quiet_hours_end: str | None = None
+    # Notifications matched during quiet hours are queued rather than dropped
+    # (see queue_store.py). A queued entry older than this many hours is treated
+    # as stale and discarded when the queue is drained after quiet hours end.
+    quiet_hours_queue_max_age_hours: float = 12.0
 
 
 class Settings(StrictConfigModel):

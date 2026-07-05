@@ -27,7 +27,7 @@ from .models import Deal, Subscriber
 from .notify.email import EmailSender, send_maintainer_alert
 from .notify.render import DealItem
 from .observations import ObservationLog, build_observation
-from .scoring import classify_hot, compute_vote_velocity, enrich_deal
+from .scoring import classify_hot, compute_vote_velocity, enrich_deal, is_voteless_source
 from .sources.camelcamelcamel import CamelCamelCamelSource
 from .sources.ozbargain import OzBargainSource
 from .state import StateStore
@@ -281,9 +281,15 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 )
                 # Quality gate guards the lowest tier only. Deals at "great"/"top" already
                 # earned a higher score threshold via classify_hot; don't double-filter.
+                # It is also vote-velocity based, so it doesn't apply to voteless-source
+                # deals (e.g. CamelCamelCamel) — those already earned their tier purely
+                # on discount depth (see scoring.classify_discount_tier), which is a
+                # sufficient quality bar on its own.
                 is_elevated = tier_rank.get(level, 0) > tier_rank.get(tiers[-1].name, 0)
-                passes_qg = is_elevated or _passes_quality_gate(
-                    deal, settings.scoring.hot, vote_velocity=vel
+                passes_qg = (
+                    is_elevated
+                    or is_voteless_source(deal, settings.scoring.hot)
+                    or _passes_quality_gate(deal, settings.scoring.hot, vote_velocity=vel)
                 )
                 if not passes_qg:
                     log.info(
@@ -437,10 +443,12 @@ def _passes_quality_gate(deal: Deal, hot_cfg, vote_velocity: float = 0.0) -> boo
 
 
 def _hot_reason(deal: Deal) -> str:
-    parts = [f"▲ {deal.votes_pos} votes"]
+    parts = []
+    if deal.votes_pos or deal.votes_neg:
+        parts.append(f"▲ {deal.votes_pos} votes")
     if deal.discount_percent:
         parts.append(f"{deal.discount_percent:.0f}% off")
-    return " · ".join(parts)
+    return " · ".join(parts) or "Hot deal"
 
 
 def _is_quiet_hours(settings: Settings, now: datetime) -> bool:
