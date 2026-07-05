@@ -17,6 +17,7 @@ dependencies = [
 [project.scripts]
 bargain-hunter = "bargain_hunter.main:main"
 bargain-hunter-backtest = "bargain_hunter.backtest:main"
+bargain-hunter-calibrate = "bargain_hunter.calibration:main"
 strategy-hunter = "strategy_hunter.main:main"
 
 [project.optional-dependencies]
