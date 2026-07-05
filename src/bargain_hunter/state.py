@@ -28,6 +28,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from .models import Deal, DealSnapshot
+from .scoring import compute_vote_velocity
 
 log = logging.getLogger(__name__)
 
@@ -60,6 +61,10 @@ class StateStore:
         # key -> list[DealSnapshot] (oldest first)
         self._data: dict[str, list[DealSnapshot]] = {}
         self._first_seen: dict[str, datetime] = {}
+        # Deals suppressed on first sighting for being stale (cold-start guard).
+        # Kept "seeded" rather than dropped: on a later run they can still earn
+        # a notification if they show renewed hot-candidacy-level velocity.
+        self._seeded: dict[str, datetime] = {}
         self._cold_start = False
 
     # ------------------------------------------------------------------
@@ -101,6 +106,10 @@ class StateStore:
             with contextlib.suppress(ValueError):
                 self._first_seen[key] = datetime.fromisoformat(ts_str)
 
+        for key, ts_str in raw.get("seeded", {}).items():
+            with contextlib.suppress(ValueError):
+                self._seeded[key] = datetime.fromisoformat(ts_str)
+
         self._cold_start = raw.get("cold_start", False)
         log.info("Loaded state: %d deals, cold_start=%s", len(self._data), self._cold_start)
 
@@ -123,6 +132,7 @@ class StateStore:
                 for key, snaps in self._data.items()
             },
             "first_seen": {key: ts.isoformat() for key, ts in self._first_seen.items()},
+            "seeded": {key: ts.isoformat() for key, ts in self._seeded.items()},
         }
         self.path.parent.mkdir(parents=True, exist_ok=True)
         _atomic_write_json(self.path, payload)
@@ -173,6 +183,9 @@ class StateStore:
         ignore_older_than_hours: float,
         is_first_sighting: bool,
         now: datetime | None = None,
+        snapshots: list[DealSnapshot] | None = None,
+        window_minutes: int | None = None,
+        min_votes_gain_per_window: int | None = None,
     ) -> bool:
         """Return False during cold start, or if a newly-seen deal is stale.
 
@@ -182,15 +195,36 @@ class StateStore:
         never fire. On the first run we suppress everything (cold start). After
         that, a deal we are seeing for the first time is only eligible if it
         isn't already old inventory.
+
+        A deal suppressed here for being stale on first sighting is not killed
+        outright — it is marked "seeded". On later runs it stays suppressed
+        unless it shows renewed, hot-candidacy-level window vote-gain (pass
+        ``snapshots`` / ``window_minutes`` / ``min_votes_gain_per_window`` from
+        the caller's scoring config to evaluate that gate); once it clears the
+        gate once it graduates and is treated like any other known deal from
+        then on. This keeps the cold-start spam guard without permanently
+        burying a deal that later goes viral.
         """
+        now = now or datetime.now(UTC)
         if self._cold_start:
             return False
         if is_first_sighting:
             if deal.posted_at is None:
                 return True
-            now = now or datetime.now(UTC)
             age = (now - deal.posted_at).total_seconds() / 3600
-            return age <= ignore_older_than_hours
+            if age <= ignore_older_than_hours:
+                return True
+            self._seeded[deal.key] = now
+            return False
+        if deal.key in self._seeded:
+            if not snapshots or window_minutes is None or min_votes_gain_per_window is None:
+                return False
+            vote_vel, _ = compute_vote_velocity(snapshots, window_minutes, now)
+            window_gain = vote_vel * (window_minutes / 60)
+            if window_gain >= min_votes_gain_per_window:
+                del self._seeded[deal.key]
+                return True
+            return False
         return True
 
     # ------------------------------------------------------------------
@@ -206,3 +240,6 @@ class StateStore:
         for key, first_seen in list(self._first_seen.items()):
             if key not in self._data and first_seen < cutoff:
                 del self._first_seen[key]
+        for key, seeded_at in list(self._seeded.items()):
+            if key not in self._data and seeded_at < cutoff:
+                del self._seeded[key]

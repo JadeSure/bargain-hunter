@@ -141,6 +141,9 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 settings.cold_start.ignore_deals_older_than_hours,
                 deal.key in first_sighting,
                 now=now,
+                snapshots=snaps_map[deal.key],
+                window_minutes=settings.scoring.window_minutes,
+                min_votes_gain_per_window=settings.scoring.hot.min_votes_gain_per_window,
             ):
                 continue
             level = classify_hot(
@@ -321,6 +324,9 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 settings.cold_start.ignore_deals_older_than_hours,
                 deal.key in first_sighting,
                 now=now,
+                snapshots=snaps_map.get(deal.key, []),
+                window_minutes=settings.scoring.window_minutes,
+                min_votes_gain_per_window=settings.scoring.hot.min_votes_gain_per_window,
             ):
                 continue
             skip, realert_label = dedup.realert_check(
