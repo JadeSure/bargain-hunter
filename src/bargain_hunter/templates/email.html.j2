@@ -45,7 +45,7 @@
   {% for item in deals %}
   {% set deal = item.deal %}
   <div class="deal">
-    <h2><a href="{{ deal.url }}">{{ deal.title }}</a></h2>
+    <h2><a href="{{ item.affiliate_deal_url }}">{{ deal.title }}</a></h2>
     <div class="meta">
       {% if deal.price is not none and deal.price_confidence == 'high' %}
       <span class="badge price">${{ "%.2f"|format(deal.price) }}</span>
@@ -69,9 +69,9 @@
     <div class="expiry">Expires {{ deal.expiry.strftime('%d %b %Y %H:%M AEST') }}</div>
     {% endif %}
     <div class="links">
-      <a href="{{ deal.url }}">{{ source_labels.get(deal.source, deal.source|title) }} ↗</a>
-      {% if deal.merchant_url %}
-      <a href="{{ deal.merchant_url }}">Go to deal ↗</a>
+      <a href="{{ item.affiliate_deal_url }}">{{ source_labels.get(deal.source, deal.source|title) }} ↗</a>
+      {% if item.affiliate_merchant_url %}
+      <a href="{{ item.affiliate_merchant_url }}">Go to deal ↗</a>
       {% endif %}
       {% if item.feedback_up_url %}
       <a href="{{ item.feedback_up_url }}">👍 Good</a>

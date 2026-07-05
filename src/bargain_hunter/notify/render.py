@@ -14,6 +14,7 @@ from zoneinfo import ZoneInfo
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from ..models import Deal, Subscriber
+from .links import affiliate_url, get_amazon_affiliate_tag
 
 log = logging.getLogger(__name__)
 
@@ -42,6 +43,18 @@ class DealItem:
         self.level = level
         self.feedback_up_url: str | None = None
         self.feedback_down_url: str | None = None
+
+    @property
+    def affiliate_deal_url(self) -> str:
+        """`deal.url` with an Amazon affiliate tag applied (env `AMAZON_AFFILIATE_TAG`)."""
+        return affiliate_url(self.deal.url, get_amazon_affiliate_tag())
+
+    @property
+    def affiliate_merchant_url(self) -> str | None:
+        """`deal.merchant_url` with an Amazon affiliate tag applied, if set."""
+        if not self.deal.merchant_url:
+            return None
+        return affiliate_url(self.deal.merchant_url, get_amazon_affiliate_tag())
 
 
 def _sign(secret: str, deal_key: str, verdict: str, email: str) -> str:
