@@ -158,7 +158,12 @@ class _FakeDedup:
 
 
 def _wire_run(monkeypatch, tmp_path, deals, sub, dedup, quiet):
-    """Common monkeypatching for run(): fake source/Notion/email, warm state."""
+    """Common monkeypatching for run(): fake source/Notion/email, warm state.
+
+    ``sub`` may be a single Subscriber or a list. ``quiet`` may be None to keep
+    the real per-subscriber ``is_in_quiet_hours`` resolution (for tests that
+    exercise subscriber-level quiet-hours overrides).
+    """
     monkeypatch.chdir(tmp_path)
     state_path = Path("data/deals_state.json")
     if not state_path.exists():
@@ -186,10 +191,12 @@ def _wire_run(monkeypatch, tmp_path, deals, sub, dedup, quiet):
     monkeypatch.setenv("NOTION_SENT_LOG_DB_ID", "l")
     monkeypatch.setattr(main_mod, "OzBargainSource", FakeSource)
     monkeypatch.setattr(main_mod, "make_notion_client", lambda: object())
-    monkeypatch.setattr(main_mod, "fetch_subscribers", lambda *a, **kw: [sub])
+    subs = sub if isinstance(sub, list) else [sub]
+    monkeypatch.setattr(main_mod, "fetch_subscribers", lambda *a, **kw: list(subs))
     monkeypatch.setattr(main_mod, "DedupStore", lambda cfg: dedup)
     monkeypatch.setattr(main_mod.EmailSender, "send_digest", fake_send_digest)
-    monkeypatch.setattr(main_mod, "_is_quiet_hours", lambda settings, now: quiet)
+    if quiet is not None:
+        monkeypatch.setattr(main_mod, "is_in_quiet_hours", lambda sub, now, cfg: quiet)
     return sent_digests
 
 
@@ -225,6 +232,63 @@ def test_quiet_hours_queues_instead_of_sending(monkeypatch, tmp_path):
     assert summary["notifications_sent"] == 0
     assert summary["queued"] == 1
     assert Path("data/queued_notifications.json").exists()
+
+
+def test_per_subscriber_quiet_hours_override(monkeypatch, tmp_path):
+    """One subscriber's own quiet window queues while another's sends, same run."""
+    from zoneinfo import ZoneInfo
+
+    now = datetime.now(UTC)
+    deals = [
+        _deal(
+            deal_id="n1",
+            title="Nintendo Switch OLED",
+            votes_pos=20,
+            posted_at=now - timedelta(hours=1),
+        )
+    ]
+    settings = _watch_settings()
+    local = now.astimezone(ZoneInfo(settings.run.timezone))
+
+    def hhmm(offset_hours: int) -> str:
+        shifted = local + timedelta(hours=offset_hours)
+        return f"{shifted.hour:02d}:{shifted.minute:02d}"
+
+    night = Subscriber(
+        name="Night", email="night@example.com",
+        subscribe_hot=False, watch_keywords=["Nintendo"],
+        quiet_hours_start=hhmm(-1), quiet_hours_end=hhmm(1),  # covers now
+    )
+    day = Subscriber(
+        name="Day", email="day@example.com",
+        subscribe_hot=False, watch_keywords=["Nintendo"],
+        quiet_hours_start=hhmm(1), quiet_hours_end=hhmm(2),  # excludes now
+    )
+    dedup = _FakeDedup()
+    sent = _wire_run(monkeypatch, tmp_path, deals, [night, day], dedup, quiet=None)
+
+    summary = main_mod.run(settings, dry_run=True)
+
+    assert [email for email, _items, _cap in sent] == ["day@example.com"]
+    assert summary["queued"] == 1
+    queued_raw = json.loads(Path("data/queued_notifications.json").read_text(encoding="utf-8"))
+    assert [e["subscriber_email"] for e in queued_raw["entries"]] == ["night@example.com"]
+
+
+def test_drain_only_removes_draining_subscribers_queue_entries(monkeypatch, tmp_path):
+    """A draining subscriber must not wipe entries owed to a still-quiet one."""
+    from bargain_hunter.queue_store import NotificationQueue
+
+    now = datetime.now(UTC)
+    queue = NotificationQueue()
+    deal = _deal(deal_id="q1", title="Queued deal", votes_pos=20, posted_at=now)
+    queue.add("still-quiet@example.com", deal, "watch", None, "kept", now=now)
+    queue.add("draining@example.com", deal, "watch", None, "drained", now=now)
+    queue.remove_for("draining@example.com")
+    assert [e.subscriber_email for e in queue.entries_for("still-quiet@example.com")] == [
+        "still-quiet@example.com"
+    ]
+    assert queue.entries_for("draining@example.com") == []
 
 
 def test_drain_merges_queued_into_next_digest_and_clears_queue(monkeypatch, tmp_path):

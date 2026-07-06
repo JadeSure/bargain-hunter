@@ -1,11 +1,11 @@
 """Per-subscriber quiet-hours override on top of the global run config.
 
-`main.py`'s `_is_quiet_hours` gates the whole run against `settings.run`'s
-global window. This module adds a subscriber-level override: a subscriber can
-set their own "HH:MM" start/end (e.g. because they're in a different routine
-than the maintainer's default), and an unset field falls back to the global
-value. Not wired into `main.py` yet — see the module docstring in that file's
-owning PR for the integration point.
+`main.py` resolves quiet hours per subscriber with this helper: a subscriber
+can set their own "HH:MM" start/end (e.g. because they're in a different
+routine than the maintainer's default), and an unset field falls back to the
+global `settings.run` window. During a subscriber's quiet window their
+notifications are queued (see `queue_store`) and drained into their first
+digest after the window ends.
 """
 
 from __future__ import annotations
@@ -30,8 +30,7 @@ def is_in_quiet_hours(subscriber: Subscriber, now: datetime, global_config: RunC
     `global_config.quiet_hours_start`/`quiet_hours_end`; if neither pair is
     fully set, quiet hours are disabled (returns False).
 
-    Handles wrap-around midnight (e.g. 22:00-07:00), matching
-    `main._is_quiet_hours`'s semantics.
+    Handles wrap-around midnight (e.g. 22:00-07:00).
     """
     if subscriber.quiet_hours_start and subscriber.quiet_hours_end:
         start_str, end_str = subscriber.quiet_hours_start, subscriber.quiet_hours_end

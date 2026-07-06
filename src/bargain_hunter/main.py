@@ -28,6 +28,7 @@ from .notify.email import EmailSender, send_maintainer_alert
 from .notify.render import DealItem
 from .observations import ObservationLog, build_observation
 from .queue_store import NotificationQueue
+from .quiet_hours import is_in_quiet_hours
 from .scoring import classify_hot, compute_vote_velocity, enrich_deal, is_voteless_source
 from .sources.camelcamelcamel import CamelCamelCamelSource
 from .sources.ozbargain import OzBargainSource
@@ -226,18 +227,14 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     # ------------------------------------------------------------------
     # During quiet hours we don't drop notifications — we queue them (per
     # subscriber) and drain the queue into the first digest after quiet hours
-    # end, re-checking staleness and Sent Log dedup at drain time.
-    queue_mode = False
-    if _is_quiet_hours(settings, now):
-        if force:
-            log.info("Quiet hours active but --force set; proceeding with notifications.")
-        else:
-            log.info("Quiet hours — queueing notifications instead of sending.")
-            queue_mode = True
+    # end, re-checking staleness and Sent Log dedup at drain time. Quiet hours
+    # are resolved per subscriber (their own window overrides the global one),
+    # so on any given run some subscribers may be queueing while others drain.
+    if force:
+        log.info("--force set; quiet hours are bypassed for all subscribers.")
 
     queue = NotificationQueue()
     queue.load()
-    draining = not queue_mode and len(queue) > 0
     max_age = settings.run.quiet_hours_queue_max_age_hours
 
     sender = EmailSender(dry_run=dry_run)
@@ -246,16 +243,19 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         if not sub.active:
             continue
 
+        # This subscriber's effective quiet window (own override, else global).
+        sub_quiet = not force and is_in_quiet_hours(sub, now, settings.run)
+
         # Daily caps — hot and watch are independent quotas.
         # "mixed" deals (hot-qualified + watch keyword hit) count against hot cap only.
-        # In queue mode caps are NOT applied: the drain (usually the next AET
-        # day, when caps have reset) applies them instead.
+        # While a subscriber is quiet, caps are NOT applied: the drain (usually
+        # the next AET day, when caps have reset) applies them instead.
         hot_daily = dedup.daily_count(sub, now=now, tracks={"hot", "mixed"})
         watch_daily = dedup.daily_count(sub, now=now, tracks={"watch"})
         remaining_hot = sub.max_alerts_per_day - hot_daily
         remaining_watch = sub.max_watch_alerts_per_day - watch_daily
 
-        if not queue_mode and remaining_hot <= 0 and remaining_watch <= 0:
+        if not sub_quiet and remaining_hot <= 0 and remaining_watch <= 0:
             log.info(
                 "Subscriber %s at daily caps (hot=%d/%d watch=%d/%d); skipping.",
                 sub.ref, hot_daily, sub.max_alerts_per_day,
@@ -263,11 +263,14 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             )
             continue
 
-        queued = (
-            queue.drain_for(sub.email or "", now=now, max_age_hours=max_age)
-            if draining
-            else []
-        )
+        if sub_quiet:
+            queued = []
+        else:
+            queued = queue.drain_for(sub.email or "", now=now, max_age_hours=max_age)
+            # Survivors are merged into this digest; anything stale is dropped.
+            # Only this subscriber's entries — others may still be in their own
+            # quiet window and are owed theirs later.
+            queue.remove_for(sub.email or "")
 
         # Candidates = passed every filter except the daily cap (applied after
         # the queued-entry merge so tier sorting decides who wins cap slots).
@@ -339,7 +342,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         # Best tiers first, then apply the daily cap (skipped in queue mode —
         # the drain applies caps instead).
         hot_candidates.sort(key=lambda item: tier_rank.get(item.level or "", 0), reverse=True)
-        if queue_mode:
+        if sub_quiet:
             hot_items = hot_candidates
         else:
             hot_items = hot_candidates[: max(remaining_hot, 0)]
@@ -394,7 +397,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             watch_candidates.append(DealItem(q.deal, track="watch", reason=q.reason))
             notified_keys.add(q.deal.key)
 
-        if queue_mode:
+        if sub_quiet:
             watch_items = watch_candidates
         else:
             watch_items = watch_candidates[: max(remaining_watch, 0)]
@@ -409,11 +412,12 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         if not items:
             continue
 
-        if queue_mode:
+        if sub_quiet:
             email = sub.email or ""
             for item in items:
                 queue.add(email, item.deal, item.track, item.level, item.reason, now=now)
             summary["queued"] += len(items)
+            log.info("[%s] quiet hours — %d notification(s) queued.", sub.ref, len(items))
             continue
 
         summary["watch_matches"] += len(watch_items)
@@ -446,14 +450,10 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     # ------------------------------------------------------------------
     # 7. Save state (and the quiet-hours queue)
     # ------------------------------------------------------------------
-    if queue_mode:
-        queue.save()
+    # Persist queue additions (quiet subscribers) and removals (drained ones).
+    queue.save()
+    if summary["queued"]:
         log.info("Quiet hours: %d notification(s) queued for later delivery.", summary["queued"])
-    elif draining:
-        # Everything survivable was merged into this run's digests; drop the rest.
-        queue.clear()
-        queue.save()
-        log.info("Overnight notification queue drained and cleared.")
 
     state.save()
 
@@ -537,30 +537,6 @@ def _hot_reason(deal: Deal) -> str:
     if deal.discount_percent:
         parts.append(f"{deal.discount_percent:.0f}% off")
     return " · ".join(parts) or "Hot deal"
-
-
-def _is_quiet_hours(settings: Settings, now: datetime) -> bool:
-    """Return True if current local time falls within the configured quiet window.
-
-    Handles wrap-around midnight (e.g. 22:00–07:00).
-    Returns False when quiet hours are not configured.
-    """
-    start_str = settings.run.quiet_hours_start
-    end_str = settings.run.quiet_hours_end
-    if not start_str or not end_str:
-        return False
-    from zoneinfo import ZoneInfo
-
-    tz = ZoneInfo(settings.run.timezone)
-    local = now.astimezone(tz)
-    current = local.hour * 60 + local.minute
-    sh, sm = map(int, start_str.split(":"))
-    eh, em = map(int, end_str.split(":"))
-    start = sh * 60 + sm
-    end = eh * 60 + em
-    if start > end:  # window wraps midnight, e.g. 22:00–07:00
-        return current >= start or current < end
-    return start <= current < end
 
 
 def _alert_if_needed(summary: dict, settings: Settings, now: datetime) -> None:

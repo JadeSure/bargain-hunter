@@ -137,6 +137,20 @@ class NotificationQueue:
             if not e.is_stale(now, max_age_hours)
         ]
 
+    def remove_for(self, subscriber_email: str) -> None:
+        """Drop all of one subscriber's entries (after their drain was merged).
+
+        Per-subscriber quiet-hours windows mean subscribers leave quiet hours at
+        different times, so a drain must only remove the draining subscriber's
+        entries — a global clear would wipe entries still owed to subscribers
+        whose own window hasn't ended yet.
+        """
+        self._entries = {
+            key: entry
+            for key, entry in self._entries.items()
+            if entry.subscriber_email != subscriber_email
+        }
+
     def clear(self) -> None:
         self._entries.clear()
 
