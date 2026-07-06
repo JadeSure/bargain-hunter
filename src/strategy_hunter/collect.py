@@ -41,6 +41,11 @@ def build_sources(cfg: StrategyConfig) -> list[StrategySource]:
                 ),
                 max_retries=s.reddit.max_retries,
                 max_backoff_seconds=s.reddit.max_backoff_seconds,
+                fetch_comments=s.reddit.fetch_comments,
+                comment_min_len=s.reddit.comment_min_len,
+                max_comments_per_post=s.reddit.max_comments_per_post,
+                max_posts_with_comments=s.reddit.max_posts_with_comments,
+                comment_min_score=s.reddit.comment_min_score,
             )
         )
     if s.ozbargain_forum.enabled:

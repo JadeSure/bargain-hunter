@@ -50,6 +50,12 @@ class RedditConfig(StrictConfigModel):
     request_delay_seconds: float = 6.0   # gap between subreddit requests
     max_retries: int = 4                 # retries on a 429 before giving up
     max_backoff_seconds: float = 90.0    # cap on any single backoff/Retry-After wait
+    # Comment mining (OAuth transport only; the RSS fallback has no comments endpoint).
+    fetch_comments: bool = True
+    comment_min_len: int = 80            # skip low-signal one-liners ("This", "Same")
+    max_comments_per_post: int = 15
+    max_posts_with_comments: int = 5     # per-run extra-request budget, across all subreddits
+    comment_min_score: int = 5           # only mine posts with some traction
 
 
 class WhirlpoolConfig(StrictConfigModel):
