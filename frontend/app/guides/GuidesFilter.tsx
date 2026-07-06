@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import type { Guide } from '@/lib/guides'
 import { techniqueLabel } from '@/lib/guide-labels'
@@ -28,31 +28,92 @@ function GuideCard({ guide }: { guide: Guide }) {
   )
 }
 
+function guideSearchText(guide: Guide): string {
+  return [
+    guide.goal,
+    guide.summary,
+    ...guide.steps.map((s) => `${s.action} ${s.detail ?? ''}`),
+  ]
+    .join(' ')
+    .toLowerCase()
+}
+
 export function GuidesFilter({
   guides,
   techniques,
+  categories,
 }: {
   guides: Guide[]
   techniques: string[]
+  categories: string[]
 }) {
-  const [active, setActive] = useState<string | null>(null)
-  const filtered = active ? guides.filter((g) => g.techniques.includes(active)) : guides
+  const [activeTechnique, setActiveTechnique] = useState<string | null>(null)
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
+
+  // Search corpora are derived once from the statically-embedded guide data.
+  const searchTexts = useMemo(() => guides.map(guideSearchText), [guides])
+
+  const trimmed = query.trim().toLowerCase()
+  const terms = trimmed.length > 0 ? trimmed.split(/\s+/) : []
+
+  const filtered = guides.filter((g, i) => {
+    if (activeTechnique && !g.techniques.includes(activeTechnique)) return false
+    if (activeCategory && g.category !== activeCategory) return false
+    if (terms.length > 0 && !terms.every((t) => searchTexts[i].includes(t))) return false
+    return true
+  })
+
+  const hasFilters = activeTechnique !== null || activeCategory !== null || terms.length > 0
 
   return (
     <>
+      {guides.length > 0 && (
+        <div className="guides-search">
+          <input
+            type="search"
+            className="guides-search-input"
+            placeholder="Search guides — e.g. gift cards, cashback, energy…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search guides"
+          />
+        </div>
+      )}
+
+      {categories.length > 0 && (
+        <nav className="guides-filter" aria-label="Filter by category">
+          <button
+            className={`guide-filter-chip${!activeCategory ? ' guide-filter-chip-active' : ''}`}
+            onClick={() => setActiveCategory(null)}
+          >
+            All categories
+          </button>
+          {categories.map((c) => (
+            <button
+              key={c}
+              className={`guide-filter-chip${activeCategory === c ? ' guide-filter-chip-active' : ''}`}
+              onClick={() => setActiveCategory(activeCategory === c ? null : c)}
+            >
+              {c}
+            </button>
+          ))}
+        </nav>
+      )}
+
       {techniques.length > 0 && (
         <nav className="guides-filter" aria-label="Filter by technique">
           <button
-            className={`guide-filter-chip${!active ? ' guide-filter-chip-active' : ''}`}
-            onClick={() => setActive(null)}
+            className={`guide-filter-chip${!activeTechnique ? ' guide-filter-chip-active' : ''}`}
+            onClick={() => setActiveTechnique(null)}
           >
             All
           </button>
           {techniques.map((t) => (
             <button
               key={t}
-              className={`guide-filter-chip${active === t ? ' guide-filter-chip-active' : ''}`}
-              onClick={() => setActive(active === t ? null : t)}
+              className={`guide-filter-chip${activeTechnique === t ? ' guide-filter-chip-active' : ''}`}
+              onClick={() => setActiveTechnique(activeTechnique === t ? null : t)}
             >
               {techniqueLabel(t)}
             </button>
@@ -69,8 +130,10 @@ export function GuidesFilter({
                 The scraper pulls discussions from OzBargain, Reddit, and Whirlpool daily — distilled guides will appear here as they&apos;re generated.
               </p>
             </>
+          ) : hasFilters ? (
+            <p>No guides match those filters — try broadening your search.</p>
           ) : (
-            <p>No guides for that technique yet — try another.</p>
+            <p>No guides yet — check back soon.</p>
           )}
         </div>
       ) : (

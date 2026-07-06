@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { getGuides, getAllTechniques } from '@/lib/guides'
+import { getGuides, getAllTechniques, getAllCategories } from '@/lib/guides'
 import { GuidesFilter } from './GuidesFilter'
 import { BrandMark } from '../components/BrandMark'
 
@@ -20,7 +20,11 @@ export const metadata: Metadata = {
 }
 
 export default async function GuidesPage() {
-  const [guides, techniques] = await Promise.all([getGuides(), getAllTechniques()])
+  const [guides, techniques, categories] = await Promise.all([
+    getGuides(),
+    getAllTechniques(),
+    getAllCategories(),
+  ])
 
   return (
     <main className="guides-page">
@@ -39,7 +43,7 @@ export default async function GuidesPage() {
         </p>
       </section>
 
-      <GuidesFilter guides={guides} techniques={techniques} />
+      <GuidesFilter guides={guides} techniques={techniques} categories={categories} />
     </main>
   )
 }

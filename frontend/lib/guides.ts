@@ -82,3 +82,10 @@ export async function getAllTechniques(): Promise<string[]> {
   for (const g of guides) for (const t of g.techniques) set.add(t)
   return [...set].sort()
 }
+
+export async function getAllCategories(): Promise<string[]> {
+  const guides = await getGuides()
+  const set = new Set<string>()
+  for (const g of guides) if (g.category) set.add(g.category)
+  return [...set].sort()
+}

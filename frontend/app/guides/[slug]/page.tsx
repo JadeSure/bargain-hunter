@@ -3,6 +3,8 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { techniqueLabel } from '@/lib/guide-labels'
 import { getGuide, getGuides } from '@/lib/guides'
+import { formatAge, sourceLabel } from '@/lib/deals'
+import { getGuideDealMatches } from '@/lib/guide-deal-matching'
 
 export const dynamicParams = false
 
@@ -56,6 +58,9 @@ export default async function GuideDetailPage({
   const { slug } = await params
   const guide = await getGuide(slug)
   if (!guide) notFound()
+
+  const { guideToDeals } = await getGuideDealMatches()
+  const stackableDeals = guideToDeals.get(guide.id) ?? []
 
   return (
     <main className="guide-detail">
@@ -137,6 +142,38 @@ export default async function GuideDetailPage({
               ))}
           </ol>
         </section>
+
+        {stackableDeals.length > 0 && (
+          <section className="guide-section">
+            <h2 className="guide-section-title">Live deals you can stack this with</h2>
+            <ul className="guide-stack-deals">
+              {stackableDeals.map((deal) => (
+                <li key={deal.key}>
+                  <a
+                    href={deal.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="guide-stack-deal"
+                  >
+                    <span className="guide-stack-deal-title">{deal.title}</span>
+                    <span className="guide-stack-deal-meta">
+                      {sourceLabel(deal.source)} · {formatAge(deal.ageHours)}
+                      {deal.price !== null && <> · ${deal.price.toFixed(2)}</>}
+                      {deal.discountPercent !== null && (
+                        <> · {Math.round(deal.discountPercent)}% off</>
+                      )}
+                      {' ↗'}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className="guide-stack-note">
+              Matched automatically from the live deals board — check the deal still fits the
+              guide&apos;s mechanics before buying.
+            </p>
+          </section>
+        )}
 
         {guide.risks.length > 0 && (
           <section className="guide-section">

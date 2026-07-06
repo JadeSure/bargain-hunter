@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getLiveDeals, formatAge, sourceLabel } from '@/lib/deals'
+import { getGuideDealMatches } from '@/lib/guide-deal-matching'
 import { BrandMark } from '../components/BrandMark'
 
 export const metadata: Metadata = {
@@ -34,7 +35,7 @@ function SourceBadge({ source }: { source: string }) {
 }
 
 export default async function DealsPage() {
-  const deals = await getLiveDeals()
+  const [deals, { dealToGuides }] = await Promise.all([getLiveDeals(), getGuideDealMatches()])
 
   return (
     <main className="deals-page">
@@ -69,13 +70,7 @@ export default async function DealsPage() {
           <div className="deals-count">{deals.length} active deal{deals.length !== 1 ? 's' : ''}</div>
           <div className="deals-grid">
             {deals.map((deal) => (
-              <a
-                key={deal.key}
-                href={deal.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="deal-live-card"
-              >
+              <div key={deal.key} className="deal-live-card">
                 <div className="deal-live-top">
                   <div className="deal-live-badges">
                     <HotLevelBadge level={deal.hotLevel} />
@@ -84,7 +79,17 @@ export default async function DealsPage() {
                   <span className="deal-live-age">{formatAge(deal.ageHours)}</span>
                 </div>
 
-                <h2 className="deal-live-title">{deal.title}</h2>
+                <h2 className="deal-live-title">
+                  {/* Stretched link — its ::after covers the whole card */}
+                  <a
+                    href={deal.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="deal-live-link"
+                  >
+                    {deal.title}
+                  </a>
+                </h2>
 
                 {(deal.isFree || deal.price !== null || deal.discountPercent !== null) && (
                   <div className="deal-live-meta">
@@ -103,6 +108,21 @@ export default async function DealsPage() {
                   </div>
                 )}
 
+                {(dealToGuides.get(deal.key) ?? []).length > 0 && (
+                  <div className="deal-stack-chips">
+                    {(dealToGuides.get(deal.key) ?? []).map((guide) => (
+                      <Link
+                        key={guide.id}
+                        href={`/guides/${guide.id}`}
+                        className="deal-stack-chip"
+                        title={guide.goal}
+                      >
+                        Stack it: {guide.goal}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
                 <div className="deal-live-footer">
                   {deal.source === 'ozbargain' && (
                     <span className="deal-live-votes">
@@ -116,7 +136,7 @@ export default async function DealsPage() {
                   <span className="deal-live-score">peak {deal.peakScore.toFixed(2)}</span>
                   <span className="deal-live-link-hint">View deal ↗</span>
                 </div>
-              </a>
+              </div>
             ))}
           </div>
         </section>

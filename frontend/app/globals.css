@@ -739,7 +739,18 @@ html, body {
 .guides-hero-title { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; }
 .guides-hero-sub { margin-top: 10px; font-size: 16px; color: rgba(232,233,236,0.6); max-width: 640px; }
 
-.guides-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+.guides-search { margin-bottom: 20px; }
+.guides-search-input {
+  width: 100%; max-width: 440px;
+  font-size: 14px; padding: 10px 16px; border-radius: 10px;
+  background: var(--surface-2); border: 1px solid var(--border-low);
+  color: var(--text-primary); outline: none; transition: border-color 0.15s;
+}
+.guides-search-input::placeholder { color: rgba(232,233,236,0.35); }
+.guides-search-input:focus { border-color: var(--orange); }
+
+.guides-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.guides-filter:last-of-type { margin-bottom: 32px; }
 .guide-filter-chip {
   font-size: 13px; padding: 7px 14px; border-radius: 999px; text-decoration: none;
   background: var(--surface-2); border: 1px solid var(--border-low);
@@ -821,6 +832,18 @@ html, body {
   font-size: 12px; padding: 3px 9px; border-radius: 6px;
   background: var(--surface-4); border: 1px solid var(--border-mid); color: rgba(232,233,236,0.7);
 }
+.guide-stack-deals { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.guide-stack-deal {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 14px 18px; border-radius: 10px; text-decoration: none;
+  background: var(--surface-2); border: 1px solid var(--border-low);
+  transition: border-color 0.15s;
+}
+.guide-stack-deal:hover { border-color: rgba(45,212,191,0.5); }
+.guide-stack-deal-title { font-size: 14px; font-weight: 500; color: var(--text-primary); line-height: 1.45; }
+.guide-stack-deal-meta { font-size: 12px; color: var(--teal); }
+.guide-stack-note { margin-top: 12px; font-size: 12px; color: rgba(232,233,236,0.4); line-height: 1.5; }
+
 .guide-sources { list-style: none; display: flex; flex-direction: column; gap: 8px; }
 .guide-sources a { font-size: 14px; color: var(--teal); text-decoration: none; }
 .guide-sources a:hover { text-decoration: underline; }
@@ -875,6 +898,7 @@ html, body {
 }
 
 .deal-live-card {
+  position: relative;
   display: flex; flex-direction: column; gap: 10px;
   padding: 20px; border-radius: 12px;
   background: var(--surface-1);
@@ -891,6 +915,22 @@ html, body {
 .deal-live-badges { display: flex; flex-wrap: wrap; gap: 6px; }
 .deal-live-age { font-size: 12px; color: rgba(232,233,236,0.35); white-space: nowrap; flex-shrink: 0; }
 .deal-live-title { font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--text-primary); }
+/* Stretched link: the whole card is clickable via ::after, while elements
+   with a higher z-index (the Stack-it chips) stay independently clickable. */
+.deal-live-link { color: inherit; text-decoration: none; }
+.deal-live-link::after { content: ''; position: absolute; inset: 0; }
+
+.deal-stack-chips { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.deal-stack-chip {
+  position: relative; z-index: 1;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px;
+  text-decoration: none;
+  background: rgba(45,212,191,0.1); color: var(--teal);
+  border: 1px solid rgba(45,212,191,0.25);
+  transition: border-color 0.15s, background 0.15s;
+}
+.deal-stack-chip:hover { background: rgba(45,212,191,0.18); border-color: rgba(45,212,191,0.5); }
 .deal-live-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .deal-live-price { font-size: 18px; font-weight: 700; color: #4ade80; }
 .deal-live-free { font-size: 18px; font-weight: 700; color: #4ade80; }
