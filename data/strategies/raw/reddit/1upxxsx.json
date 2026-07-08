@@ -4,14 +4,14 @@
   "url": "https://www.reddit.com/r/fiaustralia/comments/1upxxsx/i_built_a_tool_that_shows_the_cgt_cost_of_a/",
   "title": "I built a tool that shows the CGT cost of a rebalance before you trade — launched today, would love feedback",
   "author": "/u/crowdfolio",
-  "body": "Long-time lurker, first product post — mods, happy to remove if this breaks the rules. Full disclosure: I'm the developer. Like a lot of people here I run a DIY ETF portfolio, and my biggest annoyance was that rebalancing decisions were blind to tax. My tracker could tell me I'd drifted 8% from my target allocation, but not what selling parcel X now vs. waiting for the 12-month CGT discount would actually cost me. So I built Crowdfolio. It: - imports holdings (Sharesight export, CommSec, CMC, etc.) - compares them against a target model portfolio - generates a proposed trade list with parcel-level CGT on every sell (FIFO, LIFO, specific selection, or CGT-optimised) - flags tax-loss harvesting opportunities before EOFY - supports SMSFs and tracks franking credits It's day one, so rough edges are guaranteed. What would make this actually useful for you? Brutal feedback welcome. (Obligatory: it's a modelling tool, not financial advice.) submitted by /u/crowdfolio [link] [comments]",
+  "body": "Long-time lurker, first product post — mods, happy to remove if this breaks the rules. Full disclosure: I'm the developer. Like a lot of people here I run a DIY ETF portfolio, and my biggest annoyance was that rebalancing decisions were blind to tax. My tracker could tell me I'd drifted 8% from my target allocation, but not what selling parcel X now vs. waiting for the 12-month CGT discount would actually cost me. So I built Crowdfolio . It: - imports holdings (Sharesight export, CommSec, CMC, etc.) - compares them against a target model portfolio - generates a proposed trade list with parcel-level CGT on every sell (FIFO, LIFO, specific selection, or CGT-optimised) - flags tax-loss harvesting opportunities before EOFY - supports SMSFs and tracks franking credits It's day one, so rough edges are guaranteed. What would make this actually useful for you? Brutal feedback welcome. (Obligatory: it's a modelling tool, not financial advice.) submitted by /u/crowdfolio [link] [comments]",
   "board": "r/fiaustralia",
   "created_at": "2026-07-07T15:10:51Z",
-  "fetched_at": "2026-07-07T17:34:07.465410Z",
+  "fetched_at": "2026-07-08T16:58:14.635282Z",
   "score": null,
   "num_comments": null,
   "tags": [],
   "relevance": 1,
-  "content_hash": "a24f4ca3ed448701",
+  "content_hash": "66a4a0e2ceee06a3",
   "key": "reddit:1upxxsx"
 }

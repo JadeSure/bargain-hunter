@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1uqkldd",
+  "url": "https://www.reddit.com/r/fiaustralia/comments/1uqkldd/ran_the_numbers_on_what_going_parttime_actually/",
+  "title": "Ran the numbers on what going part-time actually costs in superannuation over 22 years — the gap surprised me",
+  "author": "/u/breitling018",
+  "body": "I got curious how much moving to a 4-day week actually costs in super, so I ran a hypothetical projection (45yo, $120k → $96k, 22 years to retirement, 7% average return). Quick summary: Annual difference in SG contributions: $2,880 Over 22 years of compounding: ~$155,000 Once you factor in the effect on the existing balance: total gap ~$185,000 by retirement That translates to roughly $7,400 less per year in retirement, for life What I found interesting — the carry-forward concessional contributions rule (if your balance is under $500k) can partially offset this, but almost nobody actually uses it after cutting hours. Put together a full breakdown with sources (ATO, ASFA, MoneySmart) here if anyone wants the detailed maths: https://youtu.be/ppbxX025BuI Not a financial adviser, these are illustrative projections, not advice — just found it interesting how rarely this number actually gets calculated when people decide to reduce their hours. submitted by /u/breitling018 [link] [comments]",
+  "board": "r/fiaustralia",
+  "created_at": "2026-07-08T06:29:28Z",
+  "fetched_at": "2026-07-08T16:58:14.635282Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "586011cb0aa049b3",
+  "key": "reddit:1uqkldd"
+}
