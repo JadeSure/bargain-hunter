@@ -170,15 +170,18 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     return entries.filter((_, i) => !expired[i])
   }
 
-  // Top-tier deals are the main event. Top-tier supply is bursty (it clusters
-  // around big sale days, e.g. EOFY) and individual deals sell out fast, so on
-  // quieter days there may be none genuinely live — fall back to a handful of
-  // the best "great" deals (by peak score) rather than showing an empty page.
-  // The fallback check happens AFTER the live-expiry filter, not on the raw
-  // candidate count, so a page that would otherwise render zero live top
-  // deals (even if some are still technically inside the retention window)
-  // still gets the great-tier fallback.
+  // Top-tier deals are the main event, but top-tier supply is bursty (it
+  // clusters around big sale days, e.g. EOFY) and a single stray top-tier
+  // classification (e.g. a non-expiring news/policy post that racked up
+  // votes) shouldn't be able to crowd out every genuinely good "great" deal.
+  // So: always show live top-tier deals, and top up with the best "great"
+  // deals (by peak score) whenever the live count is thin, rather than an
+  // all-or-nothing top-vs-great choice. The fallback check happens AFTER the
+  // live-expiry filter, not on the raw candidate count, so a page that would
+  // otherwise render few live top deals (even if some are still technically
+  // inside the retention window) still gets topped up.
   const FALLBACK_GREAT_LIMIT = 8
+  const MIN_DISPLAY_COUNT = 8
 
   const topCandidates: [string, Agg][] = []
   const greatCandidates: [string, Agg][] = []
@@ -190,11 +193,12 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
   }
 
   let live = await keepLive(toEntries(topCandidates))
-  if (live.length === 0) {
+  if (live.length < MIN_DISPLAY_COUNT) {
     const greatEntries = toEntries(
       greatCandidates.sort((a, b) => b[1].peakScore - a[1].peakScore).slice(0, FALLBACK_GREAT_LIMIT),
     )
-    live = await keepLive(greatEntries)
+    const greatLive = await keepLive(greatEntries)
+    live = [...live, ...greatLive]
   }
 
   // Highest tier first (Top > Great > Good); within a tier, by peak score.
