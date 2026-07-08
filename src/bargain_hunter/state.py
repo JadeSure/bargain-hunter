@@ -66,6 +66,10 @@ class StateStore:
         # a notification if they show renewed hot-candidacy-level velocity.
         self._seeded: dict[str, datetime] = {}
         self._cold_start = False
+        # Event-day adaptive baseline: hour-of-day (Australia/Sydney, 0-23) ->
+        # {"ewma": float, "updated_at": datetime}. Empty when never seeded.
+        self._baseline_seeded_at: datetime | None = None
+        self._baseline_hours: dict[int, dict] = {}
 
     # ------------------------------------------------------------------
     # Load / save
@@ -110,6 +114,21 @@ class StateStore:
             with contextlib.suppress(ValueError):
                 self._seeded[key] = datetime.fromisoformat(ts_str)
 
+        baseline = raw.get("site_baseline") or {}
+        with contextlib.suppress(ValueError):
+            seeded_at_str = baseline.get("seeded_at")
+            if seeded_at_str:
+                self._baseline_seeded_at = datetime.fromisoformat(seeded_at_str)
+        for hour_str, bucket in (baseline.get("hours") or {}).items():
+            try:
+                hour = int(hour_str)
+                self._baseline_hours[hour] = {
+                    "ewma": float(bucket["ewma"]),
+                    "updated_at": datetime.fromisoformat(bucket["updated_at"]),
+                }
+            except (KeyError, ValueError, TypeError):
+                continue
+
         self._cold_start = raw.get("cold_start", False)
         log.info("Loaded state: %d deals, cold_start=%s", len(self._data), self._cold_start)
 
@@ -133,6 +152,18 @@ class StateStore:
             },
             "first_seen": {key: ts.isoformat() for key, ts in self._first_seen.items()},
             "seeded": {key: ts.isoformat() for key, ts in self._seeded.items()},
+            "site_baseline": {
+                "seeded_at": (
+                    self._baseline_seeded_at.isoformat() if self._baseline_seeded_at else None
+                ),
+                "hours": {
+                    str(hour): {
+                        "ewma": bucket["ewma"],
+                        "updated_at": bucket["updated_at"].isoformat(),
+                    }
+                    for hour, bucket in self._baseline_hours.items()
+                },
+            },
         }
         self.path.parent.mkdir(parents=True, exist_ok=True)
         _atomic_write_json(self.path, payload)
@@ -172,6 +203,57 @@ class StateStore:
     def is_new_to_system(self, key: str) -> bool:
         """True if we have seen this deal for the first time this run."""
         return key not in self._first_seen
+
+    # ------------------------------------------------------------------
+    # Event-day adaptive baseline (site-wide vote velocity)
+    # ------------------------------------------------------------------
+
+    def site_baseline(self, hour: int) -> tuple[float, datetime] | None:
+        """Return (ewma, updated_at) for the given hour-of-day bucket, or None."""
+        bucket = self._baseline_hours.get(hour)
+        if bucket is None:
+            return None
+        return bucket["ewma"], bucket["updated_at"]
+
+    def baseline_age_days(self, now: datetime | None = None) -> float:
+        """Days since the baseline was first seeded; 0.0 if never seeded."""
+        if self._baseline_seeded_at is None:
+            return 0.0
+        now = now or datetime.now(UTC)
+        return max((now - self._baseline_seeded_at).total_seconds() / 86400, 0.0)
+
+    def update_site_baseline(
+        self,
+        sample: float,
+        hour: int,
+        now: datetime,
+        half_life_days: float,
+        sample_clamp: float,
+    ) -> None:
+        """Update the hour-of-day bucket with a new site-velocity-index sample.
+
+        First-ever update seeds `seeded_at`. An empty bucket is seeded directly
+        with the sample; otherwise the sample is clamped to `sample_clamp *
+        ewma` (only when ewma > 0, so an event-day spike can't poison the
+        baseline in one run) before a time-aware EWMA update.
+        """
+        if self._baseline_seeded_at is None:
+            self._baseline_seeded_at = now
+
+        bucket = self._baseline_hours.get(hour)
+        if bucket is None:
+            self._baseline_hours[hour] = {"ewma": sample, "updated_at": now}
+            return
+
+        ewma = bucket["ewma"]
+        clamped_sample = sample
+        if ewma > 0:
+            clamped_sample = min(sample, sample_clamp * ewma)
+
+        dt_days = max((now - bucket["updated_at"]).total_seconds() / 86400, 0.0)
+        alpha = 1 - 0.5 ** (dt_days / half_life_days) if half_life_days > 0 else 1.0
+        new_ewma = ewma + alpha * (clamped_sample - ewma)
+        self._baseline_hours[hour] = {"ewma": new_ewma, "updated_at": now}
 
     # ------------------------------------------------------------------
     # Cold-start / age guard (FR8)

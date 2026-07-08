@@ -56,6 +56,26 @@ def test_build_observation_records_hot_level():
     assert row2["hot_level"] is None
 
 
+def test_build_observation_includes_adaptive_baseline_fields():
+    now = datetime.now(UTC)
+    row = build_observation(
+        _deal(),
+        _snaps(now),
+        ScoringConfig(),
+        is_hot=True,
+        now=now,
+        heat_ratio=1.5,
+        site_velocity_index=12.3456,
+    )
+    assert row["heat_ratio"] == 1.5
+    assert row["site_velocity_index"] == 12.3456
+
+    # Defaults are behaviour-identical to pre-adaptive-baseline rows.
+    row_default = build_observation(_deal(), _snaps(now), ScoringConfig(), is_hot=True, now=now)
+    assert row_default["heat_ratio"] == 1.0
+    assert row_default["site_velocity_index"] is None
+
+
 def test_observation_log_writes_jsonl(tmp_path):
     now = datetime.now(UTC)
     obs = ObservationLog(obs_dir=tmp_path)

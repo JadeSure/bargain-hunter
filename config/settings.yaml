@@ -51,6 +51,21 @@ scoring:
       - {name: top,   min_score: 7.0, min_votes: 40}
       - {name: great, min_score: 4.0}
       - {name: good,  min_score: 1.5}   # = the original hot floor
+    # Event-day adaptive baseline: normalizes the absolute vote-velocity gates
+    # above against a rolling per-hour site heat index so genuinely good deals
+    # on high-traffic days (Boxing Day, Prime Day) aren't misclassified. The
+    # warmup period means behaviour is unchanged for the first few days while
+    # the baseline accumulates real data.
+    adaptive:
+      enabled: true
+      ewma_half_life_days: 14
+      index_percentile: 75
+      min_deals_for_index: 5
+      warmup_days: 3
+      ratio_clamp_min: 0.5
+      ratio_clamp_max: 3.0
+      baseline_sample_clamp: 3.0
+      min_baseline_velocity: 0.1
   watch:
     min_votes: 15                  # minimum positive votes after keyword match (raised to 15)
     min_discount_percent: 15       # discount threshold when no votes available (e.g. CCC) — raised to 15%

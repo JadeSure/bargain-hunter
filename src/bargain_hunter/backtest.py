@@ -132,6 +132,8 @@ class ObservationRow(BaseModel):
     hot_score: float = 0.0
     is_hot: bool = False
     hot_level: str | None = None
+    heat_ratio: float = 1.0
+    site_velocity_index: float | None = None
 
 
 def _file_date(path: Path) -> date | None:
@@ -190,8 +192,8 @@ def _replay_score(row: ObservationRow, hot: HotConfig) -> float:
     total_votes = row.votes_pos + row.votes_neg
     neg_ratio = row.votes_neg / total_votes if total_votes else 0.0
 
-    v1 = hot.min_votes_gain_per_window or 1
-    v2 = hot.early_burst_min_votes or 1
+    v1 = (hot.min_votes_gain_per_window * row.heat_ratio) or 1
+    v2 = (hot.early_burst_min_votes * row.heat_ratio) or 1
     vote_term = row.vote_velocity / v1 + math.log1p(row.votes_pos) / math.log1p(v2)
     comment_term = hot.comment_velocity_weight * row.comment_velocity
     score = age_factor * (vote_term + comment_term) - hot.neg_vote_penalty_weight * neg_ratio
@@ -211,12 +213,15 @@ def _replay_is_candidate(
     # docstring's caveat about changing scoring.window_minutes in candidates.
     if row.n_snapshots >= 2:
         window_gain = row.vote_velocity * (cfg.window_minutes / 60)
-        if window_gain >= hot.min_votes_gain_per_window:
+        if window_gain >= hot.min_votes_gain_per_window * row.heat_ratio:
             return True
 
     # Gate 2: early burst.
     age_hours = row.age_hours if row.age_hours is not None else 0.0
-    if age_hours <= hot.early_burst_age_hours and row.votes_pos >= hot.early_burst_min_votes:
+    if (
+        age_hours <= hot.early_burst_age_hours
+        and row.votes_pos >= hot.early_burst_min_votes * row.heat_ratio
+    ):
         return True
 
     # Gate 3: top-P% velocity among deals active in the same run.

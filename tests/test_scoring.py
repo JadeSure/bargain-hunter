@@ -4,12 +4,14 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from bargain_hunter.config import HotConfig, HotTier, ScoringConfig, effective_tiers
+from bargain_hunter.config import AdaptiveConfig, HotConfig, HotTier, ScoringConfig, effective_tiers
 from bargain_hunter.models import Deal, DealSnapshot
 from bargain_hunter.scoring import (
     classify_hot,
     compute_click_velocity,
+    compute_heat_ratio,
     compute_hot_score,
+    compute_site_velocity_index,
     compute_vote_velocity,
     enrich_deal,
     extract_price_signals,
@@ -497,3 +499,113 @@ def test_voteless_deal_discount_candidate_min_disabled():
     cfg = ScoringConfig(hot=HotConfig(discount_candidate_min=None))
     d = _ccc_deal(discount_percent=99.0)
     assert not is_hot_candidate(d, [], cfg)
+
+
+# ---------------------------------------------------------------------------
+# Event-day adaptive baseline
+# ---------------------------------------------------------------------------
+
+
+def test_site_velocity_index_excludes_single_snapshot_pairs():
+    now = datetime.now(UTC)
+    pairs = [
+        (_deal(deal_id="1"), _snaps(10)),  # single snapshot — excluded
+        (_deal(deal_id="2"), _snaps(0, 20, spacing_minutes=30)),
+        (_deal(deal_id="3"), _snaps(0, 40, spacing_minutes=30)),
+    ]
+    index = compute_site_velocity_index(pairs, window_minutes=60, percentile=50, now=now)
+    assert index is not None
+    assert index > 0
+
+
+def test_site_velocity_index_none_when_no_samples():
+    now = datetime.now(UTC)
+    pairs = [(_deal(deal_id="1"), _snaps(10))]  # single snapshot only
+    assert compute_site_velocity_index(pairs, window_minutes=60, percentile=75, now=now) is None
+
+
+def test_site_velocity_index_percentile_maths():
+    now = datetime.now(UTC)
+    # Velocities: 0->10 over 30min=20v/h, 0->20=40v/h, 0->30=60v/h, 0->40=80v/h
+    pairs = [
+        (_deal(deal_id=str(i)), _snaps(0, v, spacing_minutes=30))
+        for i, v in enumerate([10, 20, 30, 40])
+    ]
+    index = compute_site_velocity_index(pairs, window_minutes=60, percentile=50, now=now)
+    assert index == pytest.approx(50.0, abs=1.0)
+
+
+def test_compute_heat_ratio_disabled_returns_one():
+    cfg = AdaptiveConfig(enabled=False)
+    assert compute_heat_ratio(2.0, 1.0, cfg, baseline_age_days=100) == 1.0
+
+
+def test_compute_heat_ratio_none_index_returns_one():
+    cfg = AdaptiveConfig(enabled=True)
+    assert compute_heat_ratio(None, 1.0, cfg, baseline_age_days=100) == 1.0
+
+
+def test_compute_heat_ratio_none_baseline_returns_one():
+    cfg = AdaptiveConfig(enabled=True)
+    assert compute_heat_ratio(2.0, None, cfg, baseline_age_days=100) == 1.0
+
+
+def test_compute_heat_ratio_tiny_baseline_returns_one():
+    cfg = AdaptiveConfig(enabled=True, min_baseline_velocity=0.5)
+    assert compute_heat_ratio(2.0, 0.2, cfg, baseline_age_days=100) == 1.0
+
+
+def test_compute_heat_ratio_warmup_returns_one():
+    cfg = AdaptiveConfig(enabled=True, warmup_days=3.0)
+    assert compute_heat_ratio(2.0, 1.0, cfg, baseline_age_days=1.0) == 1.0
+
+
+def test_compute_heat_ratio_clamps_high():
+    cfg = AdaptiveConfig(enabled=True, warmup_days=3.0, ratio_clamp_max=3.0)
+    assert compute_heat_ratio(100.0, 1.0, cfg, baseline_age_days=100) == 3.0
+
+
+def test_compute_heat_ratio_clamps_low():
+    cfg = AdaptiveConfig(enabled=True, warmup_days=3.0, ratio_clamp_min=0.5)
+    assert compute_heat_ratio(0.01, 1.0, cfg, baseline_age_days=100) == 0.5
+
+
+def test_compute_heat_ratio_computed_value():
+    cfg = AdaptiveConfig(enabled=True, warmup_days=3.0, ratio_clamp_min=0.5, ratio_clamp_max=3.0)
+    assert compute_heat_ratio(2.0, 1.0, cfg, baseline_age_days=100) == 2.0
+
+
+def test_is_hot_candidate_gate1_scales_with_heat_ratio():
+    # Window vote gain of 20 votes/h (5 votes over 15 min) with default
+    # min_votes_gain_per_window=15: passes at ratio 1.0, fails at ratio 2.0.
+    d = _deal(votes_pos=15, posted_at=datetime.now(UTC) - timedelta(hours=6))
+    snaps = _snaps(10, 15, spacing_minutes=15)
+    cfg = _cfg()
+    assert is_hot_candidate(d, snaps, cfg, heat_ratio=1.0)
+    assert not is_hot_candidate(d, snaps, cfg, heat_ratio=2.0)
+
+
+def test_is_hot_candidate_gate1_fails_at_1_passes_at_lower_ratio():
+    d = _deal(votes_pos=13, posted_at=datetime.now(UTC) - timedelta(hours=6))
+    snaps = _snaps(10, 13, spacing_minutes=15)
+    cfg = _cfg()
+    assert not is_hot_candidate(d, snaps, cfg, heat_ratio=1.0)
+    assert is_hot_candidate(d, snaps, cfg, heat_ratio=0.5)
+
+
+def test_is_hot_candidate_gate2_scales_with_heat_ratio():
+    # early_burst_min_votes default 25; deal has 25 votes, fresh.
+    d = _deal(votes_pos=25, posted_at=datetime.now(UTC) - timedelta(minutes=30))
+    snaps = _snaps(25)
+    cfg = _cfg()
+    assert is_hot_candidate(d, snaps, cfg, heat_ratio=1.0)
+    assert not is_hot_candidate(d, snaps, cfg, heat_ratio=2.0)
+
+
+def test_compute_hot_score_scales_with_heat_ratio():
+    cfg = _cfg()
+    d = _deal(votes_pos=40, posted_at=datetime.now(UTC) - timedelta(minutes=30))
+    snaps = _snaps(0, 20, 40, spacing_minutes=20)
+    score_ratio_1 = compute_hot_score(d, snaps, cfg, heat_ratio=1.0)
+    score_ratio_low = compute_hot_score(d, snaps, cfg, heat_ratio=0.5)
+    assert score_ratio_low > score_ratio_1

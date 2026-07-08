@@ -50,6 +50,34 @@ class HotTier(StrictConfigModel):
     min_votes: int | None = None
 
 
+class AdaptiveConfig(StrictConfigModel):
+    """Event-day adaptive scoring baseline (site-wide vote velocity index).
+
+    Normalises the fixed absolute vote-velocity gates in `HotConfig` against a
+    rolling per-hour site heat baseline so genuinely good deals aren't
+    misclassified on event days (Boxing Day, Prime Day) when site-wide
+    velocity shifts. Disabled by default; see `heat_ratio` plumbing in
+    `scoring.py` / `main.py`.
+    """
+
+    enabled: bool = False
+    ewma_half_life_days: float = 14.0
+    # Percentile of active-deal vote velocities used as the per-run site heat index.
+    index_percentile: float = 75.0
+    # Minimum sampled deals to compute an index this run.
+    min_deals_for_index: int = 5
+    # Until the baseline is this old, heat_ratio is forced to 1.0.
+    warmup_days: float = 3.0
+    ratio_clamp_min: float = 0.5
+    ratio_clamp_max: float = 3.0
+    # Each run's index sample is clamped to <= this x current bucket EWMA before
+    # updating, so an event day can't poison the baseline (only when the bucket
+    # already has a value).
+    baseline_sample_clamp: float = 3.0
+    # Votes/h; below this the bucket baseline is treated as unreliable -> ratio 1.0.
+    min_baseline_velocity: float = 0.1
+
+
 class HotConfig(StrictConfigModel):
     min_votes_gain_per_window: int = 15
     early_burst_age_hours: float = 2.0
@@ -93,6 +121,7 @@ class HotConfig(StrictConfigModel):
     discount_tiers: dict[str, float] = Field(
         default_factory=lambda: {"good": 40.0, "great": 55.0, "top": 70.0}
     )
+    adaptive: AdaptiveConfig = Field(default_factory=AdaptiveConfig)
 
 
 def effective_tiers(hot: HotConfig) -> list[HotTier]:

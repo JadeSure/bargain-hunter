@@ -15,6 +15,7 @@ import sys
 import traceback
 from datetime import UTC, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -29,7 +30,14 @@ from .notify.render import DealItem
 from .observations import ObservationLog, build_observation
 from .queue_store import NotificationQueue
 from .quiet_hours import is_in_quiet_hours
-from .scoring import classify_hot, compute_vote_velocity, enrich_deal, is_voteless_source
+from .scoring import (
+    classify_hot,
+    compute_heat_ratio,
+    compute_site_velocity_index,
+    compute_vote_velocity,
+    enrich_deal,
+    is_voteless_source,
+)
 from .sources.camelcamelcamel import CamelCamelCamelSource
 from .sources.ozbargain import OzBargainSource
 from .state import StateStore
@@ -42,6 +50,10 @@ logging.basicConfig(
     stream=sys.stdout,
 )
 log = logging.getLogger(__name__)
+
+# Hour-of-day baseline buckets are keyed in Australia/Sydney time so an event
+# day's dilution isn't misread as (or masked by) the normal 3am lull.
+_AET = ZoneInfo("Australia/Sydney")
 
 
 def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
@@ -129,6 +141,52 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     snaps_map = {d.key: state.snapshots(d.key) for d in active_deals}
     active_pairs = [(d, snaps_map[d.key]) for d in active_deals]
 
+    # ------------------------------------------------------------------
+    # 4a. Event-day adaptive baseline: compute this run's site heat ratio
+    #     against the PRE-update baseline, classify with it, then update the
+    #     baseline. Voteless sources (e.g. CCC) are excluded from the index —
+    #     they carry no vote signal and would only drag it down.
+    # ------------------------------------------------------------------
+    adaptive_cfg = settings.scoring.hot.adaptive
+    heat_ratio = 1.0
+    site_velocity_index: float | None = None
+    if not state.is_cold_start():
+        vote_based_pairs = [
+            (d, snaps)
+            for d, snaps in active_pairs
+            if not is_voteless_source(d, settings.scoring.hot)
+        ]
+        site_velocity_index = compute_site_velocity_index(
+            vote_based_pairs,
+            settings.scoring.window_minutes,
+            adaptive_cfg.index_percentile,
+            now=now,
+        )
+        n_index_samples = sum(1 for _d, snaps in vote_based_pairs if len(snaps) >= 2)
+        if n_index_samples < adaptive_cfg.min_deals_for_index:
+            site_velocity_index = None
+
+        hour = now.astimezone(_AET).hour
+        baseline_entry = state.site_baseline(hour)
+        baseline_value = baseline_entry[0] if baseline_entry else None
+        heat_ratio = compute_heat_ratio(
+            site_velocity_index, baseline_value, adaptive_cfg, state.baseline_age_days(now)
+        )
+        if site_velocity_index is not None and adaptive_cfg.enabled:
+            state.update_site_baseline(
+                site_velocity_index,
+                hour,
+                now,
+                adaptive_cfg.ewma_half_life_days,
+                adaptive_cfg.baseline_sample_clamp,
+            )
+    log.info(
+        "Adaptive baseline: heat_ratio=%.3f site_velocity_index=%s",
+        heat_ratio, site_velocity_index,
+    )
+    summary["heat_ratio"] = round(heat_ratio, 3)
+    summary["site_velocity_index"] = site_velocity_index
+
     hot_deals: list[Deal] = []
     # Hot ladder + routing inputs, computed once for the whole run.
     tiers = effective_tiers(settings.scoring.hot)
@@ -150,7 +208,12 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             ):
                 continue
             level = classify_hot(
-                deal, snaps_map[deal.key], settings.scoring, active_pairs, now=now
+                deal,
+                snaps_map[deal.key],
+                settings.scoring,
+                active_pairs,
+                now=now,
+                heat_ratio=heat_ratio,
             )
             if level is not None:
                 hot_levels[deal.key] = level
@@ -178,6 +241,8 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 is_hot=deal.key in hot_keys,
                 level=hot_levels.get(deal.key),
                 now=now,
+                heat_ratio=heat_ratio,
+                site_velocity_index=site_velocity_index,
             )
         )
     obs.flush(now)

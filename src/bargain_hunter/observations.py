@@ -43,12 +43,19 @@ def build_observation(
     is_hot: bool,
     level: str | None = None,
     now: datetime,
+    heat_ratio: float = 1.0,
+    site_velocity_index: float | None = None,
 ) -> dict:
-    """Build one feature row for a deal at decision time."""
+    """Build one feature row for a deal at decision time.
+
+    `heat_ratio` / `site_velocity_index` are the event-day adaptive baseline
+    inputs for this run (see `scoring.compute_heat_ratio`) — logged so the
+    backtest replay can reproduce the live decision.
+    """
     vote_vel, lifetime_vel = compute_vote_velocity(snapshots, cfg.window_minutes, now)
     comment_vel = compute_comment_velocity(snapshots, cfg.window_minutes, now)
     click_vel = compute_click_velocity(snapshots, cfg.window_minutes, now)
-    score = compute_hot_score(deal, snapshots, cfg, now)
+    score = compute_hot_score(deal, snapshots, cfg, now, heat_ratio=heat_ratio)
 
     age_hours: float | None = None
     if deal.posted_at:
@@ -76,6 +83,10 @@ def build_observation(
         "hot_score": score,
         "is_hot": is_hot,
         "hot_level": level,
+        "heat_ratio": round(heat_ratio, 4),
+        "site_velocity_index": (
+            round(site_velocity_index, 4) if site_velocity_index is not None else None
+        ),
     }
 
 

@@ -1,7 +1,10 @@
 """Tests for state persistence and the cold-start / staleness guard (FR8)."""
 
+import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+
+import pytest
 
 from bargain_hunter.models import Deal, DealSnapshot
 from bargain_hunter.state import StateStore
@@ -184,6 +187,104 @@ def test_seeded_state_persists_across_save_load(tmp_path):
     s2.load()
     assert old.key in s2._seeded
     assert not s2.should_notify(old, 6.0, is_first_sighting=False)
+
+
+# ---------------------------------------------------------------------------
+# Event-day adaptive baseline
+# ---------------------------------------------------------------------------
+
+
+def test_site_baseline_missing_returns_none():
+    s = StateStore(path=Path("/nonexistent/x.json"))
+    s.load()
+    assert s.site_baseline(9) is None
+    assert s.baseline_age_days() == 0.0
+
+
+def test_site_baseline_first_update_seeds_bucket():
+    s = StateStore(path=Path("/nonexistent/x.json"))
+    s.load()
+    now = datetime.now(UTC)
+    s.update_site_baseline(2.0, hour=9, now=now, half_life_days=14.0, sample_clamp=3.0)
+    result = s.site_baseline(9)
+    assert result is not None
+    ewma, updated_at = result
+    assert ewma == 2.0
+    assert updated_at == now
+    assert s.baseline_age_days(now) == 0.0
+
+
+def test_site_baseline_roundtrips_through_save_load(tmp_path):
+    path = tmp_path / "deals_state.json"
+    s = StateStore(path=path)
+    s.load()
+    now = datetime.now(UTC)
+    s.update_site_baseline(2.0, hour=9, now=now, half_life_days=14.0, sample_clamp=3.0)
+    s.save()
+
+    s2 = StateStore(path=path)
+    s2.load()
+    result = s2.site_baseline(9)
+    assert result is not None
+    assert result[0] == pytest.approx(2.0)
+    assert s2.baseline_age_days(now) == pytest.approx(0.0, abs=1e-6)
+
+
+def test_loading_old_format_state_without_site_baseline_works(tmp_path):
+    path = tmp_path / "deals_state.json"
+    path.write_text(json.dumps({"cold_start": False, "snapshots": {}}))
+    s = StateStore(path=path)
+    s.load()
+    assert s.site_baseline(9) is None
+    assert s.baseline_age_days() == 0.0
+
+
+def test_site_baseline_ewma_time_aware_decay():
+    s = StateStore(path=Path("/nonexistent/x.json"))
+    s.load()
+    t0 = datetime.now(UTC)
+    s.update_site_baseline(10.0, hour=9, now=t0, half_life_days=14.0, sample_clamp=3.0)
+    # Exactly one half-life later, a sample of 0 should pull the EWMA halfway down.
+    t1 = t0 + timedelta(days=14.0)
+    s.update_site_baseline(0.0, hour=9, now=t1, half_life_days=14.0, sample_clamp=3.0)
+    ewma, _ = s.site_baseline(9)
+    assert ewma == pytest.approx(5.0, abs=0.01)
+
+
+def test_site_baseline_sample_clamp_caps_event_day_spike():
+    s = StateStore(path=Path("/nonexistent/x.json"))
+    s.load()
+    t0 = datetime.now(UTC)
+    s.update_site_baseline(10.0, hour=9, now=t0, half_life_days=14.0, sample_clamp=3.0)
+    # Event-day spike of 1000 should be clamped to 3x the existing EWMA (30)
+    # before the EWMA update — not allowed to poison the baseline in one run.
+    t1 = t0 + timedelta(days=14.0)
+    s.update_site_baseline(1000.0, hour=9, now=t1, half_life_days=14.0, sample_clamp=3.0)
+    ewma, _ = s.site_baseline(9)
+    # alpha=0.5, clamped_sample=30 -> ewma = 10 + 0.5*(30-10) = 20
+    assert ewma == pytest.approx(20.0, abs=0.01)
+
+
+def test_site_baseline_hour_buckets_are_independent():
+    s = StateStore(path=Path("/nonexistent/x.json"))
+    s.load()
+    now = datetime.now(UTC)
+    s.update_site_baseline(5.0, hour=9, now=now, half_life_days=14.0, sample_clamp=3.0)
+    s.update_site_baseline(50.0, hour=20, now=now, half_life_days=14.0, sample_clamp=3.0)
+    assert s.site_baseline(9)[0] == pytest.approx(5.0)
+    assert s.site_baseline(20)[0] == pytest.approx(50.0)
+
+
+def test_site_baseline_seeded_at_set_once():
+    s = StateStore(path=Path("/nonexistent/x.json"))
+    s.load()
+    t0 = datetime.now(UTC)
+    s.update_site_baseline(5.0, hour=9, now=t0, half_life_days=14.0, sample_clamp=3.0)
+    assert s.baseline_age_days(t0) == pytest.approx(0.0, abs=1e-6)
+    t1 = t0 + timedelta(days=5)
+    s.update_site_baseline(6.0, hour=10, now=t1, half_life_days=14.0, sample_clamp=3.0)
+    # seeded_at is set on the FIRST ever update across all buckets, not per-bucket.
+    assert s.baseline_age_days(t1) == pytest.approx(5.0, abs=1e-6)
 
 
 def test_first_run_mass_send_regression_cold_start_then_normal_deals_unaffected():

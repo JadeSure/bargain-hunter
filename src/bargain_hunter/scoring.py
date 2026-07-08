@@ -11,7 +11,7 @@ import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
-from .config import HotConfig, ScoringConfig, effective_tiers
+from .config import AdaptiveConfig, HotConfig, ScoringConfig, effective_tiers
 from .models import Deal, DealSnapshot
 
 # ---------------------------------------------------------------------------
@@ -291,6 +291,67 @@ def compute_click_velocity(
 
 
 # ---------------------------------------------------------------------------
+# Event-day adaptive baseline (site-wide vote velocity)
+# ---------------------------------------------------------------------------
+
+
+def compute_site_velocity_index(
+    active_pairs: list[tuple[Deal, list[DealSnapshot]]],
+    window_minutes: int,
+    percentile: float,
+    now: datetime | None = None,
+) -> float | None:
+    """Return the given percentile of window vote velocities across active deals.
+
+    Only pairs with >= 2 snapshots contribute a velocity sample. Returns None
+    if there are no samples at all (the caller applies the `min_deals_for_index`
+    floor separately, since that's a policy decision, not a maths one).
+    """
+    now = now or datetime.now(UTC)
+    velocities = [
+        compute_vote_velocity(snapshots, window_minutes, now)[0]
+        for _deal, snapshots in active_pairs
+        if len(snapshots) >= 2
+    ]
+    if not velocities:
+        return None
+    velocities.sort()
+    if len(velocities) == 1:
+        return velocities[0]
+    rank = (percentile / 100) * (len(velocities) - 1)
+    lower = math.floor(rank)
+    upper = math.ceil(rank)
+    if lower == upper:
+        return velocities[lower]
+    weight = rank - lower
+    return velocities[lower] + (velocities[upper] - velocities[lower]) * weight
+
+
+def compute_heat_ratio(
+    index: float | None,
+    baseline: float | None,
+    adaptive_cfg: AdaptiveConfig,
+    baseline_age_days: float,
+) -> float:
+    """Return the site-wide heat ratio (index / baseline, clamped), or 1.0.
+
+    1.0 (no-op) applies whenever the ratio can't be trusted: adaptive scoring
+    disabled, no index sample this run, no baseline yet, an unreliably-low
+    baseline, or the baseline hasn't warmed up long enough.
+    """
+    if not adaptive_cfg.enabled:
+        return 1.0
+    if index is None or baseline is None:
+        return 1.0
+    if baseline < adaptive_cfg.min_baseline_velocity:
+        return 1.0
+    if baseline_age_days < adaptive_cfg.warmup_days:
+        return 1.0
+    ratio = index / baseline
+    return max(adaptive_cfg.ratio_clamp_min, min(adaptive_cfg.ratio_clamp_max, ratio))
+
+
+# ---------------------------------------------------------------------------
 # Hot score (PRD §6.2)
 # ---------------------------------------------------------------------------
 
@@ -300,10 +361,14 @@ def compute_hot_score(
     snapshots: list[DealSnapshot],
     cfg: ScoringConfig,
     now: datetime | None = None,
+    heat_ratio: float = 1.0,
 ) -> float:
     """Compute the weighted hot score for a single deal.
 
     Returns 0.0 if there are insufficient snapshots for a meaningful score.
+    `heat_ratio` scales the two vote-count normalizers (v1/v2) so the score
+    stays meaningful when site-wide velocity is elevated (event days) or
+    depressed relative to the rolling baseline (see `compute_heat_ratio`).
     """
     now = now or datetime.now(UTC)
     hot = cfg.hot
@@ -318,8 +383,8 @@ def compute_hot_score(
     age_factor = 0.5 ** (age_hours / hot.age_penalty_half_life_hours)
     neg_ratio = deal.votes_neg / max(deal.votes_pos + deal.votes_neg, 1)
 
-    v1 = hot.min_votes_gain_per_window or 1
-    v2 = hot.early_burst_min_votes or 1
+    v1 = (hot.min_votes_gain_per_window * heat_ratio) or 1
+    v2 = (hot.early_burst_min_votes * heat_ratio) or 1
 
     vote_term = vote_vel / v1 + math.log1p(deal.votes_pos) / math.log1p(v2)
     comment_term = hot.comment_velocity_weight * comment_vel
@@ -348,12 +413,16 @@ def is_hot_candidate(
     cfg: ScoringConfig,
     all_active_deals: list[tuple[Deal, list[DealSnapshot]]] | None = None,
     now: datetime | None = None,
+    heat_ratio: float = 1.0,
 ) -> bool:
     """Return True if deal passes at least one of the hot candidacy gates.
 
     Vote-based sources use the original any-one-of-three gates (window vote
     gain / early burst / top-percentile velocity), untouched. Voteless sources
     (no vote signal at all) instead qualify purely on discount depth.
+    `heat_ratio` scales gates 1 and 2's absolute vote thresholds (see
+    `compute_heat_ratio`); gate 3's percentile cutoff is already relative and
+    is not scaled.
     """
     now = now or datetime.now(UTC)
     hot = cfg.hot
@@ -374,14 +443,17 @@ def is_hot_candidate(
     if len(snapshots) >= 2:
         vote_vel, _ = compute_vote_velocity(snapshots, cfg.window_minutes, now)
         window_gain = vote_vel * (cfg.window_minutes / 60)
-        if window_gain >= hot.min_votes_gain_per_window:
+        if window_gain >= hot.min_votes_gain_per_window * heat_ratio:
             return True
 
     # Gate 2: early burst
     age_hours = 0.0
     if deal.posted_at:
         age_hours = (now - deal.posted_at).total_seconds() / 3600
-    if age_hours <= hot.early_burst_age_hours and deal.votes_pos >= hot.early_burst_min_votes:
+    if (
+        age_hours <= hot.early_burst_age_hours
+        and deal.votes_pos >= hot.early_burst_min_votes * heat_ratio
+    ):
         return True
 
     # Gate 3: top-P% velocity among active deals
@@ -425,6 +497,7 @@ def classify_hot(
     cfg: ScoringConfig,
     all_active_deals: list[tuple[Deal, list[DealSnapshot]]] | None = None,
     now: datetime | None = None,
+    heat_ratio: float = 1.0,
 ) -> str | None:
     """Return the name of the highest hot tier the deal earns, or None.
 
@@ -436,11 +509,11 @@ def classify_hot(
     ``min_discount_percent``) pass. A deal that clears a tier's score but fails
     its value gate falls through to the next-best tier rather than being dropped.
     """
-    if not is_hot_candidate(deal, snapshots, cfg, all_active_deals, now):
+    if not is_hot_candidate(deal, snapshots, cfg, all_active_deals, now, heat_ratio=heat_ratio):
         return None
     if is_voteless_source(deal, cfg.hot):
         return classify_discount_tier(deal.discount_percent, cfg.hot)
-    score = compute_hot_score(deal, snapshots, cfg, now)
+    score = compute_hot_score(deal, snapshots, cfg, now, heat_ratio=heat_ratio)
     for tier in effective_tiers(cfg.hot):
         if score < tier.min_score:
             continue
@@ -461,6 +534,10 @@ def is_hot(
     cfg: ScoringConfig,
     all_active_deals: list[tuple[Deal, list[DealSnapshot]]] | None = None,
     now: datetime | None = None,
+    heat_ratio: float = 1.0,
 ) -> bool:
     """Backward-compatible boolean: True if the deal earns any hot tier."""
-    return classify_hot(deal, snapshots, cfg, all_active_deals, now) is not None
+    return (
+        classify_hot(deal, snapshots, cfg, all_active_deals, now, heat_ratio=heat_ratio)
+        is not None
+    )
