@@ -181,7 +181,7 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
   // otherwise render few live top deals (even if some are still technically
   // inside the retention window) still gets topped up.
   const FALLBACK_GREAT_LIMIT = 8
-  const MIN_DISPLAY_COUNT = 8
+  const MIN_DISPLAY_COUNT = 6
 
   const topCandidates: [string, Agg][] = []
   const greatCandidates: [string, Agg][] = []
