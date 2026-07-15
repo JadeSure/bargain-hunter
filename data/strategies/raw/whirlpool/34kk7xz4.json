@@ -1,0 +1,17 @@
+{
+  "source": "whirlpool",
+  "post_id": "34kk7xz4",
+  "url": "https://forums.whirlpool.net.au/thread/34kk7xz4",
+  "title": "Free tax + deduction finder tool -  Feedback?",
+  "author": null,
+  "body": "O.P.\nLink – https://www.austaxtools.au\nBeen building this on the side. Most tax calculators online only handle simple scenarios, so I tried to go a bit deeper — e.g. a whole-of-life property model (rental cash flow → eventual sale CGT), and CGT with main residence exemption + 6-year rule.\nJust added an Occupation Deduction Finder too — search your profession (nurse, tradie, teacher, IT, etc.) and see what you can actually claim, based on ATO occupation guides.\nFull list:\nIncome tax & take-home pay (Medicare levy, HECS/HELP) Occupation Deduction Finder (24+ professions) CGT — simple + complex (main residence exemption, 6-year rule) Super contributions (concessional cap headroom, salary sacrifice) Negative gearing / rental cash flow Depreciation schedule (Div 40/43) Whole-of-life property model Sole trader vs company comparison Small business CGT concessions Instant asset write-off\nWould love feedback from this group especially. Link below ???? https://www.austaxtools.au\n\n---- replies ----\n[User #7769936075 postsTerry_wwww.structuring.com.auWhirlpool Forums Addict] its nicely built and I like the timeline on the main residence CGT page, but it is slightly defective because\na) it doesn't have a tab for the 3rd element cost base expenses while living there, such as interest\nb) improvements not taken into account\nc) deprecation not taken into account\nd) the 6 year rule part – \"Nominated another property as main residence during this absence?\" is a bit vague. maybe 'will/have you or your spouse or dependent minor child claim the main residence exemption on another property for this overlapping period?\nIt will be very hard to account for every different permutation for CGT with rules that come into force at different dates – indexation v 50% discount, counting cost base expenses etc.\nMaybe need a disclaimer up top to emphasis that it is a rough guide.\n\"Please consult a registered tax agent or accountant before making any decisions\" accountants can't advise on tax unless they are a tax agent.\nThe PDF produced doesn't look very nice, can that be spruced up?\n[User #7769936075 postsTerry_wwww.structuring.com.auWhirlpool Forums Addict] I like using AI, but also like these web based ones too as you can play around with the figures more easily",
+  "board": "Finance",
+  "created_at": null,
+  "fetched_at": "2026-07-15T16:55:34.216021Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "ced4ec6d7d5b3267",
+  "key": "whirlpool:34kk7xz4"
+}
