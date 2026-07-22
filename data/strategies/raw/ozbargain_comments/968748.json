@@ -1,0 +1,17 @@
+{
+  "source": "ozbargain_comments",
+  "post_id": "968748",
+  "url": "https://www.ozbargain.com.au/node/968748",
+  "title": "Asus ProArt PX13 GoPro Ed, 13.3\" 3K OLED, Ryzen AI MAX+ 395, 128 GB RAM LPDDRX-8000, 1TB SSD, $4,799 Delivered @ CentreCom",
+  "author": null,
+  "body": "Deal: Asus ProArt PX13 GoPro Ed, 13.3\" 3K OLED, Ryzen AI MAX+ 395, 128 GB RAM LPDDRX-8000, 1TB SSD, $4,799 Delivered @ CentreCom\n\n[Mild October] Sorry local LLM came straight into my mind when I saw 128GB of unified memories.\nAnd yet I was blaming the RAM hype…\n[McFly] In case anyone is wondering, it's a laptop and here are the spec's\nModel full name - HN7306EAC-LX044W\n[Bones78] I have one of these. Only has Windows Home so an upgrade to Linux is recommended for LLM use.\nI'm disappointed that AMD won't let me officially install the same AI software suite as the new AMD mini PCs.\nThe pen and 360 screen is a nice touch but not really why I bought it.\n[Pone] Bought one from HN 2 months ago when they were on special, it's got massive 128GB RAM that can fit the massive LLM in.\nThe massive \"cardboard\" storage box is interesting (over packagin!), although it's coming with a nice rugged carry case.\nUpgrade the SSD to 2TB CORSAIR MP600 Mini, which got the closest performance comapre to original. I'm pretty happy with it.\nOne thing to bare in mind is DON'T upgrade to latest AMD driver, you will end up losing the audio. Or if you need to manually\nuninstall the \"updated\" audio drivers the reinstall the ASUS one.\n[Ezuku] I've got an asus z13, which is very similar. It has the same strix halo ai395 plus with 128 gb unified memory. This is an incredibly good price compared to the z13 given the current ram shortage.\nI bought it for local llm usage. These are pretty awful for dense models, are a bit slow on prompt processing, but are quite zippy on MoE models. I'm enjoying the gemma 4 26b a4b model.\nIt will also be reasonably slow for anything compute bound like image generation and the battery life is terrible.",
+  "board": "OzBargain Deals (comments)",
+  "created_at": null,
+  "fetched_at": "2026-07-22T17:00:15.981246Z",
+  "score": null,
+  "num_comments": 10,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "21b0ebb1a88270a0",
+  "key": "ozbargain_comments:968748"
+}
