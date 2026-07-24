@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1v53hut",
+  "url": "https://www.reddit.com/r/fiaustralia/comments/1v53hut/debt_recycling_computation_how_much_does_your/",
+  "title": "Debt Recycling Computation - How much does your shares need to grow to breakeven if capital stayed in offset?",
+  "author": "/u/emboon",
+  "body": "How much does your share need to grow to breakeven if capital stayed in offset? I tried to compute how much does your investment need to grow to break even with offset and the number I come to is \" exactly the same rate as your mortgage \" For instance if mortgage rate is 6% and loan recycled is 100k and 39% MTR. If money stayed in offset you will earn 6% * 100k = $6000 after tax or 6000 / .61 = $9836.07 before tax If debt recycled you will get tax refund of $6000 * 39% = $2340 after tax Subtracting this from the after tax earnings if your money stayed in offset $6000 - $2340 = $3660 after tax This figure $3660 is what your investments need to earn after tax (Lets assume you sell shares while on your current MTR) To get the before tax figures 3660 / .61 = $6000 before tax 6000 / 100000 = 6% -> The growth your investment needs to break even with offset (Lets assume you sell shares during retirement with the minimum 30% CGT introduced by labor budget + 2% medicare levy applies) To get the before tax figures 3660 / .68 = $5382.35 before tax 5382.35 / 100000 = 5.38% -> The growth your investment needs to break even with offset TLDR: Your shares should grow at the same pace as your Home Loan rate to break even with keeping funds in offset. If selling shares during low income years then 30% minimum CGT + 2% medicare levy applies which is a 10.33% drop from your current mortgage rate. For simplicity sake I didn't factor the computation for inflation based discount so this rate should be much lower. This just piqued my curiosity hence the post but happy to be corrected if I miscalculated or misunderstood something. :) submitted by /u/emboon [link] [comments]",
+  "board": "r/fiaustralia",
+  "created_at": "2026-07-24T06:41:32Z",
+  "fetched_at": "2026-07-24T17:06:42.813797Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "62ef2ff463c2a1eb",
+  "key": "reddit:1v53hut"
+}
