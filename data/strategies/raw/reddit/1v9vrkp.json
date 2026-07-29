@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1v9vrkp",
+  "url": "https://www.reddit.com/r/AusFinance/comments/1v9vrkp/real_estate_agents_are_hiding_more_sold_prices/",
+  "title": "Real estate agents are hiding more sold prices than ever. I started tracking guide vs. actual sold differences manually. What did I find?",
+  "author": "/u/v1ru5fr33",
+  "body": "Hi everyone, I’m a mortgage broker, but right now I’m also in the trenches trying to buy a property for myself.. Between my own search and what my clients (and even people who just come to me for general chats) go through every day, the level of pricing games is insane. It makes it almost impossible to plan bids and buy a property. Specifically, two massive issues: 1. Underquoting: An agent lists a property with a guide of $1.1M. My clients spend $500 on building reports and align pre-approval, only to find the vendor's reserve is actually $1.35M. I had one buyer do this three times in a row. As you might have seen in the recent media publication/ news as well underquoting is at a serious level right now and something must be done. 2. Hidden Sale Prices The moment an auction ends, the status changes to \"Sold\" but the price is hidden as \"Contact Agent\". This comparable data is vital for people setting expectations for their own upcoming pre-approvals, but waiting 3 months for government registries to update is too slow. Because I got tired of manually tracking guide baselines and comparable data for myself and my clients, I put together a simple database and browser tool to automate it. It does two things: - Saves the initial price guide the moment a listing goes live (so if the agent quietly bumps it up later, it flags the change and logs the percentage drift). - Lets community members who attend the auction log the final price right on the listing page so it updates instantly for everyone. The database is totally public and there's no sign-up or paywall. I'm hoping to get this to a point where we can crowdsource all auction results across Australia. If you're currently property searching, I'd love your feedback on it or any feature ideas. What do you think is the best way to handle crowdsourced validation? submitted by /u/v1ru5fr33 [link] [comments]",
+  "board": "r/AusFinance",
+  "created_at": "2026-07-29T13:09:55Z",
+  "fetched_at": "2026-07-29T16:51:37.040995Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "2a210899f65755eb",
+  "key": "reddit:1v9vrkp"
+}

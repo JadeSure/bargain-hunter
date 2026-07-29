@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1v9kvkc",
+  "url": "https://www.reddit.com/r/fiaustralia/comments/1v9kvkc/free_calculating_tool_for_looking_at_stocks/",
+  "title": "Free Calculating tool for looking at stocks, dividends and CGT.",
+  "author": "/u/SruffyTheRealJanitor",
+  "body": "Happy wednesday all! This is not for self-promotion or advertising just a tool that people may find helpful. I Built a free FIRE calculator that models the 2026 CGT reform (indexation + 30% minimum tax vs the old 50% discount). Been building this for my own planning and figured others chasing FIRE in Australia might find it useful. It's a browser-based calculator that covers: 1. Multi-stock dividend + growth projections with reinvested distributions 2. Franking credit tax impact based on your income. The actual 2026 Budget CGT changes (cost base indexation + 30% floor from 1 July 2027) compared side by side against the old 50% discount rules Broker brokerage and fund MER factored into the numbers, not just yield and growth Runs entirely in your browser, nothing you type is sent anywhere, it's free, and it's not financial advice, just a tool I wanted to exist. Link: https://jordan-letchford.github.io/Dividend_Fire_Calculator/ Happy to take feedback if anything looks off, still refining it. submitted by /u/SruffyTheRealJanitor [link] [comments]",
+  "board": "r/fiaustralia",
+  "created_at": "2026-07-29T03:52:45Z",
+  "fetched_at": "2026-07-29T16:51:37.040995Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 2,
+  "content_hash": "cab25a133f2e09fd",
+  "key": "reddit:1v9kvkc"
+}
