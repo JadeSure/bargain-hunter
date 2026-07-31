@@ -85,6 +85,24 @@ push — no code change needed.
 | OzBargain | Community deals | Vote velocity, comments |
 | CamelCamelCamel AU | Amazon price drops | Discount % |
 
+## Money-saving signals
+
+Beyond "is it trending", each deal is enriched so you save more per purchase:
+
+- **Cashback stacking** — a config-maintained merchant→rate map (`config/settings.yaml`
+  under `cashback:`) adds "+ up to X% cashback" to matching deals in the digest and on
+  `/deals`. Refresh candidate rates with `scripts/refresh_cashback.py` (reads ShopBack's
+  public store list) then paste the reviewed values back.
+- **Price-rank ("is it actually cheap?")** — a deal's current price is ranked against its
+  own recent high-confidence price history (read back from `data/observations/*.jsonl`, so
+  no new storage) and shown as `💰 Lowest in 30d` / `⚠ Above typical price`. Turns "hot"
+  (social proof) into "hot *and* cheap". Slow-burn: appears once a deal has enough history.
+- **Gift-card deals** — a standalone `/gift-cards` board (statically built from OzBargain's
+  gift-card + cashback tag feeds) surfaces discounted gift cards / bonus-points offers to
+  stack at checkout. Kept out of the email hot flow.
+- **Target-price watches** — track a specific Amazon product until it hits your price (see
+  [Watch keyword syntax](#watch-keyword-syntax)).
+
 ## Strategy guides
 
 A separate daily pipeline (`strategy_hunter`) harvests money-saving *discussion* —
@@ -95,10 +113,13 @@ Three stages:
 
 1. **Collect** (GitHub Actions, daily, fully automated): scrapes forum threads/posts,
    filters by relevance, and stores a corpus + an LLM-ready digest in the repo.
-2. **Extract** (local, your own LLM): feed `data/strategies/digest/<date>.md` plus
-   `src/strategy_hunter/prompts/extract_guide.md` to a model to produce structured
-   guide JSON in `data/strategies/guides/`.
-3. **Publish** (website): render guides at `/guides` in the `frontend/` Next.js app.
+2. **Extract** (GitHub Actions, daily, automated via Gemini): `strategy-hunter extract`
+   feeds the latest `data/strategies/digest/<date>.md` plus
+   `src/strategy_hunter/prompts/extract_guide.md` to the Gemini API and writes structured
+   guide JSON, opened as a **review PR** (`guides/auto-<date>`) rather than committed to
+   `main`. Requires the `GEMINI_API_KEY` Actions secret; without it, extraction skips
+   cleanly and you can still run it locally by feeding the digest + prompt to any LLM.
+3. **Publish** (website): a merged guides PR renders at `/guides` in the `frontend/` Next.js app.
 
 Sources (configurable in `config/settings.yaml` under `strategy:`):
 
@@ -154,8 +175,18 @@ Examples:
 | `Dyson <=499` | Dyson deal at or under $499 |
 | `Sony WH <=300 @2026-07-01T23:59` | Sony WH under $300, expires 1 July 2026 |
 | `BWS @19:00` | BWS deal, expires today at 19:00 AEST |
+| `https://amazon.com.au/dp/B08166SLDF <=1500` | **Target-price watch**: alert when *this exact* Amazon product hits ≤$1500 |
+| `B08166SLDF <=1500` | Same, using a bare ASIN |
 
 Bare `@HH:MM` means today in `Australia/Sydney`. Expired keywords are silently skipped. Price ceiling is optional — bare keywords match on votes/discount alone.
+
+**Target-price watches** — when a keyword is an Amazon product URL (`…/dp/<ASIN>`) or a
+bare `B0…` ASIN, it matches that *exact* product in the CamelCamelCamel feed by ASIN
+(not by title text) and the vote/discount noise guard is skipped — the `<=PRICE` target
+is the gate. This tracks a specific product until it hits your price, rather than reacting
+to whatever trends. Coverage is bounded to when CamelCamelCamel flags the product as a
+top price drop (per-product polling isn't possible — Amazon and CCC block it), so set a
+realistic target and you'll be pinged the moment it qualifies.
 
 ## Quick start (local dev)
 

@@ -17,7 +17,10 @@ infra:
 - **`src/strategy_hunter/`** — a separate **daily** pipeline that harvests
   money-saving *discussion* (combos of techniques to buy things cheaply) and
   turns it into structured "guides". Three stages: **collect** (automated) →
-  **extract** (LLM, see `src/strategy_hunter/prompts/extract_guide.md`) →
+  **extract** (automated via the Gemini API — `strategy-hunter extract`, gated on
+  the `GEMINI_API_KEY` secret; opens a review PR, never commits to `main`; falls
+  back to a manual LLM step when the key is unset, see
+  `src/strategy_hunter/prompts/extract_guide.md`) →
   **publish** (the Next.js frontend renders `/guides`).
 - **`frontend/`** — Next.js + React + Tailwind website. ⚠️ Uses a pre-release
   Next.js with breaking changes; read `frontend/AGENTS.md` and the bundled docs
