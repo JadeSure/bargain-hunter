@@ -109,6 +109,12 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    # Load .env so local runs pick up GEMINI_API_KEY etc. (CI uses real env vars,
+    # which always win — load_dotenv only fills keys not already set).
+    from bargain_hunter.config import load_dotenv
+
+    load_dotenv()
+
     cfg = load_strategy_config(args.settings)
     if not cfg.enabled:
         log.info("strategy.enabled is false — nothing to do.")

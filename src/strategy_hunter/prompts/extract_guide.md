@@ -13,7 +13,11 @@ Two kinds of guide are equally valid — extract both:
 1. **Purchase-goal guides** — cluster scattered threads about the same goal into one guide (e.g. "buying a MacBook cheaply", "cheapest Adobe Creative Cloud", "best phone plan"). Do not produce one guide per post; merge same-goal discussions.
 2. **Technique / tactic guides** — a single reusable method that saves money across many purchases (e.g. credit-card churning, stacking discounted gift cards + price-beat, receipt-scanning cashback, maximising savings-account interest, picking a no-fee travel card). One rich thread is enough for these.
 
-**Maximise coverage, not scarcity.** If the batch contains eight legitimately useful strategies, produce eight guides — do not artificially cap the count. The bar is *truthful + actionable + sourced*, never "keep it short". Equally, do not force-merge unrelated tactics into one bloated guide just to reduce the number.
+**Prioritise value, cap the count.** Output **at most 12 guides per run** — the 12
+highest-value, most broadly useful strategies in the batch. If more than 12 qualify,
+keep the best (broadest applicability × saving size × confidence) and drop the rest;
+a later run will surface others as the corpus shifts. Do not pad to reach 12, and do
+not force-merge unrelated tactics into one bloated guide just to fit the cap.
 
 ## Requirements
 
@@ -29,7 +33,7 @@ Two kinds of guide are equally valid — extract both:
 
 **Pass A — inventory.** Read the whole digest first and list *every* candidate strategy you can see, as `goal → supporting source url(s)`. Don't write guides yet. Walk the coverage checklist below so nothing is missed. Expect 6–12 candidates from a typical 40-post batch.
 
-**Pass B — write.** For each candidate that clears the requirements, write a guide JSON. Drop only the ones that are truly thin (no real method) or unsupported. A candidate that survives Pass A but has only one source is still shipped, with lower `confidence`.
+**Pass B — write.** For each candidate that clears the requirements, write a guide JSON. Drop only the ones that are truly thin (no real method) or unsupported. A candidate that survives Pass A but has only one source is still shipped, with lower `confidence`. **If more than 12 clear the bar, keep only the 12 highest-value.**
 
 ### Coverage checklist (mine each lens against the batch)
 

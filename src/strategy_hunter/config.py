@@ -106,7 +106,15 @@ class OnboardingConfig(StrictConfigModel):
 class ExtractConfig(StrictConfigModel):
     # Gemini model id used for automated Stage 2 guide extraction (free tier).
     model: str = "gemini-2.5-flash"
-    max_tokens: int = 8192
+    # Max output tokens. gemini-2.5 counts thinking tokens against this budget, so
+    # keep headroom above the guide JSON size (see thinking_budget below). Set near
+    # the model ceiling: a full digest yields many guides and lower caps truncate
+    # the JSON mid-array (→ unparseable). Only tokens actually generated are billed.
+    max_tokens: int = 65536
+    # gemini-2.5 "thinking" tokens are drawn from the output budget; left on, a
+    # large digest can exhaust max_tokens on thinking alone and return truncated
+    # /empty JSON. 0 disables thinking so the whole budget goes to the answer.
+    thinking_budget: int = 0
 
 
 class StrategyConfig(StrictConfigModel):

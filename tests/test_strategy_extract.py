@@ -111,6 +111,38 @@ def test_call_gemini_no_candidates_raises(monkeypatch):
         call_gemini("s", "u", model="m", max_tokens=10, api_key="k")
 
 
+def test_build_payload_disables_thinking_by_default():
+    # Regression guard: gemini-2.5 thinking tokens draw from maxOutputTokens; if
+    # thinking isn't capped, a large digest exhausts the budget and returns
+    # truncated/empty JSON. thinking_budget=0 must reach generationConfig.
+    from strategy_hunter.extract import _build_payload
+
+    payload = _build_payload("sys", "user", 65536, 0)
+    gen = payload["generationConfig"]
+    assert gen["maxOutputTokens"] == 65536
+    assert gen["thinkingConfig"] == {"thinkingBudget": 0}
+
+
+def test_build_payload_omits_thinking_when_none():
+    from strategy_hunter.extract import _build_payload
+
+    payload = _build_payload("sys", "user", 100, None)
+    assert "thinkingConfig" not in payload["generationConfig"]
+
+
+def test_call_gemini_threads_thinking_budget(monkeypatch):
+    captured = {}
+    monkeypatch.setattr(
+        httpx,
+        "post",
+        lambda url, headers=None, json=None, timeout=None: captured.update(json=json)
+        or FakeResponse(200, {"candidates": [{"content": {"parts": [{"text": "ok"}]}}]}),
+    )
+    call_gemini("s", "u", model="m", max_tokens=99, api_key="k", thinking_budget=0)
+    assert captured["json"]["generationConfig"]["thinkingConfig"] == {"thinkingBudget": 0}
+
+
+
 def test_call_gemini_retries_on_429_then_succeeds(monkeypatch):
     calls = {"n": 0}
 

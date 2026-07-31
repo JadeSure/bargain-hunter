@@ -113,6 +113,25 @@ def _retry_delay_seconds(response: httpx.Response) -> float:
     return _DEFAULT_RETRY_DELAY_SECONDS
 
 
+def _build_payload(
+    system_prompt: str, user_message: str, max_tokens: int, thinking_budget: int | None
+) -> dict:
+    """Assemble the generateContent request body.
+
+    ``thinking_budget`` is threaded into ``generationConfig.thinkingConfig`` so a
+    gemini-2.5 model doesn't spend the whole ``maxOutputTokens`` budget on internal
+    thinking (0 disables thinking entirely). ``None`` omits the field (model default).
+    """
+    gen_cfg: dict = {"maxOutputTokens": max_tokens, "temperature": _TEMPERATURE}
+    if thinking_budget is not None:
+        gen_cfg["thinkingConfig"] = {"thinkingBudget": thinking_budget}
+    return {
+        "system_instruction": {"parts": [{"text": system_prompt}]},
+        "contents": [{"parts": [{"text": user_message}]}],
+        "generationConfig": gen_cfg,
+    }
+
+
 def call_gemini(
     system_prompt: str,
     user_message: str,
@@ -120,6 +139,7 @@ def call_gemini(
     model: str,
     max_tokens: int,
     api_key: str,
+    thinking_budget: int | None = 0,
     timeout: float = 300.0,
     max_retries: int = 2,
 ) -> str:
@@ -131,11 +151,7 @@ def call_gemini(
     """
     url = f"{_API_BASE}/{model}:generateContent"
     headers = {"x-goog-api-key": api_key, "content-type": "application/json"}
-    payload = {
-        "system_instruction": {"parts": [{"text": system_prompt}]},
-        "contents": [{"parts": [{"text": user_message}]}],
-        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": _TEMPERATURE},
-    }
+    payload = _build_payload(system_prompt, user_message, max_tokens, thinking_budget)
 
     attempt = 0
     while True:
@@ -203,6 +219,7 @@ def extract_guides(
             model=cfg.extract.model,
             max_tokens=cfg.extract.max_tokens,
             api_key=api_key,
+            thinking_budget=cfg.extract.thinking_budget,
         )
     except GeminiRateLimited as exc:
         result.skipped = True
