@@ -20,6 +20,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 0.8,
     },
+    {
+      url: `${siteUrl}/deals`,
+      lastModified: now,
+      changeFrequency: 'hourly',
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/gift-cards`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.7,
+    },
     ...guides.map((guide) => ({
       url: `${siteUrl}/guides/${guide.id}`,
       lastModified: guide.generated_at ? new Date(guide.generated_at) : now,

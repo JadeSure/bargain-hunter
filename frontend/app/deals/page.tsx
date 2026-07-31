@@ -30,6 +30,13 @@ function HotLevelBadge({ level }: { level: string | null }) {
   )
 }
 
+function PriceRankBadge({ rank }: { rank: string | null }) {
+  if (rank === 'lowest') return <span className="deal-live-pricelow">💰 Lowest price seen</span>
+  if (rank === 'low') return <span className="deal-live-pricelow">Near lowest seen</span>
+  if (rank === 'high') return <span className="deal-live-pricehigh">⚠ Above typical price</span>
+  return null
+}
+
 function SourceBadge({ source }: { source: string }) {
   return <span className="deals-badge deals-badge-source">{sourceLabel(source)}</span>
 }
@@ -103,8 +110,15 @@ export default async function DealsPage() {
                         {deal.discountPercent !== null && (
                           <span className="deal-live-discount">{Math.round(deal.discountPercent)}% off</span>
                         )}
+                        <PriceRankBadge rank={deal.priceRank} />
                       </>
                     )}
+                  </div>
+                )}
+
+                {deal.cashbackPercent !== null && (
+                  <div className="deal-live-cashback">
+                    + up to {deal.cashbackPercent}% cashback
                   </div>
                 )}
 

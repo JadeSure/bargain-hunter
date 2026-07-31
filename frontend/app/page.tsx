@@ -135,6 +135,7 @@ export default function LandingPage() {
         </div>
         <div className="lp-nav-right">
           <Link className="lp-nav-link" href="/deals">Hot Deals</Link>
+          <Link className="lp-nav-link" href="/gift-cards">Gift Cards</Link>
           <Link className="lp-nav-link" href="/start-here">Start Here</Link>
           <Link className="lp-nav-link" href="/guides">Saving Guides</Link>
           <span className="lp-nav-tagline">Invite-only · Australia</span>
@@ -156,6 +157,7 @@ export default function LandingPage() {
         {menuOpen && (
           <div className="lp-nav-mobile">
             <Link className="lp-nav-mobile-link" href="/deals" onClick={() => setMenuOpen(false)}>Hot Deals</Link>
+            <Link className="lp-nav-mobile-link" href="/gift-cards" onClick={() => setMenuOpen(false)}>Gift Cards</Link>
             <Link className="lp-nav-mobile-link" href="/start-here" onClick={() => setMenuOpen(false)}>Start Here</Link>
             <Link className="lp-nav-mobile-link" href="/guides" onClick={() => setMenuOpen(false)}>Saving Guides</Link>
             <Link className="lp-nav-mobile-link" href="/login" onClick={() => setMenuOpen(false)}>Log in</Link>

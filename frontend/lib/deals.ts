@@ -10,6 +10,8 @@ export interface LiveDeal {
   source: 'ozbargain' | 'camelcamelcamel' | string
   price: number | null
   discountPercent: number | null
+  cashbackPercent: number | null
+  priceRank: 'lowest' | 'low' | 'typical' | 'high' | null
   isFree: boolean
   votesPos: number
   commentCount: number
@@ -20,26 +22,37 @@ export interface LiveDeal {
   ts: string
 }
 
-// OzBargain marks an expired deal's page with this class — checked below on the
-// small number of currently-displayed deals to catch expiry the observation log
-// can't see (a deal quietly expiring doesn't necessarily drop out of the RSS
-// feed or stop being re-observed within the retention window).
-const OZB_EXPIRED_MARKER = 'nodeexpiry expired'
+// Checked on the small number of currently-displayed deals to catch status
+// changes the observation log cannot see until the next successful scan.
+const OZB_INACTIVE_STATUSES = new Set([404, 410])
+const OZB_INACTIVE_MARKERS = [
+  /\bnodeexpiry\b[^"]*\bexpired\b/i,
+  /\bnode-ozbdeal\b[^"]*\bexpired\b/i,
+  /<span class="expired">(?:expired|out of stock)<\/span>/i,
+  /\bnode-unpublished\b/i,
+  /<div class="messages[^"]*"[^>]*>[\s\S]{0,500}\bunpublished\b/i,
+  /\bthis (?:deal|post) has been unpublished\b/i,
+]
 const OZB_USER_AGENT =
   'bargain-hunter/0.1 (personal deal alerter; +https://github.com/versent-shawn/bargain-hunter)'
 
-async function isOzbargainExpired(url: string): Promise<boolean> {
+async function isOzbargainInactive(url: string): Promise<boolean> {
   try {
     const res = await fetch(url, {
       signal: AbortSignal.timeout(6000),
       headers: { 'User-Agent': OZB_USER_AGENT },
     })
+    if (OZB_INACTIVE_STATUSES.has(res.status)) return true
     if (!res.ok) return false // fail open — a transient fetch error shouldn't hide a live deal
     const html = await res.text()
-    return html.includes(OZB_EXPIRED_MARKER)
+    return OZB_INACTIVE_MARKERS.some((marker) => marker.test(html))
   } catch {
     return false // fail open — network hiccups shouldn't hide a live deal
   }
+}
+
+function sourceFromKey(key: string): string {
+  return key.split(':', 1)[0]
 }
 
 function dealUrl(key: string): string {
@@ -116,19 +129,24 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     lastHotTs: string
   }
   const byKey = new Map<string, Agg>()
+  const latestTsBySource = new Map<string, string>()
 
   for (const r of all) {
     const tsMs = Date.parse(r.ts as string)
     if (Number.isNaN(tsMs) || tsMs < cutoffMs) continue
     const key = r.deal_key as string
+    const source = sourceFromKey(key)
+    const ts = r.ts as string
+    const latestSourceTs = latestTsBySource.get(source)
+    if (!latestSourceTs || ts > latestSourceTs) latestTsBySource.set(source, ts)
     let agg = byKey.get(key)
     if (!agg) {
       agg = { latest: r, peakLevel: null, peakScore: 0, lastHotTs: '' }
       byKey.set(key, agg)
     }
-    if ((r.ts as string) > (agg.latest.ts as string)) agg.latest = r
+    if (ts > (agg.latest.ts as string)) agg.latest = r
     if (r.is_hot === true) {
-      if ((r.ts as string) > agg.lastHotTs) agg.lastHotTs = r.ts as string
+      if (ts > agg.lastHotTs) agg.lastHotTs = ts
       const score = (r.hot_score as number) ?? 0
       if (score > agg.peakScore) {
         agg.peakScore = score
@@ -145,10 +163,12 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
           key,
           title: r.title as string,
           url: dealUrl(key),
-          source: key.split(':')[0],
+          source: sourceFromKey(key),
           isFree: /^\s*free\b/i.test(r.title as string),
           price: /^\s*free\b/i.test(r.title as string) ? null : (r.price && r.price > 0 ? (r.price as number) : null),
           discountPercent: /^\s*free\b/i.test(r.title as string) ? null : (r.discount_percent ? (r.discount_percent as number) : null),
+          cashbackPercent: r.cashback_percent ? (r.cashback_percent as number) : null,
+          priceRank: (r.price_rank as LiveDeal['priceRank']) ?? null,
           votesPos: r.votes_pos as number,
           commentCount: r.comment_count as number,
           hotScore: (r.hot_score as number) ?? 0,  // current score (reflects actual heat now)
@@ -161,13 +181,19 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     })
   }
 
-  // Drop deals OzBargain itself now shows as expired, even within the retention
-  // window — only a handful of deals are ever checked here.
+  function isStillInLatestSourceBatch(key: string, agg: Agg): boolean {
+    return (agg.latest.ts as string) === latestTsBySource.get(sourceFromKey(key))
+  }
+
+  // Drop deals OzBargain itself now shows as expired/unpublished, even within
+  // the retention window — only a handful of deals are ever checked here.
   async function keepLive(entries: { deal: LiveDeal }[]): Promise<{ deal: LiveDeal }[]> {
-    const expired = await Promise.all(
-      entries.map((e) => (e.deal.source === 'ozbargain' ? isOzbargainExpired(e.deal.url) : false)),
+    const inactive = await Promise.all(
+      entries.map((e) => (
+        e.deal.source === 'ozbargain' ? isOzbargainInactive(e.deal.url) : false
+      )),
     )
-    return entries.filter((_, i) => !expired[i])
+    return entries.filter((_, i) => !inactive[i])
   }
 
   // Top-tier deals are the main event, but top-tier supply is bursty (it
@@ -186,8 +212,9 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
   const topCandidates: [string, Agg][] = []
   const greatCandidates: [string, Agg][] = []
   for (const entry of byKey) {
-    const [, agg] = entry
+    const [key, agg] = entry
     if (!agg.lastHotTs || !agg.peakLevel) continue // never hot within the window
+    if (!isStillInLatestSourceBatch(key, agg)) continue
     if (agg.peakLevel === 'top') topCandidates.push(entry)
     else if (agg.peakLevel === 'great') greatCandidates.push(entry)
   }
