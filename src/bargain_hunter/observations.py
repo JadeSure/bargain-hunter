@@ -80,6 +80,8 @@ def build_observation(
         "price": deal.price,
         "price_confidence": deal.price_confidence,
         "discount_percent": deal.discount_percent,
+        "cashback_percent": deal.cashback_percent,
+        "price_rank": deal.price_rank,
         "hot_score": score,
         "is_hot": is_hot,
         "hot_level": level,

@@ -20,6 +20,7 @@ from zoneinfo import ZoneInfo
 import httpx
 
 from .alert_throttle import AlertThrottle
+from .cashback import enrich_cashback
 from .categories import deal_matches_categories
 from .config import Settings, effective_tiers, load_dotenv, load_settings
 from .dedup import DedupStore
@@ -28,6 +29,7 @@ from .models import Deal, Subscriber
 from .notify.email import EmailSender, send_maintainer_alert
 from .notify.render import DealItem
 from .observations import ObservationLog, build_observation
+from .price_history import enrich_price_ranks
 from .queue_store import NotificationQueue
 from .quiet_hours import is_in_quiet_hours
 from .scoring import (
@@ -118,6 +120,11 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     # Enrich with price/discount signals
     all_deals = [enrich_deal(d) for d in all_deals]
 
+    # Stack any known cashback rate on top (config-maintained merchant→rate map).
+    if settings.cashback.enabled:
+        for deal in all_deals:
+            enrich_cashback(deal, settings.cashback)
+
     # Filter expired/out-of-stock (including deals whose expiry timestamp has passed).
     active_deals = [
         d for d in all_deals
@@ -125,6 +132,10 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     ]
     if d := len(all_deals) - len(active_deals):
         log.info("Filtered %d expired deals.", d)
+
+    # Rank each priced deal against its own recent price history (from the
+    # observation log) so "hot" is qualified by whether it's genuinely cheap.
+    enrich_price_ranks(active_deals, settings.price_history, now)
 
     # ------------------------------------------------------------------
     # 3. Record snapshots (always, even on cold start)

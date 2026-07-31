@@ -159,6 +159,39 @@ class SourceConfig(BaseModel):
     enabled: bool = False
 
 
+class CashbackConfig(StrictConfigModel):
+    """Merchant→cashback-rate map, stacked on top of matching deals.
+
+    ``rates`` is keyed by merchant domain (e.g. ``amazon.com.au``) → headline
+    "up to" cashback percent. A deal matches when its merchant host equals a key
+    or is a subdomain of it. Maintained by hand in ``settings.yaml``; refresh
+    candidate rates with ``scripts/refresh_cashback.py`` (semi-automatic, from
+    ShopBack's public store list) then paste the reviewed values back.
+    """
+
+    enabled: bool = False
+    provider_label: str = "ShopBack"
+    rates: dict[str, float] = Field(default_factory=dict)
+
+
+class PriceHistoryConfig(StrictConfigModel):
+    """Price-rank signal: is a deal's price genuinely low, or just popular?
+
+    Ranks a deal's current price against its own history of high-confidence
+    prices from prior runs (read back from ``data/observations/*.jsonl`` — no
+    new storage). Turns "hot" (social proof) into "hot *and* cheap" (real value).
+    """
+
+    enabled: bool = False
+    lookback_days: int = 30
+    # Minimum prior high-confidence price points before a deal is ranked at all
+    # (below this the signal is unreliable and no badge is shown).
+    min_history_points: int = 3
+    # Within this fraction of the historical low counts as "near the low"; within
+    # this fraction of the historical high counts as "above typical".
+    near_fraction: float = 0.05
+
+
 class DedupConfig(StrictConfigModel):
     lookback_days: int = 7
     max_realerts_per_deal: int = 1
@@ -196,6 +229,8 @@ class Settings(StrictConfigModel):
     dedup: DedupConfig = Field(default_factory=DedupConfig)
     cold_start: ColdStartConfig = Field(default_factory=ColdStartConfig)
     alerting: AlertConfig = Field(default_factory=AlertConfig)
+    cashback: CashbackConfig = Field(default_factory=CashbackConfig)
+    price_history: PriceHistoryConfig = Field(default_factory=PriceHistoryConfig)
     # Consumed by the separate strategy_hunter pipeline (it has its own loader);
     # accepted here so the shared settings.yaml validates under this strict model.
     strategy: dict[str, Any] | None = None

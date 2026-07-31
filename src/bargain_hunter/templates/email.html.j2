@@ -21,6 +21,9 @@
   .badge.hot { background: #fff3e0; color: #e65100; }
   .badge.watch { background: #e3f2fd; color: #1565c0; }
   .badge.discount { background: #fce4ec; color: #c62828; font-weight: 600; }
+  .badge.cashback { background: #e0f2f1; color: #00695c; font-weight: 600; }
+  .badge.pricelow { background: #e8f5e9; color: #1b5e20; font-weight: 600; }
+  .badge.pricehigh { background: #fff8e1; color: #ef6c00; font-weight: 600; }
   .badge.level { background: #ede7f6; color: #4527a0; font-weight: 600; text-transform: uppercase; }
   .badge.level-top { background: #4527a0; color: #fff; }
   .reason { font-size: 12px; color: #888; margin-top: 6px; }
@@ -54,6 +57,16 @@
       {% endif %}
       {% if deal.discount_percent is not none %}
       <span class="badge discount">{{ "%.0f"|format(deal.discount_percent) }}% off</span>
+      {% endif %}
+      {% if deal.cashback_percent %}
+      <span class="badge cashback" title="Stack cashback via {{ deal.cashback_provider }}">+ up to {{ "%g"|format(deal.cashback_percent) }}% cashback</span>
+      {% endif %}
+      {% if deal.price_rank == 'lowest' %}
+      <span class="badge pricelow">💰 Lowest in {{ deal.price_history_days }}d</span>
+      {% elif deal.price_rank == 'low' %}
+      <span class="badge pricelow">Near {{ deal.price_history_days }}d low</span>
+      {% elif deal.price_rank == 'high' %}
+      <span class="badge pricehigh">⚠ Above typical price</span>
       {% endif %}
       <span class="badge {{ item.track }}">{{ item.track|upper }}</span>
       {% if item.level %}

@@ -30,6 +30,14 @@ class Deal(BaseModel):
     discount_percent: float | None = None
     price_confidence: Literal["high", "low"] | None = None
     expired: bool = False
+    # Cashback that can be stacked on top of this deal (populated by cashback.py
+    # from the config-maintained merchant→rate map). None = no known rate.
+    cashback_percent: float | None = None
+    cashback_provider: str | None = None
+    # Price-rank signal vs this deal's own recent price history (price_history.py).
+    # None = not enough history to judge. price_history_days = span the rank covers.
+    price_rank: Literal["lowest", "low", "typical", "high"] | None = None
+    price_history_days: int | None = None
 
     @property
     def key(self) -> str:
