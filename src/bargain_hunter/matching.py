@@ -9,7 +9,14 @@ Examples:
   Sony WH <=300 @2026-07-01T23:59
   Dyson <=499
 
-A deal matches when:
+If PHRASE is an Amazon product URL (…/dp/<ASIN>) or a bare ASIN (B0……), it is a
+**target-price watch**: it matches the exact product in the CamelCamelCamel feed
+(by ASIN) rather than by title text, and the vote/discount noise guard is skipped
+because the `<=PRICE` target is the gate. Examples:
+  https://www.amazon.com.au/dp/B08166SLDF <=1500
+  B08166SLDF <=1500
+
+A (text) deal matches when:
   - the keyword phrase appears in the title or description (case-insensitive), AND
   - the keyword has not expired, AND
   - votes_pos >= cfg.min_votes (noise guard — confirms it's a real deal), AND
@@ -26,6 +33,24 @@ from .config import WatchConfig
 from .models import Deal, Subscriber
 
 _AET = ZoneInfo("Australia/Sydney")
+
+# Amazon product URL (…/dp/<ASIN>, …/gp/product/<ASIN>, …/product/<ASIN>).
+_AMAZON_ASIN_RE = re.compile(r"/(?:dp|gp/product|product)/([A-Z0-9]{10})(?:[/?#]|$)", re.IGNORECASE)
+# Bare modern ASIN. Restricted to the "B0…" form so ordinary 10-char keywords
+# aren't hijacked; paste the full Amazon URL for older ISBN-style ASINs.
+_BARE_ASIN_RE = re.compile(r"^B0[A-Z0-9]{8}$", re.IGNORECASE)
+
+
+def _extract_asin(phrase: str) -> str | None:
+    """Return the uppercased ASIN if ``phrase`` is an Amazon URL or bare ASIN, else None."""
+    p = phrase.strip()
+    m = _AMAZON_ASIN_RE.search(p)
+    if m:
+        return m.group(1).upper()
+    if _BARE_ASIN_RE.match(p):
+        return p.upper()
+    return None
+
 
 # "iPhone 17 Pro <=1800 @19:00"
 # Groups: (phrase, target_price_or_empty, expiry_or_empty)
@@ -132,6 +157,21 @@ def _match_watch_with_target(
 
         if expiry is not None and now >= expiry:
             continue
+
+        # Amazon target-price watch: match the exact product by ASIN in the CCC
+        # feed, gated by the price target rather than the vote/discount guard.
+        asin = _extract_asin(keyword)
+        if asin is not None:
+            if deal.source != "camelcamelcamel" or deal.deal_id.upper() != asin:
+                continue
+            if target_price is not None:
+                if deal.price is None or deal.price > target_price:
+                    continue
+                reason = f"Amazon {asin} dropped to ${deal.price:.2f} ≤ ${target_price:.2f}"
+                return True, reason, target_price
+            note = f", {deal.discount_percent:.0f}% off" if deal.discount_percent else ""
+            price_note = f" to ${deal.price:.2f}" if deal.price is not None else ""
+            return True, f"Amazon {asin} price drop{price_note}{note}", None
 
         if not _keyword_hits(keyword, search_text):
             continue
