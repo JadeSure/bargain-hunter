@@ -908,6 +908,7 @@ html, body {
 
 .deal-live-card {
   position: relative;
+  min-width: 0;
   display: flex; flex-direction: column; gap: 10px;
   padding: 20px; border-radius: 12px;
   background: var(--surface-1);
@@ -923,7 +924,7 @@ html, body {
 .deal-live-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .deal-live-badges { display: flex; flex-wrap: wrap; gap: 6px; }
 .deal-live-age { font-size: 12px; color: rgba(232,233,236,0.35); white-space: nowrap; flex-shrink: 0; }
-.deal-live-title { font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--text-primary); }
+.deal-live-title { font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--text-primary); overflow-wrap: anywhere; }
 /* Stretched link: the whole card is clickable via ::after, while elements
    with a higher z-index (the Stack-it chips) stay independently clickable. */
 .deal-live-link { color: inherit; text-decoration: none; }
