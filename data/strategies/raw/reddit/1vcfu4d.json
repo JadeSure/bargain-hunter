@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1vcfu4d",
+  "url": "https://www.reddit.com/r/AusFinance/comments/1vcfu4d/updated_effective_marginal_tax_rates_for_202627/",
+  "title": "Updated Effective Marginal tax rates for 2026/27, plus some comments on LISTO.",
+  "author": "/u/Anachronism59",
+  "body": "6 months ago, I posted the effective marginal tax rates as a function of income, particularly relevant for those of us on low taxable incomes (like us, as retirees, or maybe those working part time ) making decisions about extra money to super etc The numbers have changed slightly due to new tax rates, so here are the new figures. Allows for LITO taper (5% then 1.5%) between $37.5k and $66.7k and the Medicare phase in of 10% in between $27.2k and $34k. Brackets are to nearest $100. No HECS loan repayments (not really tax anyway), or childcare subsidy, or MLS $0 - $22.9k 0% (LITO rises to match tax) $22.9k - $27.2k 15% (15% tax, no Medicare) $27.2k - $34.0k 25% (15% tax plus Medicare phase in at 10%) $34.0k - $37.5k 17% (15% tax plus 2% Medicare ) $37.5k - $45.0k 22% (15% tax plus 2% Medicare plus 5% LITO taper) $45.0k - $66.7k 33.5% (30% tax plus 2% Medicare plus 1.5% LITO taper) $66.7k - $135k 32% (30% tax plus 2% Medicare ) after that it's as usual and well known Note that at times I see advice (even from a tax agent in a recent comment) that concessional super give no benefit no sense if taxable income goes under $45k. This shows that this is not always correct. Saying that income is only tax free up to $18.2k is also common Also note that with concessional super that the rate is not always 15% at low incomes. Can be zero due to LISTO (Low Income Super Tax Offset) (EDITED) Under $37k taxable income (if you get more than 10% of your income from employment) there is an offset on of up to $500 on concessional super. That goes to the fund On 1st July 2027 that increases to under $45k and $810 max. Effectively that will mean that low-income workers are not taxed at all on compulsory super and essentially get the same tax savings as a person on more than $45k. Did not seem to be widely advertised though. Disclaimer : Used MS365 Editor to check spelling and grammar. submitted by /u/Anachronism59 [link] [comments]",
+  "board": "r/AusFinance",
+  "created_at": "2026-08-01T06:42:30Z",
+  "fetched_at": "2026-08-01T16:30:49.766167Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "442abca8b4a0e102",
+  "key": "reddit:1vcfu4d"
+}
