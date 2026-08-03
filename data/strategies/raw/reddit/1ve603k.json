@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1ve603k",
+  "url": "https://www.reddit.com/r/AusFinance/comments/1ve603k/i_found_a_different_way_to_use_7_eleven_fuel_lock/",
+  "title": "I found a different way to use 7 Eleven Fuel Lock for an extra saving",
+  "author": "/u/pokerbutwhole",
+  "body": "This technique is good for those who lock from their current location, then drive to the nearest 7 eleven to fill up. This was what I used to do. This is what I'm doing now: check the lock price from where I am, and what the lock price would be from my nearest 7 eleven. If the station option is lower, I drive there as normal, lock while I’m there, then fill up. The reason it can work is that locking from the station can give you a different nearby group of 7 eleven prices. Sometimes that group has a cheaper price, even though you’re still driving to the same nearest 7 eleven. I ran a very unscientific test using random, population-weighted locations across the capital cities. In 16.6% of cases, locking from the nearest station was cheaper than locking from the current location. When it was cheaper, about half the savings were 2c/L or less, and 81.3% were 4c/L or less. The best case was a 14c/L saving: the mock location was (-27.642914667295916,152.97813733888924) and locked price was 199.9c/L, but after driving to the nearest 7 eleven (Heathwood) and locking there, it picked up 185.9c/L from 7 eleven Willawong. Same station to fill up at, just a different point to lock from. I built a free tool that can quickly compare these two options, as well as nearby non‑7-eleven prices considering other reward discount programs for the best station to fill up from. If the mods allow, I shall share it. Either way, I hope this have helped someone today. submitted by /u/pokerbutwhole [link] [comments]",
+  "board": "r/AusFinance",
+  "created_at": "2026-08-03T07:00:36Z",
+  "fetched_at": "2026-08-03T17:27:34.653277Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "2e914f22075f36d2",
+  "key": "reddit:1ve603k"
+}
