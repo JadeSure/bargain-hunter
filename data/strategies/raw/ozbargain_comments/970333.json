@@ -1,0 +1,17 @@
+{
+  "source": "ozbargain_comments",
+  "post_id": "970333",
+  "url": "https://www.ozbargain.com.au/node/970333",
+  "title": "Ubiquiti Unifi U7 Pro Wi-Fi 7 Access Point $295 + Delivery ($0 SA C&C) @ Allneeds Computers",
+  "author": null,
+  "body": "Deal: Ubiquiti Unifi U7 Pro Wi-Fi 7 Access Point $295 + Delivery ($0 SA C&C) @ Allneeds Computers\n\n[omguleh] Not many old units have POE+ on it. Mine is still POE and I’m using U6 pros.\n[Gebb] Might be time to upgrade my U6 Lites. Anyone done the same?\n[starburstyellow] Not yet. I'm bottlenecked by my UDM atm :(\n[frkino] Do you have 6GHz devices?\nAlso, U6 Lite only needs PoE, is your current power source PoE+ capable? Although, mine is always on 9W through daily use (2.4GHz IoT, 5/6GHz home network)\nU7 Pro brings 6GHz radio, and just received firmware update to do MLO\n[Gebb] Yes I’m running a USW pro max 16 poe. Only a couple of 6Ghz devices, interested in the 5GHz bandwidth jump and higher gain antennas. If only Amazon would price match\n[askbargain] How old is the U6 LR? Power failure yet?\n[IlIlIl IlI llIIIl] I'm not sure, bought it secondhand. Seems to be still working. Separate POE injector.\nU6 Pro is running from my UDR v1 POE port ok\n[plastic spoon] Has the LR actually improved range at 2.4GHz?\n[IlIlIl IlI llIIIl] I think so? I realised I had far too many APs so reduced them down.\n[Ragnarok1983] Need an Unifi controller. You can host your own\n[plastic spoon] Yep, works with everything. You will need the unifi controller software to set it up but not for ongoing use.\n[Horacio] That's a cracking price. I am thinking I'll pass on 6GHz and get a TP-Link Omada EAP723 but this would be nice if money wasn't tight\n[internet-stranger] Check out the EnGenius ECW512L.\nOn Amazon for $170 + 15% off.\nI moved to these. I can get 980mbs on Speedtest.net on my iPhone 16 Pro.\nFree cloud management, 6ghz support, 2.5gbe ports.\nhttps://www.amazon.com.au/dp/B0DNNVJLPP\n[bri11iant-y] This looks like a very very powerful AP, tempted\n[internet-stranger] For the price it’s amazing.\nI can max out my 1gbe NBN over wifi.\nMy iPhone 16 pro gets 1.4gbe using iperf3.\n[Horacio] Thanks and thanks for the other posting on this. Not sure who is negging, it seems so pointless when people are trying to be helpful\n[OzComment] if you don’t need 6Ghz you can consider U7 Lite. One of the most affordable but capable APs from Ubiquiti.\n[PantlessBobby] Out of stock? Can't add to cart. Devistated.\n[cytotoxic] Worth the extra for the 7 Pro XG for the fanless design?\n[OzComment] If you plan to use the AP for a few years then yes. If you will chase for wifi 8 when it's available then no\n[Akor3] It says in stock but won't let you add the cart anymore..",
+  "board": "OzBargain Deals (comments)",
+  "created_at": null,
+  "fetched_at": "2026-08-05T17:07:40.671781Z",
+  "score": null,
+  "num_comments": 28,
+  "tags": [],
+  "relevance": 2,
+  "content_hash": "7c8c650a1accaaad",
+  "key": "ozbargain_comments:970333"
+}
