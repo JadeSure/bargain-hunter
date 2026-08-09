@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1vjcgx3",
+  "url": "https://www.reddit.com/r/fiaustralia/comments/1vjcgx3/effects_of_1jul27_incoming_tax_changes_on_a_fire/",
+  "title": "Effects of 1-Jul-27 incoming tax changes on a FIRE financial model",
+  "author": "/u/glyptometa",
+  "body": "I found three errors in prior versions of this model, fixed in this version. One small - I had missed the medicare levy reduction. The other is larger, per an interpretation I added to express how many more weeks a person might have to work to achieve the same FIRE plan. I used income only, and should have used income minus spending, which is now fixed and increases the number of weeks. The other was an error when capital gains exceed around $229K in a single year. No effect on prior tests, but the model will now work properly for very large incomes. Detailed description and comments are in the file, linked below. Here's a summary table, all in today's dollars, which compares a FIRE plan launched 1-Jul-27 under the NEW tax rules v. what would have occurred under the OLD tax rules. It's based on 10 years of saving from 40 to 49 yrs old, then 10 years of not working from 50 to 59, using DHHF and a 1.6 year cash reserve. Nothing in the model suggests a particular approach to FIRE, nor a recommendation to use DHHF, and it's not a retirement planning model. I chose DHHF because it has easy-to-find characteristics and provides a reasonable blend of international and Aus passive index growth investments. Current salary ($K) 60.0 60.0 120.0 120.0 180.0 180.0 240.0 240.0 OLD NEW OLD NEW OLD NEW OLD NEW Pre-60 annual spending target ($K) 33.5 33.5 60.0 60.0 84.6 84.6 106.0 106.0 Save per year for 10 years ($K) 20.8 21.9 37.7 39.8 54.5 57.3 68.8 71.9 Peak portfolio value ($K) 281.6 295.8 506.1 533.6 725.9 761.7 915.9 955.4 All years added tax ($K) 13.6 30.7 41.0 45.6 % of pre-60 retirement spending 4.1% 5.1% 4.8% 4.3% Pre-60 starting withdrawal rate 11.9% 11.3% 11.9% 11.2% 11.7% 11.1% 11.6% 11.1% To achieve same spending, increase contribution ($/week) 21 40 54 60 Or... Longer work to achieve same plan (weeks) 26 28 26 25 Link to models: https://docs.google.com/spreadsheets/d/1ACtFjy5j95mS3RupWktzcmzi1S1DHevJ/edit?usp=sharing&ouid=109596560468947975241&rtpof=true&sd=true The password is regre$$ive submitted by /u/glyptometa [link] [comments]",
+  "board": "r/fiaustralia",
+  "created_at": "2026-08-09T01:14:09Z",
+  "fetched_at": "2026-08-09T15:59:20.219082Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "101d594c0ad6de7a",
+  "key": "reddit:1vjcgx3"
+}
