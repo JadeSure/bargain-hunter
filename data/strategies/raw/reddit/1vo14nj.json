@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1vo14nj",
+  "url": "https://www.reddit.com/r/AusFinance/comments/1vo14nj/how_to_implement_a_guardrails_withdrawal_strategy/",
+  "title": "How to implement a \"guardrails\" withdrawal strategy with superannuation minimum percentages in pension phase?",
+  "author": "/u/JackyJoel",
+  "body": "I've been watching a few YouTube \"investment withdrawal strategy\" videos to have an idea of what income my super could safely generate in pension phase before depleting the principal. Most of these are US advisors who know nothing about the minimum withdrawal rates that apply to Australian account-based pensions. One of the things a lot of them recommend is a \"Guardrails strategy\" as proposed by Guyton & Klinger. The essence of this is to mathematically define the points at which you could increase your withdrawal rate by 10% (e.g. from 5.0 to 5.5%) or should reduce it by 10% if your portfolio/fund value drops below a lower guardrail figure. It should be pretty clear that the lower guardrail isn't an option in Australia if this is less than the minimum withdrawal rate for your age bracket (e.g. 5% if you are 65-75). I'm curious whether anyone has any ideas on how you could implement some kind of guardrail strategy for Australian account-based pensions? One idea in a bad market that dips below the lower guardrail would be to calculate what the reduced rate should be, and if this is less than the mandated minimum, to take the difference between the two and reinvest it in an accumulation account. This applies the discipline of adapting your spending to the worse market conditions and also adding to super when the underlying assets are cheaper. Another would be to partially commute the account-based pension and put it back into accumulation to avoid drawing down in a bear market, but then you get hit with 15% contribution tax and may need extra funds to live on, so it's not ideal. Any thoughts? submitted by /u/JackyJoel [link] [comments]",
+  "board": "r/AusFinance",
+  "created_at": "2026-08-14T08:07:36Z",
+  "fetched_at": "2026-08-14T16:26:06.565766Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "c7f8ccc333321513",
+  "key": "reddit:1vo14nj"
+}
