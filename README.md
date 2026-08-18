@@ -364,6 +364,35 @@ Live and running. Highlights since v1.0:
 | Low | Telegram channel — interface already modelled; needs bot /start onboarding |
 | Low | Scheduling reliability — AWS Lambda + EventBridge for sub-5-min latency (v2) |
 
+## Data retention & repo size
+
+The observation feature log (`data/observations/*.jsonl`, ~15-18 MB/day) is the
+main driver of repository growth — it's appended and committed every ~5 min.
+Two mechanisms keep it bounded (run automatically once per AET day by
+`hunt.yml`, or manually):
+
+```bash
+bargain-hunter-maintain-obs --obs-dir data/observations --retention-days 45
+```
+
+- **Compress**: completed (past-day, immutable) files are gzipped to
+  `<date>.jsonl.gz` (~19x smaller). Today's file stays uncompressed for appends.
+  `backtest`/`calibrate` read `.jsonl` and `.jsonl.gz` transparently.
+- **Prune**: files older than the retention window (default 45 days, comfortably
+  above the ~14-21 day calibration lookback) are deleted.
+
+Local build artifacts (`node_modules/`, `.terraform/`, `.venv/`) are
+git-ignored — safe to delete anytime to reclaim disk; `npm i` / `terraform init`
+/ `pip install -e ".[dev]"` regenerate them.
+
+> **One-time `.git` shrink (optional, destructive):** compression/pruning bound
+> *future* growth but don't reclaim blobs already in history. To reclaim the
+> existing `.git` bloat, rewrite history with
+> [`git filter-repo`](https://github.com/newren/git-filter-repo):
+> `git filter-repo --path data/observations --path-glob 'data/observations/*' --invert-paths`
+> (or use `--strip-blobs-bigger-than 5M`), then force-push. Coordinate first —
+> `main` moves every ~5 min via the pipeline, and all clones must re-clone.
+
 ## Privacy
 
 - `data/deals_state.json` stores vote snapshots only (no personal data). It is committed once per day (AET midnight) as a calibration seed; hot-path state travels via GitHub Actions Cache between runs.

@@ -110,13 +110,23 @@ jobs:
             push_with_retry || { echo "Could not push daily state snapshot." >&2; exit 1; }
           fi
 
+      # Once per successful run: compress completed (past-day) observation files
+      # to .jsonl.gz (~8-10x smaller) and prune anything past the retention
+      # window, so the committed feature log stays small and bounded rather than
+      # growing `.git` without limit. Idempotent: a no-op after the first run of
+      # the AET day (today's file is left uncompressed for continued appends).
+      - name: Maintain observation log (compress + prune)
+        if: success()
+        run: |
+          bargain-hunter-maintain-obs --obs-dir data/observations --retention-days 45
+
       # Every successful run: commit new observation rows so calibration data accumulates
       # continuously, not just once per day. Observations are the feature log used to tune
       # thresholds; missing a run means a gap in the training set.
       - name: Commit observations (calibration log)
         if: success()
         run: |
-          if [ ! -d data/observations ] || [ -z "$(ls data/observations/*.jsonl 2>/dev/null)" ]; then
+          if [ ! -d data/observations ] || [ -z "$(ls data/observations/* 2>/dev/null)" ]; then
             exit 0
           fi
 
@@ -138,6 +148,6 @@ jobs:
 
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/observations/
+          git add -A data/observations/
           git diff --staged --quiet || git commit -m "chore: observations [skip ci]"
           push_with_retry || { echo "Could not push observations." >&2; exit 1; }

@@ -1,0 +1,22 @@
+{
+  "name": "opencode-dc7235a2",
+  "tools": [
+    "@opencode-dc7235a2-tools-62c1acb2"
+  ],
+  "allowedTools": [
+    "@opencode-dc7235a2-tools-62c1acb2"
+  ],
+  "includeMcpJson": false,
+  "mcpServers": {
+    "opencode-dc7235a2-tools-62c1acb2": {
+      "command": "node",
+      "args": [
+        "/Users/shawnwang/.cache/opencode/packages/kiro-acp-ai-provider/node_modules/kiro-acp-ai-provider/dist/mcp-bridge.mjs",
+        "--tools",
+        "/var/folders/79/g796vlfd1_qdk2xp8223lb6m0000gn/T/kiro-acp/tools-c8a730e9-62c1acb2.json"
+      ],
+      "cwd": "/Users/shawnwang/repos/personal/bargain-hunter"
+    }
+  },
+  "prompt": "You are a coding assistant that operates under different agent identities. Your identity, behavior, and instructions are defined by the <system_instructions> block included with each request. Always follow the latest <system_instructions> as your primary directive — they define who you are, how you behave, and what tools you should use. If no <system_instructions> are present, act as a helpful coding assistant that follows instructions precisely and uses tools proactively. If a tool call fails, retry it or try alternative approaches — do not assume a tool is permanently unavailable based on a single failure."
+}

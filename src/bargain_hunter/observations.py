@@ -14,9 +14,10 @@ ones we did.
 
 from __future__ import annotations
 
+import gzip
 import json
 import logging
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -114,3 +115,95 @@ class ObservationLog:
                 f.write(json.dumps(row, ensure_ascii=False) + "\n")
         log.info("Logged %d observations to %s", len(self._rows), path.name)
         self._rows = []
+
+
+# ---------------------------------------------------------------------------
+# Maintenance: keep the committed observation log small and bounded.
+#
+# The feature log is what makes `.git` grow without limit — 15-18 MB of JSONL is
+# appended and committed every ~5 min. Calibration/backtest only look back a few
+# weeks, so we (1) gzip completed (immutable, past-day) files ~8-10x and
+# (2) prune anything older than the retention window. The live pipeline only
+# ever appends to *today's* uncompressed file, so compressing past days is safe.
+# ---------------------------------------------------------------------------
+
+DEFAULT_RETENTION_DAYS = 45
+
+
+def file_date(path: Path) -> date | None:
+    """AET date encoded in an observation filename (`.jsonl` or `.jsonl.gz`)."""
+    name = path.name
+    if name.endswith(".jsonl.gz"):
+        name = name[: -len(".gz")]
+    stem = name[: -len(".jsonl")] if name.endswith(".jsonl") else name
+    try:
+        return date.fromisoformat(stem)
+    except ValueError:
+        return None
+
+
+def compress_completed(obs_dir: Path, now: datetime) -> list[Path]:
+    """Gzip every completed (before-today, AET) ``*.jsonl`` file in ``obs_dir``.
+
+    Today's file is left uncompressed because the pipeline keeps appending to it.
+    Returns the list of newly created ``.jsonl.gz`` paths.
+    """
+    if not obs_dir.exists():
+        return []
+    today = now.astimezone(_AET).date()
+    created: list[Path] = []
+    for path in sorted(obs_dir.glob("*.jsonl")):
+        fdate = file_date(path)
+        if fdate is None or fdate >= today:
+            continue
+        gz_path = path.with_suffix(path.suffix + ".gz")
+        with path.open("rb") as src, gzip.open(gz_path, "wb") as dst:
+            dst.write(src.read())
+        path.unlink()
+        created.append(gz_path)
+        log.info("Compressed %s -> %s", path.name, gz_path.name)
+    return created
+
+
+def prune_old(obs_dir: Path, now: datetime, retention_days: int) -> list[Path]:
+    """Delete observation files older than ``retention_days`` (by filename date).
+
+    Returns the list of removed paths.
+    """
+    if not obs_dir.exists() or retention_days <= 0:
+        return []
+    cutoff = now.astimezone(_AET).date() - timedelta(days=retention_days)
+    removed: list[Path] = []
+    for path in sorted([*obs_dir.glob("*.jsonl"), *obs_dir.glob("*.jsonl.gz")]):
+        fdate = file_date(path)
+        if fdate is not None and fdate < cutoff:
+            path.unlink()
+            removed.append(path)
+            log.info("Pruned %s (older than %d days)", path.name, retention_days)
+    return removed
+
+
+def maintain(obs_dir: Path, now: datetime, retention_days: int) -> None:
+    """Compress completed daily files, then prune anything past the window."""
+    compress_completed(obs_dir, now)
+    prune_old(obs_dir, now, retention_days)
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI: compress completed observation files and prune old ones.
+
+    Usage::
+
+        bargain-hunter-maintain-obs [--obs-dir data/observations] [--retention-days 45]
+    """
+    import argparse
+    from datetime import UTC
+
+    parser = argparse.ArgumentParser(description="Compress + prune the observation log.")
+    parser.add_argument("--obs-dir", type=Path, default=DEFAULT_OBS_DIR)
+    parser.add_argument("--retention-days", type=int, default=DEFAULT_RETENTION_DAYS)
+    args = parser.parse_args(argv)
+
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    maintain(args.obs_dir, datetime.now(UTC), args.retention_days)
+    return 0

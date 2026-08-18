@@ -39,6 +39,27 @@ def test_load_observations_date_filtering():
     assert {r.deal_key for r in only_day_one} == {"ozbargain:A", "ozbargain:B"}
 
 
+def test_load_observations_reads_gzipped_files(tmp_path):
+    import gzip
+
+    (tmp_path / "2026-01-01.jsonl").write_text(
+        '{"ts":"2026-01-01T00:00:00+00:00","deal_key":"ozbargain:plain",'
+        '"title":"t","votes_pos":1,"n_snapshots":2,"vote_velocity":0.0}\n',
+        encoding="utf-8",
+    )
+    with gzip.open(tmp_path / "2026-01-02.jsonl.gz", "wt", encoding="utf-8") as f:
+        f.write(
+            '{"ts":"2026-01-02T00:00:00+00:00","deal_key":"ozbargain:gz",'
+            '"title":"t","votes_pos":1,"n_snapshots":2,"vote_velocity":0.0}\n'
+        )
+
+    rows = load_observations(tmp_path)
+    assert {r.deal_key for r in rows} == {"ozbargain:plain", "ozbargain:gz"}
+
+    only_gz = load_observations(tmp_path, date_from=date(2026, 1, 2), date_to=date(2026, 1, 2))
+    assert {r.deal_key for r in only_gz} == {"ozbargain:gz"}
+
+
 def test_replay_sanity_matches_recorded_current_config():
     """Acceptance criterion: replaying the config that produced the observations
     reproduces the same hot classifications (see backtest.py module docstring)."""

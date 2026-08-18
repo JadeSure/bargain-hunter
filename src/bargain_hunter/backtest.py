@@ -80,6 +80,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gzip
 import json
 import math
 import sys
@@ -137,8 +138,12 @@ class ObservationRow(BaseModel):
 
 
 def _file_date(path: Path) -> date | None:
+    name = path.name
+    if name.endswith(".jsonl.gz"):
+        name = name[: -len(".gz")]
+    stem = name[: -len(".jsonl")] if name.endswith(".jsonl") else path.stem
     try:
-        return date.fromisoformat(path.stem)
+        return date.fromisoformat(stem)
     except ValueError:
         return None
 
@@ -152,17 +157,21 @@ def load_observations(
 
     Files are named ``<AET-date>.jsonl`` (see ``observations.ObservationLog``),
     so filtering by filename avoids parsing files entirely outside the range —
-    this is what keeps a months-long backtest fast (FR4).
+    this is what keeps a months-long backtest fast (FR4). Completed days are
+    gzip-compressed to ``<AET-date>.jsonl.gz`` (see ``observations.maintain``)
+    and are read transparently here.
     """
     rows: list[ObservationRow] = []
-    for path in sorted(obs_dir.glob("*.jsonl")):
+    paths = sorted([*obs_dir.glob("*.jsonl"), *obs_dir.glob("*.jsonl.gz")])
+    for path in paths:
         file_date = _file_date(path)
         if file_date is not None:
             if date_from and file_date < date_from:
                 continue
             if date_to and file_date > date_to:
                 continue
-        with path.open(encoding="utf-8") as f:
+        opener = gzip.open if path.suffix == ".gz" else open
+        with opener(path, "rt", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line:
