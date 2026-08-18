@@ -127,7 +127,7 @@ class ObservationLog:
 # ever appends to *today's* uncompressed file, so compressing past days is safe.
 # ---------------------------------------------------------------------------
 
-DEFAULT_RETENTION_DAYS = 45
+DEFAULT_RETENTION_DAYS = 90
 
 
 def file_date(path: Path) -> date | None:
@@ -194,7 +194,7 @@ def main(argv: list[str] | None = None) -> int:
 
     Usage::
 
-        bargain-hunter-maintain-obs [--obs-dir data/observations] [--retention-days 45]
+        bargain-hunter-maintain-obs [--obs-dir data/observations] [--retention-days 90]
     """
     import argparse
     from datetime import UTC

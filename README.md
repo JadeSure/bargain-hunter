@@ -372,14 +372,15 @@ Two mechanisms keep it bounded (run automatically once per AET day by
 `hunt.yml`, or manually):
 
 ```bash
-bargain-hunter-maintain-obs --obs-dir data/observations --retention-days 45
+bargain-hunter-maintain-obs --obs-dir data/observations --retention-days 90
 ```
 
 - **Compress**: completed (past-day, immutable) files are gzipped to
   `<date>.jsonl.gz` (~19x smaller). Today's file stays uncompressed for appends.
   `backtest`/`calibrate` read `.jsonl` and `.jsonl.gz` transparently.
-- **Prune**: files older than the retention window (default 45 days, comfortably
-  above the ~14-21 day calibration lookback) are deleted.
+- **Prune**: files older than the retention window (default 90 days, comfortably
+  above the ~14-21 day calibration lookback while preserving months-long
+  backtests) are deleted.
 
 Local build artifacts (`node_modules/`, `.terraform/`, `.venv/`) are
 git-ignored — safe to delete anytime to reclaim disk; `npm i` / `terraform init`

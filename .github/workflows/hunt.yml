@@ -118,7 +118,7 @@ jobs:
       - name: Maintain observation log (compress + prune)
         if: success()
         run: |
-          bargain-hunter-maintain-obs --obs-dir data/observations --retention-days 45
+          bargain-hunter-maintain-obs --obs-dir data/observations --retention-days 90
 
       # Every successful run: commit new observation rows so calibration data accumulates
       # continuously, not just once per day. Observations are the feature log used to tune
