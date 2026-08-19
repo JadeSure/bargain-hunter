@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1vsc8w1",
+  "url": "https://www.reddit.com/r/fiaustralia/comments/1vsc8w1/new_cgt_changes_for_july_1st_2027_for_both_gains/",
+  "title": "New CGT changes for July 1st 2027 for both gains and losses",
+  "author": "/u/No-Office6181",
+  "body": "Question about the 2027 CGT changes: are pre-1 July 2027 gains also grandfathered from the 30% minimum tax? I'm trying to clarify how the transitional rules work for an asset that was purchased before 1 July 2027 but sold after that date. My understanding is that the gain accrued up to 30 June 2027 retains the existing 50% CGT discount, while the gain accrued from 1 July 2027 onwards is subject to CPI-based indexation and the new 30% minimum tax. But what I'm unclear about is the tax rate applied to the pre-1 July 2027 portion . For example, if I had a $100k capital gain that accrued entirely before 1 July 2027, and I sold the asset in 2030 when I had little or no other taxable income: Would the $100k gain receive the existing 50% discount, leaving $50k as the taxable capital gain? Would that $50k then simply be taxed at my normal marginal tax rates for 2030 (potentially a low rate if I had little/no other income)? Or does the new 30% minimum tax somehow apply to that $50k as well, despite the gain having accrued before 1 July 2027? In other words, is the \"grandfathering\" of the pre-1 July 2027 gain limited to preserving the 50% CGT discount, or does it also preserve the old tax treatment where the discounted gain is taxed at the ordinary marginal rates? I've read that the government says the new rules apply to gains \"accruing from 1 July 2027\", which makes me think the pre-2027 portion should remain outside the 30% minimum-tax regime, but I'd like confirmation from someone who understands the actual legislation. Question about CGT transition rules for an investment that is at a loss on 1 July 2027 I'm trying to understand how the transition to the new CPI-based CGT system will work if an investment is worth less than its original purchase price on 30 June 2027 . For example: I buy an investment for $10,000 in early 2027. On 30 June 2027 , it's worth only $7,000 , so I'm sitting on an unrealised $3,000 loss . From 1 July 2027, the investment is subject to the new CPI-based CGT system. Five years later, I sell it for $20,000 . How would the CGT be calculated? Would the $7,000 value on 30 June 2027 effectively become the starting point for the new system, so that the post-2027 gain is $13,000 (before applying CPI indexation)? Or is there some transitional rule that preserves the $3,000 pre-1 July 2027 unrealised loss , so that the eventual gain is treated differently? In other words, if an investment is sitting at an unrealised loss on 30 June 2027, is that loss effectively locked in for CGT purposes, or does it disappear when the asset moves into the new system and subsequently recovers? Has this specific scenario been addressed in the legislation or explanatory memorandum? thanks for any responses submitted by /u/No-Office6181 [link] [comments]",
+  "board": "r/fiaustralia",
+  "created_at": "2026-08-19T04:34:12Z",
+  "fetched_at": "2026-08-19T15:58:18.453344Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "1836bb6f58356f8a",
+  "key": "reddit:1vsc8w1"
+}

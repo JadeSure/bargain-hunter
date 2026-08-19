@@ -1,0 +1,17 @@
+{
+  "source": "ozbargain_comments",
+  "post_id": "971934",
+  "url": "https://www.ozbargain.com.au/node/971934",
+  "title": "Buy 2kg of Coffee Beans (Min Spend $76) and Get 1kg PNG Mountain Paradise Free & Free Delivery @ Crave Coffee",
+  "author": null,
+  "body": "Deal: Buy 2kg of Coffee Beans (Min Spend $76) and Get 1kg PNG Mountain Paradise Free & Free Delivery @ Crave Coffee\n\n[huntabargain] Are you sure, 3kg for $76-$80 delivered?\n[beefsandwich] Couldn't get this to work. 3x Mountain Paradise, no deal. 2 other coffee + 1 Mountain Paradise, no deal. Coupon invalid.\n[alvian] It did not work because Crave Coffee & OP did not use plain text for the coupon code but the Unicode characters\n𝗕 U+1D5D5 MATHEMATICAL SANS-SERIF BOLD CAPITAL B\n𝗕 U+1D5D5 MATHEMATICAL SANS-SERIF BOLD CAPITAL B\n𝟮 U+1D7EE MATHEMATICAL SANS-SERIF BOLD DIGIT TWO\n𝟱 U+1D7F1 MATHEMATICAL SANS-SERIF BOLD DIGIT FIVE\nThe checkout expected the plain text BB25 code and not this cute but useless 𝗕𝗕𝟮𝟱 code.\n[huntabargain] Is PNG Mountain Paradise good for cappuccino? Which 2kg best for cappuccino, Cafe KA blend?\n[noise36] Good price per kg for what I assume is freshly roasted coffee but it is only fresh for 2-3 weeks so why would you buy such large amounts at once?\nI used to buy 1kg at a time but drinking one coffee day it always went stale towards the end of the bag so now only buy 500g at a time.\n[huntabargain] You can freeze each ~150gm in airtight container, stay fresh. I use old jam jars.\n[heretisj] What are the roast levels for each bean type ?\n[ThatsCheap] Are these freshly roasted and shipped out with the roast date clearly printed on the bag? If you've ordered from them before, could you please confirm?\nDo the bags feature a one-way air valve and a resealable zipper? Or will I need to transfer the beans into an airtight container once opened?",
+  "board": "OzBargain Deals (comments)",
+  "created_at": null,
+  "fetched_at": "2026-08-19T16:01:54.190714Z",
+  "score": null,
+  "num_comments": 13,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "a5f015b15c127f3f",
+  "key": "ozbargain_comments:971934"
+}
