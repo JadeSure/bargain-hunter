@@ -18,6 +18,7 @@ from .sources import (
     OzBargainCommentsSource,
     OzBargainForumSource,
     RedditSource,
+    RssFeedSource,
     StrategySource,
     WhirlpoolSource,
 )
@@ -46,6 +47,15 @@ def build_sources(cfg: StrategyConfig) -> list[StrategySource]:
                 max_comments_per_post=s.reddit.max_comments_per_post,
                 max_posts_with_comments=s.reddit.max_posts_with_comments,
                 comment_min_score=s.reddit.comment_min_score,
+            )
+        )
+    if s.rss.enabled:
+        sources.append(
+            RssFeedSource(
+                feeds=[{"url": f.url, "board": f.board} for f in s.rss.feeds],
+                request_delay_seconds=max(
+                    s.rss.request_delay_seconds, cfg.request_delay_seconds
+                ),
             )
         )
     if s.ozbargain_forum.enabled:

@@ -287,6 +287,53 @@ def test_site_baseline_seeded_at_set_once():
     assert s.baseline_age_days(t1) == pytest.approx(5.0, abs=1e-6)
 
 
+# ---------------------------------------------------------------------------
+# Poll-cadence gating + generic feature snapshots
+# ---------------------------------------------------------------------------
+
+
+def test_due_for_fetch_true_when_never_fetched():
+    s = StateStore(path=Path("/nonexistent/x.json"))
+    s.load()
+    assert s.due_for_fetch("openrouter", 1440, datetime.now(UTC))
+
+
+def test_due_for_fetch_respects_interval():
+    s = StateStore(path=Path("/nonexistent/x.json"))
+    s.load()
+    now = datetime.now(UTC)
+    s.mark_fetched("openrouter", now)
+    assert not s.due_for_fetch("openrouter", 60, now + timedelta(minutes=30))
+    assert s.due_for_fetch("openrouter", 60, now + timedelta(minutes=61))
+
+
+def test_last_fetch_and_snapshot_roundtrip_through_save_load(tmp_path):
+    path = tmp_path / "deals_state.json"
+    s = StateStore(path=path)
+    s.load()
+    now = datetime.now(UTC)
+    s.mark_fetched("bank_rates", now)
+    s.set_snapshot("bank_rates", {"ING:123": {"rates": {"BONUS": 5.35}}})
+    s.save()
+
+    s2 = StateStore(path=path)
+    s2.load()
+    assert not s2.due_for_fetch("bank_rates", 1440, now + timedelta(hours=1))
+    assert s2.snapshot("bank_rates") == {"ING:123": {"rates": {"BONUS": 5.35}}}
+    assert s2.snapshot("llm_prices") == {}  # never set -> empty, not KeyError
+
+
+def test_naive_last_fetch_timestamp_coerced_to_aware_on_load(tmp_path):
+    """A hand-edited (naive) timestamp in the committed state file must not
+    crash `due_for_fetch`'s subtraction against a tz-aware `now`."""
+    path = tmp_path / "deals_state.json"
+    raw = {"cold_start": False, "last_fetch": {"bank_rates": "2026-08-20T00:00:00"}}
+    path.write_text(json.dumps(raw))
+    s = StateStore(path=path)
+    s.load()
+    assert not s.due_for_fetch("bank_rates", 1440, datetime(2026, 8, 20, 1, 0, tzinfo=UTC))
+
+
 def test_first_run_mass_send_regression_cold_start_then_normal_deals_unaffected():
     """A fresh (non-cold-start) run with a mix of brand-new fresh deals must
     not be affected by the seeding mechanism — only stale first-sightings get

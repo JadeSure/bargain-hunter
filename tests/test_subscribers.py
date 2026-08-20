@@ -41,6 +41,19 @@ def test_max_alerts_uses_builtin_default_when_not_passed():
     assert sub.max_alerts_per_day == 10
 
 
+def test_max_digital_alerts_falls_back_to_settings_default_when_property_absent():
+    """The Notion DB has no "Max Digital Alerts/Day" property (and never will —
+    schema is not being changed), so every subscriber must take the
+    settings.yaml `run.max_digital_alerts_per_day` default."""
+    sub = _parse_subscriber(_props(), default_max_digital_alerts_per_day=42)
+    assert sub.max_digital_alerts_per_day == 42
+
+
+def test_max_digital_alerts_uses_builtin_default_when_not_passed():
+    sub = _parse_subscriber(_props())
+    assert sub.max_digital_alerts_per_day == 10
+
+
 def test_quiet_hours_unset_by_default():
     sub = _parse_subscriber(_props())
     assert sub.quiet_hours_start is None

@@ -33,6 +33,14 @@ from .scoring import compute_vote_velocity
 log = logging.getLogger(__name__)
 
 
+def _aware(dt: datetime) -> datetime:
+    """Coerce a possibly-naive datetime (e.g. hand-edited into the committed
+    state file) to UTC-aware, so later arithmetic against `datetime.now(UTC)`
+    can't raise `TypeError: can't subtract offset-naive and offset-aware
+    datetimes`. Same treatment as strategy_hunter/sources/rss.py::_parse_pub_date."""
+    return dt if dt.tzinfo is not None else dt.replace(tzinfo=UTC)
+
+
 def _atomic_write_json(path: Path, payload: dict) -> None:
     """Write JSON via a same-directory temp file + os.replace so a crash mid-write
     can't corrupt the target (a partial write would otherwise force cold-start)."""
@@ -70,6 +78,13 @@ class StateStore:
         # {"ewma": float, "updated_at": datetime}. Empty when never seeded.
         self._baseline_seeded_at: datetime | None = None
         self._baseline_hours: dict[int, dict] = {}
+        # source -> last successful fetch time, for poll_interval_minutes gating
+        # on sources slower-cadence than the 5-min hot-path loop.
+        self._last_fetch: dict[str, datetime] = {}
+        # Generic per-feature snapshot store (e.g. "llm_prices", "bank_rates") —
+        # each feature keeps whatever JSON-able dict it needs between runs. Not
+        # to be confused with `snapshots()` below (per-deal vote-velocity history).
+        self._feature_snapshots: dict[str, dict] = {}
 
     # ------------------------------------------------------------------
     # Load / save
@@ -94,7 +109,7 @@ class StateStore:
                 try:
                     parsed.append(
                         DealSnapshot(
-                            ts=datetime.fromisoformat(s["ts"]),
+                            ts=_aware(datetime.fromisoformat(s["ts"])),
                             votes_pos=s["votes_pos"],
                             votes_neg=s["votes_neg"],
                             comment_count=s["comment_count"],
@@ -108,26 +123,32 @@ class StateStore:
 
         for key, ts_str in raw.get("first_seen", {}).items():
             with contextlib.suppress(ValueError):
-                self._first_seen[key] = datetime.fromisoformat(ts_str)
+                self._first_seen[key] = _aware(datetime.fromisoformat(ts_str))
 
         for key, ts_str in raw.get("seeded", {}).items():
             with contextlib.suppress(ValueError):
-                self._seeded[key] = datetime.fromisoformat(ts_str)
+                self._seeded[key] = _aware(datetime.fromisoformat(ts_str))
 
         baseline = raw.get("site_baseline") or {}
         with contextlib.suppress(ValueError):
             seeded_at_str = baseline.get("seeded_at")
             if seeded_at_str:
-                self._baseline_seeded_at = datetime.fromisoformat(seeded_at_str)
+                self._baseline_seeded_at = _aware(datetime.fromisoformat(seeded_at_str))
         for hour_str, bucket in (baseline.get("hours") or {}).items():
             try:
                 hour = int(hour_str)
                 self._baseline_hours[hour] = {
                     "ewma": float(bucket["ewma"]),
-                    "updated_at": datetime.fromisoformat(bucket["updated_at"]),
+                    "updated_at": _aware(datetime.fromisoformat(bucket["updated_at"])),
                 }
             except (KeyError, ValueError, TypeError):
                 continue
+
+        for src, ts_str in (raw.get("last_fetch") or {}).items():
+            with contextlib.suppress(ValueError):
+                self._last_fetch[src] = _aware(datetime.fromisoformat(ts_str))
+
+        self._feature_snapshots = raw.get("feature_snapshots") or {}
 
         self._cold_start = raw.get("cold_start", False)
         log.info("Loaded state: %d deals, cold_start=%s", len(self._data), self._cold_start)
@@ -164,6 +185,8 @@ class StateStore:
                     for hour, bucket in self._baseline_hours.items()
                 },
             },
+            "last_fetch": {src: ts.isoformat() for src, ts in self._last_fetch.items()},
+            "feature_snapshots": self._feature_snapshots,
         }
         self.path.parent.mkdir(parents=True, exist_ok=True)
         _atomic_write_json(self.path, payload)
@@ -203,6 +226,36 @@ class StateStore:
     def is_new_to_system(self, key: str) -> bool:
         """True if we have seen this deal for the first time this run."""
         return key not in self._first_seen
+
+    # ------------------------------------------------------------------
+    # Poll-cadence gating (sources slower than the 5-min hot-path loop)
+    # ------------------------------------------------------------------
+
+    def due_for_fetch(self, source: str, interval_minutes: float, now: datetime) -> bool:
+        """True if `source` has never been fetched, or its last fetch is older
+        than `interval_minutes`."""
+        last = self._last_fetch.get(source)
+        if last is None:
+            return True
+        return (now - last).total_seconds() >= interval_minutes * 60
+
+    def mark_fetched(self, source: str, now: datetime) -> None:
+        self._last_fetch[source] = now
+
+    # ------------------------------------------------------------------
+    # Generic per-feature snapshots (e.g. LLM prices, bank rates)
+    # ------------------------------------------------------------------
+
+    def snapshot(self, key: str) -> dict:
+        """Return the feature snapshot stored under `key`, or {} if never set.
+
+        Distinct from `snapshots()` above (per-deal vote-velocity history) —
+        this is an arbitrary JSON-able dict a source keeps between runs.
+        """
+        return self._feature_snapshots.get(key, {})
+
+    def set_snapshot(self, key: str, value: dict) -> None:
+        self._feature_snapshots[key] = value
 
     # ------------------------------------------------------------------
     # Event-day adaptive baseline (site-wide vote velocity)

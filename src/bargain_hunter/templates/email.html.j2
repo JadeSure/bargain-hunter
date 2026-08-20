@@ -53,7 +53,7 @@
     <h2><a href="{{ item.affiliate_deal_url }}">{{ deal.title }}</a></h2>
     <div class="meta">
       {% if deal.price is not none and deal.price_confidence == 'high' %}
-      <span class="badge price">${{ "%.2f"|format(deal.price) }}</span>
+      <span class="badge price">{{ "US$" if deal.currency != "AUD" else "$" }}{{ "%.2f"|format(deal.price) }}</span>
       {% endif %}
       {% if deal.discount_percent is not none %}
       <span class="badge discount">{{ "%.0f"|format(deal.discount_percent) }}% off</span>

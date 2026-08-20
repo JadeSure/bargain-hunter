@@ -21,6 +21,7 @@ const CATEGORY_OPTIONS = [
   { id: 'beauty', label: 'Beauty & Health' },
   { id: 'food', label: 'Food & Grocery' },
   { id: 'travel', label: 'Travel' },
+  { id: 'digital', label: 'Software & Subscriptions' },
 ]
 
 const HOT_LEVEL_OPTIONS = [

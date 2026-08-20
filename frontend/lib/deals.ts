@@ -8,6 +8,7 @@ export interface LiveDeal {
   title: string
   url: string
   source: 'ozbargain' | 'camelcamelcamel' | string
+  currency: string
   price: number | null
   discountPercent: number | null
   cashbackPercent: number | null
@@ -91,6 +92,14 @@ const RETENTION_HOURS = 72
 // Hot tiers ranked so the higher value wins when picking a deal's peak level.
 const LEVEL_RANK: Record<string, number> = { top: 3, great: 2, good: 1 }
 
+// These sources are differs: they emit a Deal once, at the moment a price/rate
+// change is detected, then never re-emit it. isStillInLatestSourceBatch would
+// expire them the moment the source's next fetch happens (as little as a day
+// later), so they skip that gate and rely on the 72h RETENTION_HOURS window
+// alone. Every other new source re-emits every poll, so the batch gate is
+// correct for them.
+const EVENT_EMITTING_SOURCES = new Set(['openrouter', 'bank_rates'])
+
 type ObsRow = Awaited<ReturnType<typeof readObservationsFile>>[number]
 
 function aetDate(d: Date): string {
@@ -164,6 +173,7 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
           title: r.title as string,
           url: dealUrl(key),
           source: sourceFromKey(key),
+          currency: (r.currency as string) ?? 'AUD',
           isFree: /^\s*free\b/i.test(r.title as string),
           price: /^\s*free\b/i.test(r.title as string) ? null : (r.price && r.price > 0 ? (r.price as number) : null),
           discountPercent: /^\s*free\b/i.test(r.title as string) ? null : (r.discount_percent ? (r.discount_percent as number) : null),
@@ -236,7 +246,25 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     return b.deal.peakScore - a.deal.peakScore
   })
 
-  return live.map((e) => e.deal)
+  // Newer voteless sources (bank_rates, iknowthepilot, dealnews, slickdeals,
+  // v2ex, openrouter) reach a subscriber via the watch track, not vote
+  // velocity, so is_hot/peakLevel above rarely fires for them — gating on it
+  // like the AU tier ladder would keep the board empty. Keep them on recency
+  // instead: any deal still within RETENTION_HOURS (byKey only holds those)
+  // that is still in its own source's latest scan batch. ozbargain/
+  // camelcamelcamel are excluded here since they're already handled above.
+  const recencyCandidates: [string, Agg][] = []
+  for (const entry of byKey) {
+    const [key, agg] = entry
+    const source = sourceFromKey(key)
+    if (source === 'ozbargain' || source === 'camelcamelcamel') continue
+    if (!EVENT_EMITTING_SOURCES.has(source) && !isStillInLatestSourceBatch(key, agg)) continue
+    recencyCandidates.push(entry)
+  }
+  recencyCandidates.sort((a, b) => (b[1].latest.ts as string).localeCompare(a[1].latest.ts as string))
+  const recencyLive = await keepLive(toEntries(recencyCandidates))
+
+  return [...live, ...recencyLive].map((e) => e.deal)
 }
 
 export function formatAge(ageHours: number): string {
@@ -245,8 +273,38 @@ export function formatAge(ageHours: number): string {
   return `${Math.round(ageHours / 24)}d ago`
 }
 
+// Mirrors SOURCE_LABELS in notify/render.py so the email and the website say
+// the same thing about the same source.
+const SOURCE_LABELS: Record<string, string> = {
+  ozbargain: 'OzBargain',
+  camelcamelcamel: 'CamelCamelCamel',
+  dealnews: 'DealNews (US)',
+  slickdeals: 'Slickdeals (US)',
+  v2ex: 'V2EX (CN)',
+  openrouter: 'OpenRouter',
+  bank_rates: 'AU Bank Rates',
+  iknowthepilot: 'Flight Deals (AU)',
+}
 export function sourceLabel(source: string): string {
-  if (source === 'ozbargain') return 'OzBargain'
-  if (source === 'camelcamelcamel') return 'CamelCamelCamel'
-  return source
+  return SOURCE_LABELS[source] ?? source
+}
+
+export function currencySymbol(currency: string): string {
+  if (currency === 'AUD') return '$'
+  if (currency === 'CNY') return '¥'
+  return 'US$'
+}
+
+// Frontend-only region grouping for the /deals page (Phase C2). Not a Deal
+// field — filtering is already per-source config on the Python side, so
+// there's nothing to add there.
+export type DealRegion = 'AU' | 'NA' | 'CN' | 'GLOBAL'
+const REGION_BY_SOURCE: Record<string, DealRegion> = {
+  ozbargain: 'AU', camelcamelcamel: 'AU',
+  bank_rates: 'AU', iknowthepilot: 'AU',
+  dealnews: 'NA', slickdeals: 'NA',
+  v2ex: 'CN', openrouter: 'GLOBAL',
+}
+export function dealRegion(source: string): DealRegion {
+  return REGION_BY_SOURCE[source] ?? 'AU'
 }

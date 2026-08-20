@@ -143,6 +143,10 @@ class WatchConfig(StrictConfigModel):
     # Skip watch matches for deals older than this (hours from posted_at).
     # Prevents stale deals from consuming the daily cap. Deals with no posted_at are exempt.
     max_deal_age_hours: float = 48.0
+    # Sources trusted to bypass the votes/discount noise guard entirely (their
+    # keyword match is itself the quality guard) — editorially curated or
+    # keyword-scoped feeds with no vote system and often no parseable discount.
+    trusted_sources: list[str] = Field(default_factory=list)
 
 
 class ScoringConfig(StrictConfigModel):
@@ -211,6 +215,10 @@ class AlertConfig(StrictConfigModel):
 class RunConfig(StrictConfigModel):
     dry_run: bool = False
     max_alerts_per_user_per_day: int = 10
+    # Default for Subscriber.max_digital_alerts_per_day when the Notion
+    # "Max Digital Alerts/Day" property is absent (the DB schema is not
+    # expected to gain that property — see subscribers.py).
+    max_digital_alerts_per_day: int = 10
     timezone: str = "Australia/Sydney"
     # Quiet hours: no sends outside this window (both in "HH:MM" local time).
     # If start > end, the window wraps midnight (e.g. 22:00–07:00).

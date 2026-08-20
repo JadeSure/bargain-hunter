@@ -23,6 +23,12 @@ _AET = ZoneInfo("Australia/Sydney")
 SOURCE_LABELS = {
     "camelcamelcamel": "CamelCamelCamel",
     "ozbargain": "OzBargain",
+    "dealnews": "DealNews (US)",
+    "slickdeals": "Slickdeals (US)",
+    "v2ex": "V2EX (CN)",
+    "openrouter": "OpenRouter",
+    "bank_rates": "AU Bank Rates",
+    "iknowthepilot": "Flight Deals (AU)",
 }
 
 _warned_missing_unsubscribe_config = False

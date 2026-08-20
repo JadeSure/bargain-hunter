@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+<title>优惠信息</title>
+<subtitle>way to explore</subtitle>
+
+<icon>https:https://cdn.v2ex.com/navatar/8d31/7bdc/747_normal.png?m=1523201604</icon>
+
+
+<logo>https:https://cdn.v2ex.com/navatar/8d31/7bdc/747_large.png?m=1523201604</logo>
+
+<link rel="alternate" type="text/html" href="https://www.v2ex.com/" />
+<link rel="self" type="application/atom+xml" href="https://www.v2ex.com/feed/deals.xml" />
+<id>https://www.v2ex.com/</id>
+
+<updated>2026-08-09T02:54:31Z</updated>
+
+<rights>Copyright © 2010-2018, V2EX</rights>
+<entry>
+	<title>中银香港 boc + 10 元羊毛</title>
+	<link rel="alternate" type="text/html" href="https://www.v2ex.com/t/1235521#reply0" />
+	<id>tag:www.v2ex.com,2026-08-19:/t/1235521</id>
+	<published>2026-08-19T02:54:31Z</published>
+	<updated>2026-08-09T02:54:31Z</updated>
+	<author>
+		<name>izyao</name>
+		<uri>https://www.v2ex.com/member/izyao</uri>
+	</author>
+	<content type="html" xml:base="https://www.v2ex.com/" xml:lang="en"><![CDATA[
+	<p>详情见这位大佬帖子： <a href="https://www.v2ex.com/t/1215144" rel="nofollow">https://www.v2ex.com/t/1215144</a>
+目前是 30-5 ，实付 25 ，实到 30</p>
+
+	]]></content>
+</entry>
+<entry>
+	<title>别急着 羊毛了，先看看 mirasim 的隐私协议</title>
+	<link rel="alternate" type="text/html" href="https://www.v2ex.com/t/1232974#reply15" />
+	<id>tag:www.v2ex.com,2026-08-08:/t/1232974</id>
+	<published>2026-08-08T22:01:31Z</published>
+	<updated>2026-08-09T20:29:10Z</updated>
+	<author>
+		<name>needpp</name>
+		<uri>https://www.v2ex.com/member/needpp</uri>
+	</author>
+	<content type="html" xml:base="https://www.v2ex.com/" xml:lang="en"><![CDATA[
+	<p>在主贴下 提出 的质疑 还被删除评论</p>
+<p>就这点 就非常值得怀疑，容不得任何不一样的声音</p>
+<p>当然了解 数据被贩卖 换取使用权 都说双方的选择</p>
+<p>天下没有免费的午餐</p>
+
+	]]></content>
+</entry>
+<entry>
+	<title>支付宝免费领无糖可乐，亲测一次即中</title>
+	<link rel="alternate" type="text/html" href="https://www.v2ex.com/t/1230967#reply70" />
+	<id>tag:www.v2ex.com,2026-07-30:/t/1230967</id>
+	<published>2026-07-30T05:38:08Z</published>
+	<updated>2026-07-31T10:34:26Z</updated>
+	<author>
+		<name>dongQQ</name>
+		<uri>https://www.v2ex.com/member/dongQQ</uri>
+	</author>
+	<content type="html" xml:base="https://www.v2ex.com/" xml:lang="en"><![CDATA[
+	<p>支付宝搜索 阿宝，发送 畅爽无负担 ，能免费领取一瓶无糖可乐，在便利店碰一下使用</p>
+<p><img alt="" class="embedded_image" loading="lazy" referrerpolicy="no-referrer" rel="noreferrer" src="https://i.imgur.com/L8cmGGa.png"/></p>
+
+	]]></content>
+</entry>
+</feed>

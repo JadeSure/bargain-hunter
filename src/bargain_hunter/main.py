@@ -40,7 +40,10 @@ from .scoring import (
     enrich_deal,
     is_voteless_source,
 )
+from .sources.bank_rates import BankRatesSource
 from .sources.camelcamelcamel import CamelCamelCamelSource
+from .sources.feed_deals import FeedDealsSource
+from .sources.llm_prices import LlmPriceSource
 from .sources.ozbargain import OzBargainSource
 from .state import StateStore
 from .subscribers import fetch_subscribers, make_notion_client
@@ -56,6 +59,24 @@ log = logging.getLogger(__name__)
 # Hour-of-day baseline buckets are keyed in Australia/Sydney time so an event
 # day's dilution isn't misread as (or masked by) the normal 3am lull.
 _AET = ZoneInfo("Australia/Sydney")
+
+# Non-physical, voteless, watch-track sources that share one separate daily
+# quota (Subscriber.max_digital_alerts_per_day) instead of the AU hot/watch
+# caps — each is too thin to justify its own quota, but too easily crowded
+# out if it shared the OzBargain/CamelCamelCamel caps.
+DIGITAL_SOURCES = {
+    "dealnews", "slickdeals", "v2ex", "openrouter", "bank_rates", "iknowthepilot",
+}
+
+
+def _save_state(state: StateStore, dry_run: bool) -> None:
+    """Persist state, unless this is a dry run.
+
+    ``data/deals_state.json`` is committed to `main` as a calibration seed —
+    a local ``--dry-run`` must never overwrite it.
+    """
+    if not dry_run:
+        state.save()
 
 
 def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
@@ -106,6 +127,77 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             all_deals.extend(raw_deals)
         except Exception as exc:
             msg = f"CamelCamelCamel fetch failed: {exc}"
+            log.error(msg)
+            summary["errors"].append(msg)
+
+    # Slower-cadence sources (hourly/daily), gated on state.due_for_fetch so
+    # the 5-min hot-path loop doesn't hammer them every run.
+    for src_name in ("dealnews", "slickdeals", "v2ex", "iknowthepilot"):
+        cfg = settings.sources.get(src_name)
+        if not (cfg and cfg.enabled):
+            continue
+        interval = getattr(cfg, "poll_interval_minutes", 60)
+        if not state.due_for_fetch(src_name, interval, now):
+            continue
+        try:
+            src = FeedDealsSource(
+                name=src_name,
+                feed_urls=list(getattr(cfg, "feed_urls", [])),
+                currency=getattr(cfg, "currency", "USD"),
+                block_patterns=list(getattr(cfg, "region_block_patterns", [])),
+                allow_patterns=list(getattr(cfg, "region_allow_patterns", [])),
+            )
+            raw_deals = src.fetch()
+            log.info("%s: fetched %d deals.", src_name, len(raw_deals))
+            all_deals.extend(raw_deals)
+            state.mark_fetched(src_name, now)
+        except Exception as exc:
+            msg = f"{src_name} fetch failed: {exc}"
+            log.error(msg)
+            summary["errors"].append(msg)
+
+    or_cfg = settings.sources.get("openrouter")
+    if (
+        or_cfg
+        and or_cfg.enabled
+        and state.due_for_fetch("openrouter", getattr(or_cfg, "poll_interval_minutes", 1440), now)
+    ):
+        try:
+            src = LlmPriceSource(
+                min_drop_percent=getattr(or_cfg, "min_drop_percent", 10.0),
+                model_allowlist=list(getattr(or_cfg, "model_allowlist", [])),
+            )
+            or_deals, or_snapshot = src.check(state.snapshot("llm_prices"), now=now)
+            log.info("openrouter: %d price-change deal(s).", len(or_deals))
+            all_deals.extend(or_deals)
+            state.set_snapshot("llm_prices", or_snapshot)
+            state.mark_fetched("openrouter", now)
+        except Exception as exc:
+            msg = f"openrouter fetch failed: {exc}"
+            log.error(msg)
+            summary["errors"].append(msg)
+
+    br_cfg = settings.sources.get("bank_rates")
+    if (
+        br_cfg
+        and br_cfg.enabled
+        and state.due_for_fetch("bank_rates", getattr(br_cfg, "poll_interval_minutes", 1440), now)
+    ):
+        try:
+            src = BankRatesSource(
+                brands=list(getattr(br_cfg, "brands", [])),
+                product_categories=list(getattr(br_cfg, "product_categories", [])),
+                min_rate_rise_bps=getattr(br_cfg, "min_rate_rise_bps", 10),
+                min_bonus_points_rise=getattr(br_cfg, "min_bonus_points_rise", 10000),
+                previous_snapshot=state.snapshot("bank_rates"),
+            )
+            br_deals = src.fetch()
+            log.info("bank_rates: %d rate-change deal(s).", len(br_deals))
+            all_deals.extend(br_deals)
+            state.set_snapshot("bank_rates", src.next_snapshot)
+            state.mark_fetched("bank_rates", now)
+        except Exception as exc:
+            msg = f"bank_rates fetch failed: {exc}"
             log.error(msg)
             summary["errors"].append(msg)
 
@@ -256,7 +348,10 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 site_velocity_index=site_velocity_index,
             )
         )
-    obs.flush(now)
+    if dry_run:
+        log.info("Dry run: state and observations were not persisted to disk.")
+    else:
+        obs.flush(now)
 
     # ------------------------------------------------------------------
     # 5. Notion: subscribers + dedup (skip if no token / dry-run mock)
@@ -270,19 +365,22 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     if not has_notion:
         if not dry_run:
             log.warning("NOTION_TOKEN / DB IDs not set — skipping subscriber fetch and dedup.")
-        state.save()
+        _save_state(state, dry_run)
         return summary
 
     notion = make_notion_client()
     try:
         subscribers = fetch_subscribers(
-            notion, subscribers_db, settings.run.max_alerts_per_user_per_day
+            notion,
+            subscribers_db,
+            settings.run.max_alerts_per_user_per_day,
+            settings.run.max_digital_alerts_per_day,
         )
     except Exception as exc:
         msg = f"Subscriber fetch failed: {exc}"
         log.error(msg)
         summary["errors"].append(msg)
-        state.save()
+        _save_state(state, dry_run)
         return summary
 
     dedup = DedupStore(cfg=settings.dedup)
@@ -295,7 +393,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         msg = f"Dedup load failed: {exc} — skipping all sends this run (fail-closed)."
         log.error(msg)
         summary["errors"].append(msg)
-        state.save()
+        _save_state(state, dry_run)
         return summary
 
     # ------------------------------------------------------------------
@@ -328,14 +426,22 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         # the next AET day, when caps have reset) applies them instead.
         hot_daily = dedup.daily_count(sub, now=now, tracks={"hot", "mixed"})
         watch_daily = dedup.daily_count(sub, now=now, tracks={"watch"})
+        digital_daily = dedup.daily_count(sub, now=now, tracks={"digital"})
         remaining_hot = sub.max_alerts_per_day - hot_daily
         remaining_watch = sub.max_watch_alerts_per_day - watch_daily
+        remaining_digital = sub.max_digital_alerts_per_day - digital_daily
 
-        if not sub_quiet and remaining_hot <= 0 and remaining_watch <= 0:
+        if (
+            not sub_quiet
+            and remaining_hot <= 0
+            and remaining_watch <= 0
+            and remaining_digital <= 0
+        ):
             log.info(
-                "Subscriber %s at daily caps (hot=%d/%d watch=%d/%d); skipping.",
+                "Subscriber %s at daily caps (hot=%d/%d watch=%d/%d digital=%d/%d); skipping.",
                 sub.ref, hot_daily, sub.max_alerts_per_day,
                 watch_daily, sub.max_watch_alerts_per_day,
+                digital_daily, sub.max_digital_alerts_per_day,
             )
             continue
 
@@ -352,6 +458,9 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         # the queued-entry merge so tier sorting decides who wins cap slots).
         hot_candidates: list[DealItem] = []
         watch_candidates: list[DealItem] = []
+        # Digital-source deals (DIGITAL_SOURCES) are peeled out of hot/watch
+        # candidates below and compete for their own cap instead.
+        digital_candidates: list[DealItem] = []
         # Deals that passed every filter except a daily cap. Surfaced in the
         # digest footer so cap truncation is visible instead of silent.
         cap_suppressed = 0
@@ -415,6 +524,10 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             hot_candidates.append(DealItem(q.deal, track=q.track, reason=q.reason, level=q.level))
             hot_candidate_keys.add(q.deal.key)
 
+        # Digital-source deals get their own quota, not the hot cap.
+        hot_candidates, digital_from_hot = _split_digital(hot_candidates)
+        digital_candidates.extend(digital_from_hot)
+
         # Best tiers first, then apply the daily cap (skipped in queue mode —
         # the drain applies caps instead).
         hot_candidates.sort(key=lambda item: tier_rank.get(item.level or "", 0), reverse=True)
@@ -428,7 +541,9 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                     sub.ref, len(hot_candidates) - len(hot_items),
                 )
                 cap_suppressed += len(hot_candidates) - len(hot_items)
-        notified_keys = {item.deal.key for item in hot_items}
+        notified_keys = {item.deal.key for item in hot_items} | {
+            item.deal.key for item in digital_from_hot
+        }
 
         # Watch track (independent cap — does not share quota with hot)
         watch_hits = filter_watch_matches(active_deals, sub, settings.scoring.watch, now=now)
@@ -473,6 +588,25 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             watch_candidates.append(DealItem(q.deal, track="watch", reason=q.reason))
             notified_keys.add(q.deal.key)
 
+        # Digital-source deals get their own quota, not the watch cap.
+        watch_candidates, digital_from_watch = _split_digital(watch_candidates)
+        digital_candidates.extend(digital_from_watch)
+
+        # Merge queued (overnight) digital entries. A third drain block is
+        # required here — the hot/mixed and watch drains above filter this
+        # track out, so without it a queued digital entry is silently lost.
+        for q in queued:
+            if q.track != "digital" or q.deal.key in notified_keys:
+                continue
+            if dedup.already_sent(q.deal, sub):
+                continue
+            if _is_blocked(q.deal, sub.block_keywords):
+                continue
+            digital_candidates.append(
+                DealItem(q.deal, track="digital", reason=q.reason, level=q.level)
+            )
+            notified_keys.add(q.deal.key)
+
         if sub_quiet:
             watch_items = watch_candidates
         else:
@@ -484,7 +618,24 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 )
                 cap_suppressed += len(watch_candidates) - len(watch_items)
 
-        items = hot_items + watch_items
+        # Best tiers first (mirrors hot), discount depth as a tiebreak — most
+        # digital deals arrive via watch and carry no tier, so discount decides.
+        digital_candidates.sort(
+            key=lambda item: (tier_rank.get(item.level or "", 0), item.deal.discount_percent or 0),
+            reverse=True,
+        )
+        if sub_quiet:
+            digital_items = digital_candidates
+        else:
+            digital_items = digital_candidates[: max(remaining_digital, 0)]
+            if len(digital_candidates) > len(digital_items):
+                log.info(
+                    "[%s] digital: %d deal(s) held back by daily cap",
+                    sub.ref, len(digital_candidates) - len(digital_items),
+                )
+                cap_suppressed += len(digital_candidates) - len(digital_items)
+
+        items = hot_items + watch_items + digital_items
         if not items:
             continue
 
@@ -531,7 +682,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     if summary["queued"]:
         log.info("Quiet hours: %d notification(s) queued for later delivery.", summary["queued"])
 
-    state.save()
+    _save_state(state, dry_run)
 
     log.info(
         "Run complete. fetched=%d hot=%d watch_hits=%d sent=%d errors=%d cold_start=%s",
@@ -573,6 +724,20 @@ def _hot_level_eligible(
     if deal_matches_categories(deal, sub.categories, taxonomy):
         return True
     return universal_top and level == top_name
+
+
+def _split_digital(items: list[DealItem]) -> tuple[list[DealItem], list[DealItem]]:
+    """Peel deals from DIGITAL_SOURCES out of a candidate list, retagging
+    their track so they compete for the digital cap instead of hot/watch's."""
+    kept: list[DealItem] = []
+    digital: list[DealItem] = []
+    for item in items:
+        if item.deal.source in DIGITAL_SOURCES:
+            item.track = "digital"
+            digital.append(item)
+        else:
+            kept.append(item)
+    return kept, digital
 
 
 def _is_blocked(deal: Deal, block_keywords: list[str]) -> bool:

@@ -71,10 +71,22 @@ class WhirlpoolConfig(StrictConfigModel):
     fetch_body: bool = True
 
 
+class RssFeedItem(StrictConfigModel):
+    url: str
+    board: str
+
+
+class RssConfig(StrictConfigModel):
+    enabled: bool = True
+    request_delay_seconds: float = 2.0
+    feeds: list[RssFeedItem] = Field(default_factory=list)
+
+
 class StrategySourcesConfig(StrictConfigModel):
     ozbargain_forum: OzbForumConfig = Field(default_factory=OzbForumConfig)
     ozbargain_comments: OzbCommentsConfig = Field(default_factory=OzbCommentsConfig)
     reddit: RedditConfig = Field(default_factory=RedditConfig)
+    rss: RssConfig = Field(default_factory=RssConfig)
     whirlpool: WhirlpoolConfig = Field(default_factory=WhirlpoolConfig)
 
 
