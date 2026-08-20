@@ -189,6 +189,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 product_categories=list(getattr(br_cfg, "product_categories", [])),
                 min_rate_rise_bps=getattr(br_cfg, "min_rate_rise_bps", 10),
                 min_bonus_points_rise=getattr(br_cfg, "min_bonus_points_rise", 10000),
+                max_detail_fetches_per_run=getattr(br_cfg, "max_detail_fetches_per_run", 40),
                 previous_snapshot=state.snapshot("bank_rates"),
             )
             br_deals = src.fetch()
@@ -308,6 +309,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 snapshots=snaps_map[deal.key],
                 window_minutes=settings.scoring.window_minutes,
                 min_votes_gain_per_window=settings.scoring.hot.min_votes_gain_per_window,
+                hot_cfg=settings.scoring.hot,
             ):
                 continue
             level = classify_hot(
@@ -549,8 +551,11 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         watch_hits = filter_watch_matches(active_deals, sub, settings.scoring.watch, now=now)
         for deal, reason, watch_target_price in watch_hits:
             if deal.key in notified_keys:
-                # Already queued via hot — annotate as mixed (no watch cap cost)
-                for item in hot_items:
+                # Already queued via hot — annotate as mixed (no watch cap cost).
+                # Digital-source deals were already peeled into digital_from_hot
+                # above, so they must be searched too or the annotation is a
+                # silent no-op and the watch-specific reason is lost.
+                for item in hot_items + digital_from_hot:
                     if item.deal.key == deal.key:
                         item.track = "mixed"
                         item.reason = f"{item.reason} · {reason}"
@@ -565,6 +570,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 snapshots=snaps_map.get(deal.key, []),
                 window_minutes=settings.scoring.window_minutes,
                 min_votes_gain_per_window=settings.scoring.hot.min_votes_gain_per_window,
+                hot_cfg=settings.scoring.hot,
             ):
                 continue
             skip, realert_label = dedup.realert_check(
