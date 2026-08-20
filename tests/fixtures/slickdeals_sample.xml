@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Hand-written from the documented Slickdeals RSS 2.0 field inventory
+  (docs/GLOBAL_DEALS_PLAN.md ss1, "slickdeals" row) — live fetch 403s from this
+  machine (Cloudflare challenge), consistent with the plan's note that
+  Slickdeals 403s readily even from CI. Fields and the SuperGrok title/date are
+  taken from that document's verified sample, not fabricated.
+-->
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<channel>
+<title>Slickdeals - supergrok</title>
+<link>https://slickdeals.net/newsearch.php?rss=1&amp;q=supergrok&amp;searcharea=deals&amp;searchin=first</link>
+<description>Slickdeals search results for supergrok</description>
+<ttl>5</ttl>
+<item>
+<title>SuperGrok Annual Plan bundled with X Premium+ $197.5</title>
+<link>https://slickdeals.net/f/18234567-supergrok-annual-plan-bundled-with-x-premium-197-5</link>
+<description>SuperGrok annual subscription bundled with X Premium+, normally billed separately. Works with an international card.</description>
+<content:encoded xmlns:content="http://purl.org/rss/1.0/modules/content/"><![CDATA[<p>SuperGrok annual subscription bundled with X Premium+, normally billed separately. Works with an international card.</p>]]></content:encoded>
+<pubDate>Mon, 29 Dec 2025 14:02:00 -0600</pubDate>
+<category>Software</category>
+<dc:creator>dealposter1</dc:creator>
+<guid isPermaLink="false">sd-18234567</guid>
+</item>
+<item>
+<title>NordVPN 2-Year Plan for $2.99/mo + 3 months free</title>
+<link>https://slickdeals.net/f/18234999-nordvpn-2-year-plan-for-2-99-mo-3-months-free</link>
+<description>NordVPN discounted 2-year plan, US billing required.</description>
+<content:encoded xmlns:content="http://purl.org/rss/1.0/modules/content/"><![CDATA[<p>NordVPN discounted 2-year plan, US billing required.</p>]]></content:encoded>
+<pubDate>Wed, 19 Aug 2026 09:15:00 -0600</pubDate>
+<category>Software</category>
+<dc:creator>dealposter2</dc:creator>
+<guid isPermaLink="false">sd-18234999</guid>
+</item>
+</channel>
+</rss>
