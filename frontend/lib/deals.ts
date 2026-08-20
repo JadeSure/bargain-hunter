@@ -66,6 +66,16 @@ function dealUrl(key: string): string {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+function resolveUrl(key: string, r: any): string {
+  // The new sources' deal_id is a hash of the feed guid, so unlike ozbargain/
+  // camelcamelcamel there is no way to reconstruct their URL from the key —
+  // it has to be the observation row's stored `url` (added alongside
+  // `currency`). Rows recorded before that field existed fall back to
+  // dealUrl(key), which is '#' for those sources; callers must drop those.
+  return (r.url as string) || dealUrl(key)
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function readObservationsFile(date: string): Promise<any[]> {
   const { promises: fs } = await import('fs')
   const { join } = await import('path')
@@ -192,7 +202,7 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
         deal: {
           key,
           title: r.title as string,
-          url: dealUrl(key),
+          url: resolveUrl(key, r),
           source: sourceFromKey(key),
           currency: (r.currency as string) ?? 'AUD',
           isFree: /^\s*free\b/i.test(r.title as string),
@@ -246,6 +256,13 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
   // prices) the same way, so the board stays a curated page, not a dump.
   // Do not remove this — it exists because these sources emit in bulk.
   const NEW_SOURCE_SECTION_CAP = 12
+  // These feeds surface evergreen/reposted content that can be weeks old even
+  // when freshly observed (HIGH_VALUE_SOURCES_PLAN.md notes DealNews items
+  // "date to February"). RETENTION_HOURS bounds observation recency, not the
+  // deal's own age, so a month-old repost can otherwise sit on the board
+  // indefinitely. 7 days keeps the bulk of real content while dropping what
+  // reads as stale. AU tier ladder is unaffected — it's bounded by vote data.
+  const NEW_SOURCE_MAX_AGE_HOURS = 24 * 7
 
   const topCandidates: [string, Agg][] = []
   const greatCandidates: [string, Agg][] = []
@@ -290,23 +307,49 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     const source = sourceFromKey(key)
     if (source === 'ozbargain' || source === 'camelcamelcamel') continue
     if (!EVENT_EMITTING_SOURCES.has(source) && !isStillInLatestSourceBatch(key, agg)) continue
+    // A card the reader can't act on is worse than a missing one — see
+    // resolveUrl().
+    if (resolveUrl(key, agg.latest) === '#') continue
+    if (((agg.latest.age_hours as number) || 0) > NEW_SOURCE_MAX_AGE_HOURS) continue
     const region = dealRegion(source)
     const bucket = recencyBySection.get(region)
     if (bucket) bucket.push(entry)
     else recencyBySection.set(region, [entry])
   }
 
+  // DealNews (and similar) can repost the same product under a new guid —
+  // same title or same resolved URL, different deal key. Keep the freshest.
+  function dedupeBucket(bucket: [string, Agg][]): [string, Agg][] {
+    const byFreshness = [...bucket].sort(
+      (a, b) => (b[1].latest.ts as string).localeCompare(a[1].latest.ts as string),
+    )
+    const seenTitles = new Set<string>()
+    const seenUrls = new Set<string>()
+    const deduped: [string, Agg][] = []
+    for (const entry of byFreshness) {
+      const [key, agg] = entry
+      const titleKey = (agg.latest.title as string).trim().toLowerCase()
+      const urlKey = resolveUrl(key, agg.latest)
+      if (seenTitles.has(titleKey) || seenUrls.has(urlKey)) continue
+      seenTitles.add(titleKey)
+      seenUrls.add(urlKey)
+      deduped.push(entry)
+    }
+    return deduped
+  }
+
   const recencyCandidates: [string, Agg][] = []
   for (const bucket of recencyBySection.values()) {
     // Biggest discount first (a 57%-off flight beats an undiscounted forum
     // post); undated/undiscounted deals sort by recency instead of vanishing.
-    bucket.sort((a, b) => {
+    const deduped = dedupeBucket(bucket)
+    deduped.sort((a, b) => {
       const da = (a[1].latest.discount_percent as number) ?? 0
       const db = (b[1].latest.discount_percent as number) ?? 0
       if (da !== db) return db - da
       return (b[1].latest.ts as string).localeCompare(a[1].latest.ts as string)
     })
-    recencyCandidates.push(...bucket.slice(0, NEW_SOURCE_SECTION_CAP))
+    recencyCandidates.push(...deduped.slice(0, NEW_SOURCE_SECTION_CAP))
   }
   const recencyLive = await keepLive(toEntries(recencyCandidates))
 

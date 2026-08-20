@@ -67,6 +67,7 @@ def build_observation(
         "ts": now.isoformat(),
         "deal_key": deal.key,
         "title": deal.title,
+        "url": deal.url,
         "votes_pos": deal.votes_pos,
         "votes_neg": deal.votes_neg,
         "neg_ratio": round(deal.votes_neg / total_votes, 4) if total_votes else 0.0,

@@ -44,6 +44,7 @@ def test_build_observation_has_expected_fields():
     now = datetime.now(UTC)
     row = build_observation(_deal(), _snaps(now), ScoringConfig(), is_hot=True, now=now)
     assert row["deal_key"] == "ozbargain:1"
+    assert row["url"] == "https://ozbargain.com.au/node/1"
     assert row["votes_pos"] == 20
     assert row["click_count"] == 15
     assert row["is_hot"] is True
