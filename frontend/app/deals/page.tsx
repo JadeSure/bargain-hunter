@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { getLiveDeals, formatAge, sourceLabel } from '@/lib/deals'
+import { getLiveDeals, formatAge, sourceLabel, currencySymbol, dealRegion } from '@/lib/deals'
+import type { LiveDeal } from '@/lib/deals'
 import { getGuideDealMatches } from '@/lib/guide-deal-matching'
+import type { Guide } from '@/lib/guides'
 import { BrandMark } from '../components/BrandMark'
 
 export const metadata: Metadata = {
@@ -41,8 +43,126 @@ function SourceBadge({ source }: { source: string }) {
   return <span className="deals-badge deals-badge-source">{sourceLabel(source)}</span>
 }
 
+function DealCard({ deal, guides }: { deal: LiveDeal; guides: Guide[] }) {
+  return (
+    <div className="deal-live-card">
+      <div className="deal-live-top">
+        <div className="deal-live-badges">
+          <HotLevelBadge level={deal.hotLevel} />
+          <SourceBadge source={deal.source} />
+        </div>
+        <span className="deal-live-age">{formatAge(deal.ageHours)}</span>
+      </div>
+
+      <h2 className="deal-live-title">
+        {/* Stretched link — its ::after covers the whole card */}
+        <a
+          href={deal.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="deal-live-link"
+        >
+          {deal.title}
+        </a>
+      </h2>
+
+      {(deal.isFree || deal.price !== null || deal.discountPercent !== null) && (
+        <div className="deal-live-meta">
+          {deal.isFree ? (
+            <span className="deal-live-free">Free</span>
+          ) : (
+            <>
+              {deal.price !== null && (
+                <span className="deal-live-price">
+                  {currencySymbol(deal.currency)}{deal.price.toFixed(2)}
+                </span>
+              )}
+              {deal.discountPercent !== null && (
+                <span className="deal-live-discount">{Math.round(deal.discountPercent)}% off</span>
+              )}
+              <PriceRankBadge rank={deal.priceRank} />
+            </>
+          )}
+        </div>
+      )}
+
+      {deal.cashbackPercent !== null && (
+        <div className="deal-live-cashback">
+          + up to {deal.cashbackPercent}% cashback
+        </div>
+      )}
+
+      {guides.length > 0 && (
+        <div className="deal-stack-chips">
+          {guides.map((guide) => (
+            <Link
+              key={guide.id}
+              href={`/guides/${guide.id}`}
+              className="deal-stack-chip"
+              title={guide.goal}
+            >
+              Stack it: {guide.goal}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      <div className="deal-live-footer">
+        {deal.source === 'ozbargain' && (
+          <span className="deal-live-votes">
+            <svg width="10" height="9" viewBox="0 0 11 10" fill="none" aria-hidden="true">
+              <path d="M5.5 0.5L10 9H1L5.5 0.5Z" fill="#4ade80" />
+            </svg>
+            {deal.votesPos} votes
+            {deal.commentCount > 0 && <> · {deal.commentCount} comments</>}
+          </span>
+        )}
+        <span className="deal-live-score">peak {deal.peakScore.toFixed(2)}</span>
+        <span className="deal-live-link-hint">View deal ↗</span>
+      </div>
+    </div>
+  )
+}
+
+// One section per region (see docs/HIGH_VALUE_SOURCES_PLAN.md Phase C2);
+// renders nothing when its deal list is empty.
+function DealsSection({
+  title,
+  deals,
+  dealToGuides,
+}: {
+  title: string
+  deals: LiveDeal[]
+  dealToGuides: Map<string, Guide[]>
+}) {
+  if (deals.length === 0) return null
+  return (
+    <section className="deals-grid-section">
+      <p className="portal-section-heading">{title}</p>
+      <div className="deals-count">{deals.length} active deal{deals.length !== 1 ? 's' : ''}</div>
+      <div className="deals-grid">
+        {deals.map((deal) => (
+          <DealCard key={deal.key} deal={deal} guides={dealToGuides.get(deal.key) ?? []} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
 export default async function DealsPage() {
   const [deals, { dealToGuides }] = await Promise.all([getLiveDeals(), getGuideDealMatches()])
+
+  // Australia's tier ladder (ozbargain/camelcamelcamel, is_hot-gated) stays
+  // exactly as selected by getLiveDeals(); bank_rates/iknowthepilot are AU
+  // region but voteless, so they get their own subsection rather than being
+  // merged into the tier ladder. NA/CN/LLM are recency-gated the same way.
+  const auTierDeals = deals.filter((d) => d.source === 'ozbargain' || d.source === 'camelcamelcamel')
+  const auOtherDeals = deals.filter(
+    (d) => dealRegion(d.source) === 'AU' && d.source !== 'ozbargain' && d.source !== 'camelcamelcamel',
+  )
+  const naDeals = deals.filter((d) => dealRegion(d.source) === 'NA')
+  const cnDeals = deals.filter((d) => dealRegion(d.source) === 'CN')
+  const llmDeals = deals.filter((d) => dealRegion(d.source) === 'GLOBAL')
 
   return (
     <main className="deals-page">
@@ -73,87 +193,13 @@ export default async function DealsPage() {
           <p>No hot deals detected in the latest scan. Check back in a few minutes.</p>
         </section>
       ) : (
-        <section className="deals-grid-section">
-          <div className="deals-count">{deals.length} active deal{deals.length !== 1 ? 's' : ''}</div>
-          <div className="deals-grid">
-            {deals.map((deal) => (
-              <div key={deal.key} className="deal-live-card">
-                <div className="deal-live-top">
-                  <div className="deal-live-badges">
-                    <HotLevelBadge level={deal.hotLevel} />
-                    <SourceBadge source={deal.source} />
-                  </div>
-                  <span className="deal-live-age">{formatAge(deal.ageHours)}</span>
-                </div>
-
-                <h2 className="deal-live-title">
-                  {/* Stretched link — its ::after covers the whole card */}
-                  <a
-                    href={deal.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="deal-live-link"
-                  >
-                    {deal.title}
-                  </a>
-                </h2>
-
-                {(deal.isFree || deal.price !== null || deal.discountPercent !== null) && (
-                  <div className="deal-live-meta">
-                    {deal.isFree ? (
-                      <span className="deal-live-free">Free</span>
-                    ) : (
-                      <>
-                        {deal.price !== null && (
-                          <span className="deal-live-price">${deal.price.toFixed(2)}</span>
-                        )}
-                        {deal.discountPercent !== null && (
-                          <span className="deal-live-discount">{Math.round(deal.discountPercent)}% off</span>
-                        )}
-                        <PriceRankBadge rank={deal.priceRank} />
-                      </>
-                    )}
-                  </div>
-                )}
-
-                {deal.cashbackPercent !== null && (
-                  <div className="deal-live-cashback">
-                    + up to {deal.cashbackPercent}% cashback
-                  </div>
-                )}
-
-                {(dealToGuides.get(deal.key) ?? []).length > 0 && (
-                  <div className="deal-stack-chips">
-                    {(dealToGuides.get(deal.key) ?? []).map((guide) => (
-                      <Link
-                        key={guide.id}
-                        href={`/guides/${guide.id}`}
-                        className="deal-stack-chip"
-                        title={guide.goal}
-                      >
-                        Stack it: {guide.goal}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-
-                <div className="deal-live-footer">
-                  {deal.source === 'ozbargain' && (
-                    <span className="deal-live-votes">
-                      <svg width="10" height="9" viewBox="0 0 11 10" fill="none" aria-hidden="true">
-                        <path d="M5.5 0.5L10 9H1L5.5 0.5Z" fill="#4ade80" />
-                      </svg>
-                      {deal.votesPos} votes
-                      {deal.commentCount > 0 && <> · {deal.commentCount} comments</>}
-                    </span>
-                  )}
-                  <span className="deal-live-score">peak {deal.peakScore.toFixed(2)}</span>
-                  <span className="deal-live-link-hint">View deal ↗</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+        <>
+          <DealsSection title="Australia" deals={auTierDeals} dealToGuides={dealToGuides} />
+          <DealsSection title="Australia — banking & travel" deals={auOtherDeals} dealToGuides={dealToGuides} />
+          <DealsSection title="North America" deals={naDeals} dealToGuides={dealToGuides} />
+          <DealsSection title="中国 / China" deals={cnDeals} dealToGuides={dealToGuides} />
+          <DealsSection title="LLM token prices" deals={llmDeals} dealToGuides={dealToGuides} />
+        </>
       )}
     </main>
   )
