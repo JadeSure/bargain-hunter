@@ -1,0 +1,28 @@
+{
+  "data": [
+    {
+      "id": "qwen/qwen3.8-27b",
+      "name": "Qwen: Qwen3.8 27B",
+      "pricing": {"prompt": "0.00000045", "completion": "0.0000032", "input_cache_read": "0.00000005"}
+    },
+    {
+      "id": "z-ai/glm-5.3",
+      "name": "Z.ai: GLM 5.3",
+      "pricing": {"prompt": "0.0000014", "completion": "0.0000044"}
+    },
+    {
+      "id": "nvidia/nemotron-3.5-lightning:free",
+      "name": "NVIDIA: Nemotron 3.5 Lightning (free)",
+      "pricing": {"prompt": "0", "completion": "0"}
+    },
+    {
+      "id": "test/malformed-pricing",
+      "name": "Test: Malformed Pricing",
+      "pricing": {"prompt": "not-a-number", "completion": "0.000001"}
+    },
+    {
+      "id": "test/missing-pricing",
+      "name": "Test: Missing Pricing Key"
+    }
+  ]
+}
