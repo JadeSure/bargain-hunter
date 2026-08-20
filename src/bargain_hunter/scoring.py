@@ -24,6 +24,12 @@ _PRICE_RE = re.compile(r"\$\s*([\d,]+(?:\.\d{1,2})?)")
 _PCT_OFF_RE = re.compile(r"(\d+(?:\.\d+)?)\s*%\s*off", re.IGNORECASE)
 # Matches: "was $X", "RRP $X", "RRP: $X"
 _WAS_RE = re.compile(r"(?:was|rrp):?\s*\$\s*([\d,]+(?:\.\d{1,2})?)", re.IGNORECASE)
+# "Up to 96% off" is a sale-banner ceiling (the best item in a multi-item sale),
+# not one item's real discount, unlike a bare "96% off". Used only to gate hot
+# candidacy (see is_banner_discount below) — discount_percent itself is left
+# alone since watch matching / dedup / price display still treat the number
+# as meaningful.
+_UP_TO_DISCOUNT_RE = re.compile(r"\bup\s+to\b.{0,20}?\d+(?:\.\d+)?\s*%\s*off", re.IGNORECASE)
 _NON_PRICE_AFTER_RE = re.compile(
     r"^\W*(?:"
     r"c&c\b|click\s*(?:and|&)\s*collect\b|"
@@ -398,6 +404,15 @@ def compute_hot_score(
 # ---------------------------------------------------------------------------
 
 
+def is_banner_discount(deal: Deal) -> bool:
+    """True if the deal's discount reads as a sale-banner ceiling ("up to N%
+    off"), not a concrete per-item price. Checked against title+description,
+    same as matching.py's search_text, since the banner phrase isn't always
+    in the title alone."""
+    text = deal.title + " " + (deal.description or "")
+    return bool(_UP_TO_DISCOUNT_RE.search(text))
+
+
 def is_voteless_source(deal: Deal, hot: HotConfig) -> bool:
     """True if `deal.source` never carries vote signals (e.g. CamelCamelCamel).
 
@@ -428,6 +443,18 @@ def is_hot_candidate(
     hot = cfg.hot
 
     if is_voteless_source(deal, hot):
+        # No vote signal means no score decay either, so age is the only
+        # staleness gate on this path. A deal with no parseable posted_at
+        # can't have its age verified; fail closed (unlike the watch track's
+        # exemption for missing posted_at) since a voteless `top` classification
+        # bypasses category routing and reaches every hot subscriber.
+        if deal.posted_at is None:
+            return False
+        age_hours = (now - deal.posted_at).total_seconds() / 3600
+        if age_hours > hot.max_voteless_age_hours:
+            return False
+        if is_banner_discount(deal):
+            return False
         return (
             hot.discount_candidate_min is not None
             and deal.discount_percent is not None

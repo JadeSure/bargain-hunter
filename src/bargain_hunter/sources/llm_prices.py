@@ -123,7 +123,15 @@ class LlmPriceSource:
                 old_prompt = float(previous[model_id][0])
             except (TypeError, ValueError, IndexError):
                 continue
-            if old_prompt <= 0:
+            # OpenRouter uses "-1" as a sentinel for variable/routed pricing (seen
+            # live on openrouter/auto, /auto-beta, /fusion, /pareto-code,
+            # /bodybuilder) — it parses as a plain float and isn't caught by
+            # is_free (which requires an exact 0.0), so without this guard a
+            # model reporting the sentinel this run divides by a real old price
+            # and produces a garbage multi-million-percent "drop". Symmetric
+            # with the old_prompt guard above: <= 0 here means unparseable, not
+            # a genuine free price.
+            if old_prompt <= 0 or new_prompt <= 0:
                 continue
             drop = (old_prompt - new_prompt) / old_prompt * 100
             if drop >= self.min_drop_percent:

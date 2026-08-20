@@ -435,6 +435,54 @@ def test_digital_entry_survives_quiet_hours_queue_and_drain(monkeypatch, tmp_pat
     assert q_raw2["entries"] == []
 
 
+def test_digital_source_deal_that_is_also_watch_matched_arrives_mixed(monkeypatch, tmp_path):
+    """A digital-source deal that both clears the hot ladder (on discount) and
+    matches the subscriber's own watch keyword must not lose the watch reason.
+
+    Regression: the digital split (main.py's _split_digital) peels DIGITAL_SOURCES
+    deals out of hot_candidates into digital_from_hot *before* the watch loop's
+    mixed-annotation pass, which only searched hot_items — so the annotation was
+    a silent no-op for digital-source deals and the specific watch-keyword reason
+    was dropped."""
+    now = datetime.now(UTC)
+    deal = _deal(
+        source="dealnews",
+        deal_id="d1",
+        title="NordVPN 40% off annual plan",
+        votes_pos=0,
+        posted_at=now - timedelta(hours=1),
+    )
+    sub = Subscriber(
+        name="Mixed", email="mixed@example.com",
+        subscribe_hot=True, watch_keywords=["NordVPN"],
+    )
+    dedup = _FakeDedup()
+    sent = _wire_run(monkeypatch, tmp_path, [deal], sub, dedup, quiet=False)
+
+    settings = Settings.model_validate(
+        {
+            "sources": {"ozbargain": {"enabled": True}},
+            "scoring": {
+                "watch": {
+                    "min_votes": 5,
+                    "min_discount_percent": 10,
+                    "trusted_sources": ["dealnews"],
+                },
+                "hot": {"voteless_sources": ["dealnews"], "discount_tiers": {"hot": 40.0}},
+            },
+        }
+    )
+    summary = main_mod.run(settings, dry_run=True)
+
+    assert summary["notifications_sent"] == 1
+    email, items, _cap = sent[0]
+    assert email == "mixed@example.com"
+    assert len(items) == 1
+    item = items[0]
+    assert item.track == "mixed"
+    assert item.reason == '40% off · "NordVPN" matched, 40% off'
+
+
 def test_new_source_poll_interval_gating_skips_when_not_due(monkeypatch, tmp_path):
     """dealnews (and the other slow-cadence sources) must respect
     poll_interval_minutes via state.due_for_fetch, not refetch every run.

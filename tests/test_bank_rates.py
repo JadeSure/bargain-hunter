@@ -298,6 +298,68 @@ def test_one_brand_http_error_does_not_lose_others(monkeypatch):
     assert deals[0].deal_id == "Up-SV001MBLSAV001"
 
 
+def test_transient_list_blip_does_not_lose_baseline_for_a_later_rate_rise(monkeypatch):
+    # run1: first sighting -> seeds the snapshot at 4.90%.
+    fake1 = _fake_get(
+        {LIST_URL: (200, LIST_ONE_PRODUCT), DETAIL_URL: (200, _json("cds_product_detail_490.json"))}
+    )
+    monkeypatch.setattr(mod.httpx, "get", fake1)
+    src1 = BankRatesSource(brands=[BRAND], product_categories=CATEGORIES)
+    assert src1.fetch() == []
+    snap1 = src1.next_snapshot
+    assert snap1["Macquarie:SV001MBLSAV001"]["rates"]["best_rate"] == 0.0490
+
+    # run2: transient network blip on the brand's LIST call -- must not wipe
+    # the baseline down to nothing.
+    def fake_get_blip(url, params=None, headers=None, timeout=None):
+        if url == LIST_URL:
+            raise httpx.ConnectError("boom", request=httpx.Request("GET", url))
+        raise AssertionError(f"unexpected URL: {url}")
+
+    monkeypatch.setattr(mod.httpx, "get", fake_get_blip)
+    src2 = BankRatesSource(brands=[BRAND], product_categories=CATEGORIES, previous_snapshot=snap1)
+    assert src2.fetch() == []
+    snap2 = src2.next_snapshot
+    assert snap2["Macquarie:SV001MBLSAV001"] == snap1["Macquarie:SV001MBLSAV001"]  # carried forward
+
+    # run3: rate genuinely rose to 5.35% -- must still be detected against the
+    # run1 baseline (via run2's carry-forward), not treated as brand new.
+    fake3 = _fake_get(
+        {
+            LIST_URL: (200, LIST_ONE_PRODUCT_UPDATED),
+            DETAIL_URL: (200, _json("cds_product_detail_535.json")),
+        }
+    )
+    monkeypatch.setattr(mod.httpx, "get", fake3)
+    src3 = BankRatesSource(brands=[BRAND], product_categories=CATEGORIES, previous_snapshot=snap2)
+    deals = src3.fetch()
+    assert len(deals) == 1
+    assert deals[0].title == "Macquarie Savings Account: 5.35% p.a. (was 4.90%)"
+
+
+def test_detail_fetch_failure_carries_baseline_forward(monkeypatch):
+    previous = {
+        "Macquarie:SV001MBLSAV001": {
+            "rates": {"best_rate": 0.0490, "bonus_points": None},
+            "lastUpdated": "2026-06-11T00:01:00.001Z",
+        }
+    }
+
+    def fake_get_detail_fails(url, params=None, headers=None, timeout=None):
+        req = httpx.Request("GET", url)
+        if url == LIST_URL:
+            return httpx.Response(200, json=LIST_ONE_PRODUCT_UPDATED, request=req)
+        if url == DETAIL_URL:
+            raise httpx.ConnectError("boom", request=req)
+        raise AssertionError(f"unexpected URL: {url}")
+
+    monkeypatch.setattr(mod.httpx, "get", fake_get_detail_fails)
+    src = BankRatesSource(brands=[BRAND], product_categories=CATEGORIES, previous_snapshot=previous)
+    assert src.fetch() == []
+    assert src.next_snapshot["Macquarie:SV001MBLSAV001"] == previous["Macquarie:SV001MBLSAV001"]
+    assert mod._SINCE_KEY not in src.next_snapshot  # held back: no prior cursor to hold
+
+
 # -- pure parsing helpers -----------------------------------------------------
 
 
@@ -324,6 +386,31 @@ def test_malformed_rate_skipped_without_crashing():
 def test_bonus_rewards_value_parsed_from_real_fixture():
     detail = _json("cds_card_detail_velocity_black.json")["data"]
     assert mod._bonus_points(detail) == 150000
+
+
+def test_bonus_points_takes_max_not_first_across_multiple_entries():
+    # CDR doesn't guarantee array order; cards can carry multiple concurrent
+    # BONUS_REWARDS entries. Verified live on a real CommBank card
+    # (productId e15ed5da59354af78c9e8aa0f4f841cf): raw order was
+    # [170000, 200000] -- the correct value is the max (200000), not the
+    # first-seen (170000).
+    detail = {
+        "features": [
+            {"featureType": "BONUS_REWARDS", "additionalValue": "170000"},
+            {"featureType": "BONUS_REWARDS", "additionalValue": "200000"},
+        ]
+    }
+    assert mod._bonus_points(detail) == 200000
+
+
+def test_bonus_points_skips_malformed_entry_instead_of_aborting():
+    detail = {
+        "features": [
+            {"featureType": "BONUS_REWARDS", "additionalValue": "not-a-number"},
+            {"featureType": "BONUS_REWARDS", "additionalValue": "90000"},
+        ]
+    }
+    assert mod._bonus_points(detail) == 90000
 
 
 def test_loyalty_program_entries_are_not_mistaken_for_bonus_points():
@@ -393,6 +480,93 @@ def test_bonus_points_rise_below_threshold_no_deal(monkeypatch):
         brands=[BRAND], product_categories=CATEGORIES, previous_snapshot=previous
     )
     assert src.fetch() == []
+
+
+# -- detail-fetch cap --------------------------------------------------------
+
+
+def _multi_product_list(n: int) -> dict:
+    products = [
+        {
+            "productId": f"P{i}",
+            "lastUpdated": f"2026-08-{10 + i:02d}T00:00:00Z",
+            "productCategory": "TRANS_AND_SAVINGS_ACCOUNTS",
+            "name": f"Account {i}",
+        }
+        for i in range(n)
+    ]
+    return _list_body(products)
+
+
+def test_detail_fetch_cap_defers_excess_products(monkeypatch):
+    list_body = _multi_product_list(3)
+    calls = []
+
+    def fake_get(url, params=None, headers=None, timeout=None):
+        calls.append(url)
+        req = httpx.Request("GET", url)
+        if url == LIST_URL:
+            return httpx.Response(200, json=list_body, request=req)
+        return httpx.Response(200, json=_json("cds_product_detail_490.json"), request=req)
+
+    monkeypatch.setattr(mod.httpx, "get", fake_get)
+    src = BankRatesSource(
+        brands=[BRAND],
+        product_categories=CATEGORIES,
+        previous_snapshot={},
+        max_detail_fetches_per_run=2,
+    )
+    src.fetch()
+
+    detail_calls = [u for u in calls if u != LIST_URL]
+    assert len(detail_calls) == 2  # capped, not 3
+    seeded = [k for k in src.next_snapshot if k != mod._SINCE_KEY]
+    assert len(seeded) == 2  # the 3rd product is left out entirely, to be retried later
+    assert mod._SINCE_KEY not in src.next_snapshot  # no prior cursor to hold, so none written
+
+
+def test_detail_fetch_cap_holds_since_cursor_instead_of_advancing(monkeypatch):
+    list_body = _multi_product_list(2)
+    old_since = "2026-08-01T00:00:00Z"
+
+    def fake_get(url, params=None, headers=None, timeout=None):
+        req = httpx.Request("GET", url)
+        if url == LIST_URL:
+            return httpx.Response(200, json=list_body, request=req)
+        return httpx.Response(200, json=_json("cds_product_detail_490.json"), request=req)
+
+    monkeypatch.setattr(mod.httpx, "get", fake_get)
+    src = BankRatesSource(
+        brands=[BRAND],
+        product_categories=CATEGORIES,
+        previous_snapshot={mod._SINCE_KEY: old_since},
+        max_detail_fetches_per_run=1,
+    )
+    src.fetch()
+
+    # Held back, not advanced to `now`: an advanced cursor could make the next
+    # run's updated-since filter drop the still-pending product forever.
+    assert src.next_snapshot[mod._SINCE_KEY] == old_since
+
+
+def test_since_timestamp_is_exact_cds_shape_not_isoformat():
+    # Verified live: 9 of 10 configured brands 400 on datetime.isoformat(),
+    # with or without fractional seconds, "+00:00" or not -- only the exact
+    # "yyyy-MM-ddTHH:mm:ssZ" shape is accepted by all ten. See module docstring
+    # and _cdr_timestamp()'s comment: don't let this regress to .isoformat().
+    from datetime import UTC, datetime, timedelta, timezone
+
+    dt = datetime(2026, 8, 20, 14, 15, 9, 123456, tzinfo=UTC)
+    result = mod._cdr_timestamp(dt)
+    assert result == "2026-08-20T14:15:09Z"
+    # Both real-world-rejected isoformat() shapes must differ from our output.
+    assert result != dt.isoformat()  # "...T14:15:09.123456+00:00": fractional seconds
+    no_micro = dt.replace(microsecond=0).isoformat()
+    assert result != no_micro  # "...T14:15:09+00:00": "+00:00" instead of "Z"
+
+    # Non-UTC input (e.g. AEST) must convert to UTC before formatting.
+    aest = datetime(2026, 8, 21, 0, 15, 9, tzinfo=timezone(timedelta(hours=10)))
+    assert mod._cdr_timestamp(aest) == "2026-08-20T14:15:09Z"
 
 
 def test_card_without_bonus_rewards_feature_yields_no_deal(monkeypatch):

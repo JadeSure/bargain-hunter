@@ -501,6 +501,84 @@ def test_voteless_deal_discount_candidate_min_disabled():
     assert not is_hot_candidate(d, [], cfg)
 
 
+def test_ancient_voteless_deal_never_candidate_regardless_of_discount():
+    """Reproduces the live defect against the real production config: a
+    years-old, 75%-off slickdeals item must not reach candidacy or classify —
+    the age gate is the fix. Prior to it, classify_hot returned "top" here,
+    reaching every hot subscriber via universal_top."""
+    from bargain_hunter.config import load_settings
+
+    cfg = load_settings().scoring
+    d = _ccc_deal(
+        source="slickdeals",
+        discount_percent=75.0,
+        posted_at=datetime.now(UTC) - timedelta(days=1000),
+    )
+    assert not is_hot_candidate(d, [], cfg)
+    assert classify_hot(d, [], cfg) is None
+
+
+def test_fresh_voteless_deal_still_classifies_top():
+    from bargain_hunter.config import load_settings
+
+    cfg = load_settings().scoring
+    d = _ccc_deal(
+        source="slickdeals",
+        discount_percent=75.0,
+        posted_at=datetime.now(UTC) - timedelta(hours=1),
+    )
+    assert is_hot_candidate(d, [], cfg)
+    assert classify_hot(d, [], cfg) == "top"
+
+
+def test_voteless_deal_just_under_age_cap_is_candidate():
+    cfg = ScoringConfig(hot=HotConfig(max_voteless_age_hours=48.0))
+    d = _ccc_deal(discount_percent=50.0, posted_at=datetime.now(UTC) - timedelta(hours=47))
+    assert is_hot_candidate(d, [], cfg)
+
+
+def test_voteless_deal_just_over_age_cap_not_candidate():
+    cfg = ScoringConfig(hot=HotConfig(max_voteless_age_hours=48.0))
+    d = _ccc_deal(discount_percent=50.0, posted_at=datetime.now(UTC) - timedelta(hours=49))
+    assert not is_hot_candidate(d, [], cfg)
+
+
+def test_banner_discount_title_never_candidate():
+    """Real DealNews title, fetched live 2026-08-20/21: 'up to 96% off' is a
+    sale-banner ceiling, not one item's real discount. Must not reach hot
+    candidacy even though it's fresh and clears discount_candidate_min."""
+    d = _ccc_deal(
+        source="dealnews",
+        title="StackSocial Deal Days Sale: Up to 96% off + shipping varies",
+        discount_percent=96.0,
+    )
+    assert not is_hot_candidate(d, [], _cfg())
+
+
+def test_concrete_discount_title_unaffected_by_banner_guard():
+    """A real, non-'up to' discount must still reach top — the banner guard
+    must not catch concrete per-item discounts."""
+    from bargain_hunter.config import load_settings
+
+    cfg = load_settings().scoring
+    d = _ccc_deal(
+        source="slickdeals",
+        title="Widget Pro 75% off RRP",
+        discount_percent=75.0,
+        posted_at=datetime.now(UTC) - timedelta(hours=1),
+    )
+    assert is_hot_candidate(d, [], cfg)
+    assert classify_hot(d, [], cfg) == "top"
+
+
+def test_voteless_deal_with_no_posted_at_fails_closed():
+    """Unlike the watch track (which exempts missing posted_at), the hot
+    voteless path denies unverifiable-age deals — it can reach every
+    subscriber via universal_top, so unknown age is treated as stale."""
+    d = _ccc_deal(discount_percent=90.0, posted_at=None)
+    assert not is_hot_candidate(d, [], _cfg())
+
+
 # ---------------------------------------------------------------------------
 # Event-day adaptive baseline
 # ---------------------------------------------------------------------------

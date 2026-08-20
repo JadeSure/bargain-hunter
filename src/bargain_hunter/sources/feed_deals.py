@@ -5,6 +5,10 @@ V2EX (优惠信息) and iknowthepilot (AU-departure flight deals). Except for
 iknowthepilot, these feeds carry no vote or comment signal, so they reach a
 subscriber through the watch track (see scoring.hot.voteless_sources and
 scoring.watch.trusted_sources) rather than the hot ladder.
+
+These feeds also re-emit months-to-years-old items on every poll (no window
+param on the query side), so parse() drops anything older than
+max_item_age_hours before it ever reaches observations/dedup/scoring.
 """
 
 import contextlib
@@ -40,7 +44,22 @@ def _strip_html(raw: str, max_len: int = 2000) -> str:
     return html.unescape(_TAG_RE.sub(" ", raw or "")).strip()[:max_len]
 
 
+_UNSET_MAX_AGE = object()  # distinguishes "use the per-source default" from explicit None
+
+
 class FeedDealsSource(Source):
+    # Default parse-time staleness cutoffs (hours since posted_at), by source
+    # `name`; sources not listed fall back to _FALLBACK_MAX_AGE_HOURS. Measured
+    # live 2026-08-21: dealnews's own item ages top out around 73h*24=1751h
+    # (~10 weeks) with no multi-year tail — it's a single evergreen software
+    # category with no fixed end dates, not reposted cruft — so it gets more
+    # headroom to avoid cutting a still-valid several-week-old software offer.
+    # slickdeals and v2ex return genuine years-old reposts (slickdeals max
+    # ~24000h / 2.7 years, v2ex max ~3200h / 4.4 months) and get the tighter
+    # fallback.
+    _DEFAULT_MAX_AGE_HOURS = {"dealnews": 24 * 60}  # 60 days
+    _FALLBACK_MAX_AGE_HOURS = 24 * 30.0  # 30 days
+
     def __init__(
         self,
         name: str,
@@ -51,6 +70,11 @@ class FeedDealsSource(Source):
         allow_patterns: list[str] | None = None,
         request_delay_seconds: float = 2.0,
         timeout: float = 20.0,
+        # Drop items older than this at parse time. None disables the filter.
+        # Items with no parseable posted_at are always kept — an unknown age
+        # is not evidence of staleness (see _is_stale). Defaults per `name`
+        # via _DEFAULT_MAX_AGE_HOURS above when not passed explicitly.
+        max_item_age_hours: float | None = _UNSET_MAX_AGE,  # type: ignore[assignment]
     ) -> None:
         self.name = name
         self.feed_urls = feed_urls
@@ -59,6 +83,9 @@ class FeedDealsSource(Source):
         self._allow = [re.compile(p, re.IGNORECASE) for p in (allow_patterns or [])]
         self.request_delay_seconds = request_delay_seconds
         self.timeout = timeout
+        if max_item_age_hours is _UNSET_MAX_AGE:
+            max_item_age_hours = self._DEFAULT_MAX_AGE_HOURS.get(name, self._FALLBACK_MAX_AGE_HOURS)
+        self.max_item_age_hours = max_item_age_hours
 
     def fetch(self) -> list[Deal]:
         deals: dict[str, Deal] = {}  # de-dupe across queries by Deal.key
@@ -89,11 +116,31 @@ class FeedDealsSource(Source):
             channel.findall("item") if channel is not None else root.findall(f"{{{_ATOM}}}entry")
         )
         out: list[Deal] = []
+        dropped_stale = 0
         for item in items:
             deal = self._parse_item(item, now)
-            if deal is not None:
-                out.append(deal)
+            if deal is None:
+                continue
+            if self._is_stale(deal, now):
+                dropped_stale += 1
+                continue
+            out.append(deal)
+        if dropped_stale:
+            # Aggregate, not per-item — these feeds can carry 100+ stale items
+            # per poll and a line each would flood the log.
+            log.info(
+                "%s: dropped %d stale item(s) older than %gh",
+                self.name,
+                dropped_stale,
+                self.max_item_age_hours,
+            )
         return out
+
+    def _is_stale(self, deal: Deal, now: datetime) -> bool:
+        if self.max_item_age_hours is None or deal.posted_at is None:
+            return False  # no cutoff configured, or age unknown — don't guess stale
+        age_hours = (now - deal.posted_at).total_seconds() / 3600
+        return age_hours > self.max_item_age_hours
 
     def _parse_item(self, item, now: datetime) -> Deal | None:
         atom = item.tag.endswith("entry")

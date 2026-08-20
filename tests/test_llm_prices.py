@@ -117,6 +117,30 @@ def test_non_200_response_returns_empty_and_does_not_raise(monkeypatch):
     assert current is previous  # unchanged, not clobbered by a transient outage
 
 
+def test_negative_one_sentinel_price_not_treated_as_a_real_drop(monkeypatch):
+    """OpenRouter uses "-1" as a sentinel for variable/routed pricing (confirmed
+    live today on openrouter/auto, /auto-beta, /fusion, /pareto-code,
+    /bodybuilder). It parses as a plain float and isn't caught by is_free
+    (which requires an exact 0.0) — a model reporting it while a real previous
+    price is on file must not divide out into a garbage "% cheaper" deal."""
+    payload = {
+        "data": [
+            {
+                "id": "x/router",
+                "name": "Router Model",
+                "pricing": {"prompt": "-1", "completion": "-1"},
+            }
+        ]
+    }
+    _patch(monkeypatch, payload)
+    previous = {"x/router": [0.000002, 0.000006]}
+
+    deals, current = LlmPriceSource().check(previous, now=NOW)
+
+    assert deals == []
+    assert current["x/router"] == (-1.0, -1.0)
+
+
 def test_model_allowlist_filters_and_empty_allowlist_means_all(monkeypatch):
     _patch(monkeypatch, {"data": _raw_models()})
     previous = {

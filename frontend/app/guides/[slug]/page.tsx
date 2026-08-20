@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { techniqueLabel } from '@/lib/guide-labels'
 import { getGuide, getGuides } from '@/lib/guides'
-import { formatAge, sourceLabel } from '@/lib/deals'
+import { formatAge, sourceLabel, currencySymbol } from '@/lib/deals'
 import { getGuideDealMatches } from '@/lib/guide-deal-matching'
 
 export const dynamicParams = false
@@ -158,7 +158,9 @@ export default async function GuideDetailPage({
                     <span className="guide-stack-deal-title">{deal.title}</span>
                     <span className="guide-stack-deal-meta">
                       {sourceLabel(deal.source)} · {formatAge(deal.ageHours)}
-                      {deal.price !== null && <> · ${deal.price.toFixed(2)}</>}
+                      {deal.price !== null && (
+                        <> · {currencySymbol(deal.currency)}{deal.price.toFixed(2)}</>
+                      )}
                       {deal.discountPercent !== null && (
                         <> · {Math.round(deal.discountPercent)}% off</>
                       )}

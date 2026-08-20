@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from bargain_hunter.config import HotConfig
 from bargain_hunter.models import Deal, DealSnapshot
 from bargain_hunter.state import StateStore
 
@@ -187,6 +188,59 @@ def test_seeded_state_persists_across_save_load(tmp_path):
     s2.load()
     assert old.key in s2._seeded
     assert not s2.should_notify(old, 6.0, is_first_sighting=False)
+
+
+# ---------------------------------------------------------------------------
+# Voteless-source bypass: a voteless deal (e.g. dealnews) never accumulates
+# votes, so the seed trap's only escape (renewed vote velocity) can never
+# fire for it. It must skip the seed trap entirely rather than be buried
+# forever; vote-based sources must be completely unaffected.
+# ---------------------------------------------------------------------------
+
+_HOT_CFG = HotConfig(voteless_sources=["camelcamelcamel", "dealnews", "slickdeals", "v2ex"])
+
+
+def test_voteless_source_stale_first_sighting_is_not_seeded():
+    s = StateStore(path=Path("/nonexistent/x.json"))
+    s.load()
+    s._cold_start = False
+    old = _deal(source="dealnews", posted_at=datetime.now(UTC) - timedelta(hours=575))
+    assert s.should_notify(old, 6.0, is_first_sighting=True, hot_cfg=_HOT_CFG)
+    assert old.key not in s._seeded
+
+
+def test_voteless_source_stays_eligible_on_subsequent_runs():
+    s = StateStore(path=Path("/nonexistent/x.json"))
+    s.load()
+    s._cold_start = False
+    old = _deal(source="dealnews", posted_at=datetime.now(UTC) - timedelta(hours=575))
+    assert s.should_notify(old, 6.0, is_first_sighting=True, hot_cfg=_HOT_CFG)
+    # No votes ever, no snapshots/window args -> would be stuck forever under
+    # the old vote-velocity-only escape. Must still pass on every later run.
+    assert s.should_notify(old, 6.0, is_first_sighting=False, hot_cfg=_HOT_CFG)
+
+
+def test_voteless_source_already_seeded_from_before_the_fix_is_unstuck():
+    """Regression: production state already has voteless deals wrongly seeded
+    by the old logic. The bypass must free them too, not just prevent new
+    ones from being seeded."""
+    s = StateStore(path=Path("/nonexistent/x.json"))
+    s.load()
+    s._cold_start = False
+    old = _deal(source="dealnews", posted_at=datetime.now(UTC) - timedelta(hours=575))
+    s._seeded[old.key] = datetime.now(UTC)  # simulate pre-fix leftover state
+    assert s.should_notify(old, 6.0, is_first_sighting=False, hot_cfg=_HOT_CFG)
+
+
+def test_vote_based_source_seed_trap_unaffected_by_hot_cfg():
+    """Passing hot_cfg must not weaken the guard for vote-based sources."""
+    s = StateStore(path=Path("/nonexistent/x.json"))
+    s.load()
+    s._cold_start = False
+    old = _deal(source="ozbargain", posted_at=datetime.now(UTC) - timedelta(hours=575))
+    assert not s.should_notify(old, 6.0, is_first_sighting=True, hot_cfg=_HOT_CFG)
+    assert old.key in s._seeded
+    assert not s.should_notify(old, 6.0, is_first_sighting=False, hot_cfg=_HOT_CFG)
 
 
 # ---------------------------------------------------------------------------

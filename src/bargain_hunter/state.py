@@ -27,8 +27,9 @@ import tempfile
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+from .config import HotConfig
 from .models import Deal, DealSnapshot
-from .scoring import compute_vote_velocity
+from .scoring import compute_vote_velocity, is_voteless_source
 
 log = logging.getLogger(__name__)
 
@@ -321,6 +322,7 @@ class StateStore:
         snapshots: list[DealSnapshot] | None = None,
         window_minutes: int | None = None,
         min_votes_gain_per_window: int | None = None,
+        hot_cfg: HotConfig | None = None,
     ) -> bool:
         """Return False during cold start, or if a newly-seen deal is stale.
 
@@ -339,10 +341,24 @@ class StateStore:
         gate once it graduates and is treated like any other known deal from
         then on. This keeps the cold-start spam guard without permanently
         burying a deal that later goes viral.
+
+        ``hot_cfg`` (pass ``settings.scoring.hot``) identifies voteless sources
+        via ``scoring.is_voteless_source`` (e.g. CamelCamelCamel, and the RSS
+        feed sources like dealnews/slickdeals/v2ex, which re-emit a backlog of
+        old inventory and are stale on first sighting almost every time). Those
+        deals never carry a vote signal, so the velocity-gated escape above can
+        never fire — without this check they'd be seeded once and suppressed
+        forever. Voteless deals skip the seed trap entirely (this also
+        un-suppresses any of them already stuck in ``_seeded`` from before this
+        check existed); their own age gates — ``matching.max_deal_age_hours``
+        for the watch track, ``scoring.HotConfig.max_voteless_age_hours`` for
+        hot candidacy — are what keep genuinely stale items out instead.
         """
         now = now or datetime.now(UTC)
         if self._cold_start:
             return False
+        if hot_cfg is not None and is_voteless_source(deal, hot_cfg):
+            return True
         if is_first_sighting:
             if deal.posted_at is None:
                 return True
@@ -350,15 +366,24 @@ class StateStore:
             if age <= ignore_older_than_hours:
                 return True
             self._seeded[deal.key] = now
+            log.info(
+                "Seed trap: suppressing stale first sighting %s (age=%.1fh > %.1fh).",
+                deal.key, age, ignore_older_than_hours,
+            )
             return False
         if deal.key in self._seeded:
             if not snapshots or window_minutes is None or min_votes_gain_per_window is None:
+                log.debug("Seed trap: %s still suppressed (no velocity data this run).", deal.key)
                 return False
             vote_vel, _ = compute_vote_velocity(snapshots, window_minutes, now)
             window_gain = vote_vel * (window_minutes / 60)
             if window_gain >= min_votes_gain_per_window:
                 del self._seeded[deal.key]
                 return True
+            log.debug(
+                "Seed trap: %s still suppressed (window_gain=%.1f < %.1f).",
+                deal.key, window_gain, min_votes_gain_per_window,
+            )
             return False
         return True
 
