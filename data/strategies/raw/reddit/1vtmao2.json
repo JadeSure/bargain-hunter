@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1vtmao2",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1vtmao2/best_way_to_run_ds4_flash_on_4xr9700/",
+  "title": "Best way to run DS4 Flash on 4xR9700?",
+  "author": "/u/spaceman_",
+  "body": "So, I finally maxed out my system - 4 R9700s and my old Xeon 8368 for a total of 128GB VRAM and 256GB of 8-channel DDR4. However... DS4 Flash barely runs fast now compared to the 3 card version. I'm using llama.cpp and standard fitting with a 200k context, using the bartowski mxfp4 quant. Is there a better way to do it? Based on the Unsloth eval charts, it seems like picking a smaller variant that fits fully in 128GB is going to give up a lot of quality. submitted by /u/spaceman_ [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-20T15:15:04Z",
+  "fetched_at": "2026-08-20T15:59:22.524291Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "00fd9e18830201a5",
+  "key": "reddit:1vtmao2"
+}
