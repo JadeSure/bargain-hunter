@@ -1,0 +1,25 @@
+{
+  "data": {
+    "productId": "SV001MBLSAV001",
+    "lastUpdated": "2026-06-11T00:01:00.001Z",
+    "productCategory": "TRANS_AND_SAVINGS_ACCOUNTS",
+    "name": "Macquarie Savings Account",
+    "brandName": "Macquarie",
+    "applicationUri": "https://www.macquarie.com.au/everyday-banking/savings-account.html",
+    "additionalInformation": {
+      "overviewUri": "https://www.macquarie.com.au/everyday-banking/savings-account.html"
+    },
+    "depositRates": [
+      {
+        "depositRateType": "VARIABLE",
+        "rate": "0.0490",
+        "applicationFrequency": "P1M",
+        "calculationFrequency": "P1D"
+      }
+    ]
+  },
+  "links": {
+    "self": "https://api.macquariebank.io/cds-au/v1/banking/products/SV001MBLSAV001"
+  },
+  "meta": {}
+}

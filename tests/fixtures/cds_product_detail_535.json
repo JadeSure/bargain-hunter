@@ -1,0 +1,40 @@
+{
+  "data": {
+    "productId": "SV001MBLSAV001",
+    "lastUpdated": "2026-08-18T00:01:00.001Z",
+    "productCategory": "TRANS_AND_SAVINGS_ACCOUNTS",
+    "name": "Macquarie Savings Account",
+    "brandName": "Macquarie",
+    "applicationUri": "https://www.macquarie.com.au/everyday-banking/savings-account.html",
+    "additionalInformation": {
+      "overviewUri": "https://www.macquarie.com.au/everyday-banking/savings-account.html#rates-and-fees"
+    },
+    "depositRates": [
+      {
+        "depositRateType": "INTRODUCTORY",
+        "rate": "0.0535",
+        "additionalValue": "P4M",
+        "applicationFrequency": "P1M",
+        "calculationFrequency": "P1D",
+        "tiers": [
+          {
+            "name": "Variable Welcome rate",
+            "unitOfMeasure": "DOLLAR",
+            "minimumValue": 0.0,
+            "maximumValue": 250000.0
+          }
+        ]
+      },
+      {
+        "depositRateType": "VARIABLE",
+        "rate": "0.0500",
+        "applicationFrequency": "P1M",
+        "calculationFrequency": "P1D"
+      }
+    ]
+  },
+  "links": {
+    "self": "https://api.macquariebank.io/cds-au/v1/banking/products/SV001MBLSAV001"
+  },
+  "meta": {}
+}
