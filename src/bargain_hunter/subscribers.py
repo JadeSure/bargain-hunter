@@ -24,6 +24,7 @@ _P_CATEGORIES = "Categories"
 _P_HOT_LEVEL = "Hot Level"
 _P_MAX_ALERTS = "Max Alerts/Day"
 _P_MAX_WATCH_ALERTS = "Max Watch Alerts/Day"
+_P_MAX_DIGITAL = "Max Digital Alerts/Day"
 _P_BLOCK_KEYWORDS = "Block Keywords"
 _P_QUIET_START = "Quiet Hours Start"
 _P_QUIET_END = "Quiet Hours End"
@@ -65,12 +66,16 @@ def fetch_subscribers(
     notion: Client,
     db_id: str,
     default_max_alerts_per_day: int = 10,
+    default_max_digital_alerts_per_day: int = 10,
 ) -> list[Subscriber]:
     """Query the Subscribers DB and return active subscribers.
 
     `default_max_alerts_per_day` (from settings.yaml `run.max_alerts_per_user_per_day`)
-    is used only when a subscriber leaves the Notion "Max Alerts/Day" field empty;
-    an explicit Notion value always overrides it.
+    and `default_max_digital_alerts_per_day` (from `run.max_digital_alerts_per_day`)
+    are used only when a subscriber leaves the matching Notion field empty; an
+    explicit Notion value always overrides it. The Notion schema has no "Max
+    Digital Alerts/Day" property today, so every subscriber currently gets the
+    configured default.
     """
     results: list[Subscriber] = []
     cursor = None
@@ -82,7 +87,9 @@ def fetch_subscribers(
         for page in resp.get("results", []):
             props = page.get("properties", {})
             try:
-                sub = _parse_subscriber(props, default_max_alerts_per_day)
+                sub = _parse_subscriber(
+                    props, default_max_alerts_per_day, default_max_digital_alerts_per_day
+                )
             except Exception as exc:
                 log.warning("Skipping malformed subscriber page %s: %s", page.get("id"), exc)
                 continue
@@ -95,7 +102,11 @@ def fetch_subscribers(
     return results
 
 
-def _parse_subscriber(props: dict, default_max_alerts_per_day: int = 10) -> Subscriber:
+def _parse_subscriber(
+    props: dict,
+    default_max_alerts_per_day: int = 10,
+    default_max_digital_alerts_per_day: int = 10,
+) -> Subscriber:
     name = _text(props.get(_P_NAME, {}))
     email = _email(props.get(_P_EMAIL, {}))
     telegram = _text(props.get(_P_TELEGRAM, {})) or None
@@ -112,6 +123,10 @@ def _parse_subscriber(props: dict, default_max_alerts_per_day: int = 10) -> Subs
         or default_max_alerts_per_day
     )
     max_watch_alerts = int(_number(props.get(_P_MAX_WATCH_ALERTS, {}), default=10) or 10)
+    max_digital_alerts = int(
+        _number(props.get(_P_MAX_DIGITAL, {}), default=default_max_digital_alerts_per_day)
+        or default_max_digital_alerts_per_day
+    )
     block_keywords_raw = _text(props.get(_P_BLOCK_KEYWORDS, {}))
     block_keywords = _parse_keywords(block_keywords_raw)
     quiet_hours_start = _text(props.get(_P_QUIET_START, {})) or None
@@ -131,6 +146,7 @@ def _parse_subscriber(props: dict, default_max_alerts_per_day: int = 10) -> Subs
         min_hot_level=min_hot_level,
         max_alerts_per_day=max_alerts,
         max_watch_alerts_per_day=max_watch_alerts,
+        max_digital_alerts_per_day=max_digital_alerts,
         quiet_hours_start=quiet_hours_start,
         quiet_hours_end=quiet_hours_end,
     )

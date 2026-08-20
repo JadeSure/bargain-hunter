@@ -357,3 +357,189 @@ def test_drain_drops_stale_and_already_sent_entries(monkeypatch, tmp_path):
     assert len(sent) == 1
     _, items, _ = sent[0]
     assert [i.deal.deal_id for i in items] == ["fresh"]
+
+
+# ---------------------------------------------------------------------------
+# Digital track: separate daily quota (HIGH_VALUE_SOURCES_PLAN.md Phase C1 /
+# GLOBAL_DEALS_PLAN.md Phase 2). DIGITAL_SOURCES deals must not share the
+# hot/watch caps, and must survive a quiet-hours queue-and-drain round trip.
+# ---------------------------------------------------------------------------
+
+
+def test_digital_track_uses_independent_daily_cap(monkeypatch, tmp_path):
+    """A digital-source deal still sends when hot and watch are both at their
+    daily cap, because it draws from remaining_digital, not theirs — this also
+    covers the "at daily caps, skipping" early-continue needing to check
+    remaining_digital too."""
+    now = datetime.now(UTC)
+    deal = _deal(
+        source="dealnews",
+        deal_id="d1",
+        title="SuperGrok now free",
+        votes_pos=20,
+        posted_at=now - timedelta(hours=1),
+    )
+    sub = Subscriber(
+        name="Digital", email="digital@example.com",
+        subscribe_hot=False, watch_keywords=["SuperGrok"],
+        max_alerts_per_day=0, max_watch_alerts_per_day=0,
+    )
+    dedup = _FakeDedup()
+    sent = _wire_run(monkeypatch, tmp_path, [deal], sub, dedup, quiet=False)
+
+    summary = main_mod.run(_watch_settings(), dry_run=True)
+
+    assert summary["notifications_sent"] == 1
+    assert len(sent) == 1
+    email, items, _cap = sent[0]
+    assert email == "digital@example.com"
+    assert [i.track for i in items] == ["digital"]
+
+
+def test_digital_entry_survives_quiet_hours_queue_and_drain(monkeypatch, tmp_path):
+    """A queued digital-track entry must not be silently dropped at drain
+    time — main.py's queue drain used to only recognise {'hot','mixed'} and
+    'watch', which would swallow a 'digital' entry without a third block."""
+    now = datetime.now(UTC)
+    deal = _deal(
+        source="dealnews",
+        deal_id="d1",
+        title="SuperGrok now free",
+        votes_pos=20,
+        posted_at=now - timedelta(hours=2),
+    )
+    sub = Subscriber(
+        name="Night", email="night@example.com",
+        subscribe_hot=False, watch_keywords=["SuperGrok"],
+    )
+    dedup = _FakeDedup()
+
+    # Quiet run: deal is queued with track="digital".
+    _wire_run(monkeypatch, tmp_path, [deal], sub, dedup, quiet=True)
+    summary1 = main_mod.run(_watch_settings(), dry_run=True)
+    assert summary1["queued"] == 1
+    q_raw = json.loads(Path("data/queued_notifications.json").read_text(encoding="utf-8"))
+    assert [e["track"] for e in q_raw["entries"]] == ["digital"]
+
+    # Morning run: feed no longer carries the deal, but the queue does.
+    sent = _wire_run(monkeypatch, tmp_path, [], sub, dedup, quiet=False)
+    summary2 = main_mod.run(_watch_settings(), dry_run=True)
+
+    assert len(sent) == 1
+    email, items, _cap = sent[0]
+    assert email == "night@example.com"
+    assert [i.deal.key for i in items] == ["dealnews:d1"]
+    assert [i.track for i in items] == ["digital"]
+    assert summary2["notifications_sent"] == 1
+    q_raw2 = json.loads(Path("data/queued_notifications.json").read_text(encoding="utf-8"))
+    assert q_raw2["entries"] == []
+
+
+def test_new_source_poll_interval_gating_skips_when_not_due(monkeypatch, tmp_path):
+    """dealnews (and the other slow-cadence sources) must respect
+    poll_interval_minutes via state.due_for_fetch, not refetch every run.
+
+    Uses dry_run=False: this test needs state.due_for_fetch persisted across
+    the two run() calls, and no Notion/email path is exercised either way
+    (env vars are deleted below), so a live run is safe here."""
+    monkeypatch.chdir(tmp_path)
+    Path("data").mkdir()
+    Path("data/deals_state.json").write_text(
+        json.dumps({"cold_start": False, "snapshots": {}, "first_seen": {}}),
+        encoding="utf-8",
+    )
+    monkeypatch.delenv("NOTION_TOKEN", raising=False)
+    monkeypatch.delenv("NOTION_SUBSCRIBERS_DB_ID", raising=False)
+    monkeypatch.delenv("NOTION_SENT_LOG_DB_ID", raising=False)
+
+    fetch_calls = []
+
+    class _EmptyOzb:
+        def __init__(self, *a, **kw):
+            pass
+
+        def fetch(self):
+            return []
+
+    class FakeFeedDealsSource:
+        def __init__(self, *a, **kw):
+            pass
+
+        def fetch(self):
+            fetch_calls.append(1)
+            return []
+
+    monkeypatch.setattr(main_mod, "OzBargainSource", _EmptyOzb)
+    monkeypatch.setattr(main_mod, "FeedDealsSource", FakeFeedDealsSource)
+
+    settings = Settings.model_validate(
+        {
+            "sources": {
+                "ozbargain": {"enabled": True},
+                "dealnews": {
+                    "enabled": True,
+                    "poll_interval_minutes": 60,
+                    "feed_urls": ["https://example.com/feed"],
+                },
+            },
+        }
+    )
+
+    main_mod.run(settings, dry_run=False)
+    assert len(fetch_calls) == 1
+
+    main_mod.run(settings, dry_run=False)
+    assert len(fetch_calls) == 1  # second run, interval not elapsed — skipped
+
+
+# ---------------------------------------------------------------------------
+# --dry-run must not touch tracked calibration data (regression: a local
+# dry run once overwrote data/deals_state.json and appended to the committed
+# observation log).
+# ---------------------------------------------------------------------------
+
+
+def _dry_run_settings() -> Settings:
+    return Settings.model_validate({"sources": {"ozbargain": {"enabled": True}}})
+
+
+def test_dry_run_does_not_persist_state_or_observations(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("NOTION_TOKEN", raising=False)
+    monkeypatch.delenv("NOTION_SUBSCRIBERS_DB_ID", raising=False)
+    monkeypatch.delenv("NOTION_SENT_LOG_DB_ID", raising=False)
+
+    class FakeSource:
+        def __init__(self, *a, **kw):
+            pass
+
+        def fetch(self):
+            return [_deal()]
+
+    monkeypatch.setattr(main_mod, "OzBargainSource", FakeSource)
+
+    main_mod.run(_dry_run_settings(), dry_run=True)
+
+    assert not Path("data/deals_state.json").exists()
+    assert not Path("data/observations").exists()
+
+
+def test_live_run_persists_state_and_observations(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("NOTION_TOKEN", raising=False)
+    monkeypatch.delenv("NOTION_SUBSCRIBERS_DB_ID", raising=False)
+    monkeypatch.delenv("NOTION_SENT_LOG_DB_ID", raising=False)
+
+    class FakeSource:
+        def __init__(self, *a, **kw):
+            pass
+
+        def fetch(self):
+            return [_deal()]
+
+    monkeypatch.setattr(main_mod, "OzBargainSource", FakeSource)
+
+    main_mod.run(_dry_run_settings(), dry_run=False)
+
+    assert Path("data/deals_state.json").exists()
+    assert list(Path("data/observations").glob("*.jsonl"))
