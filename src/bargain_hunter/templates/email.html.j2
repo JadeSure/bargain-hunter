@@ -20,6 +20,7 @@
   .badge.price { background: #e8f5e9; color: #2e7d32; font-weight: 600; }
   .badge.hot { background: #fff3e0; color: #e65100; }
   .badge.watch { background: #e3f2fd; color: #1565c0; }
+  .badge.digital { background: #f3e5f5; color: #6a1b9a; }
   .badge.discount { background: #fce4ec; color: #c62828; font-weight: 600; }
   .badge.cashback { background: #e0f2f1; color: #00695c; font-weight: 600; }
   .badge.pricelow { background: #e8f5e9; color: #1b5e20; font-weight: 600; }
@@ -72,7 +73,9 @@
       {% if item.level %}
       <span class="badge level{{ ' level-top' if item.level == 'top' else '' }}">{{ item.level }}</span>
       {% endif %}
+      {% if deal.votes_pos %}
       <span class="badge">▲ {{ deal.votes_pos }}</span>
+      {% endif %}
       {% if deal.comment_count %}
       <span class="badge">💬 {{ deal.comment_count }}</span>
       {% endif %}
