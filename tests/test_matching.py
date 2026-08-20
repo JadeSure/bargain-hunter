@@ -108,6 +108,25 @@ def test_keyword_with_price_target_also_requires_votes():
     assert not matched
 
 
+def test_trusted_source_bypasses_noise_guard_with_zero_votes_and_no_discount():
+    """A trusted (voteless, keyword-scoped) source fires on the keyword match
+    alone — no votes, no parseable discount."""
+    deal = _deal(source="dealnews", title="SuperGrok annual plan", votes_pos=0)
+    sub = _sub(watch_keywords=["SuperGrok"])
+    matched, reason = match_watch(deal, sub, _cfg(min_votes=5, trusted_sources=["dealnews"]))
+    assert matched
+    assert "SuperGrok" in reason
+
+
+def test_untrusted_source_with_same_shape_does_not_match():
+    """Same zero-votes/no-discount shape from a non-trusted source must still
+    be blocked by the noise guard."""
+    deal = _deal(source="ozbargain", title="SuperGrok annual plan", votes_pos=0)
+    sub = _sub(watch_keywords=["SuperGrok"])
+    matched, _ = match_watch(deal, sub, _cfg(min_votes=5, trusted_sources=["dealnews"]))
+    assert not matched
+
+
 # ---------------------------------------------------------------------------
 # filter_watch_matches
 # ---------------------------------------------------------------------------

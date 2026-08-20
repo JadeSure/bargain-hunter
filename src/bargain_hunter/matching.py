@@ -183,7 +183,10 @@ def _match_watch_with_target(
             and deal.discount_percent is not None
             and deal.discount_percent >= cfg.min_discount_percent
         )
-        if not (passes_votes or passes_discount):
+        # Editorially curated / keyword-scoped feeds carry neither votes nor a
+        # parseable discount; for those the keyword match is itself the quality guard.
+        passes_trusted = deal.source in cfg.trusted_sources
+        if not (passes_votes or passes_discount or passes_trusted):
             continue
 
         # Optional price ceiling — if specified, deal price must be known and within target.
@@ -195,7 +198,9 @@ def _match_watch_with_target(
 
         if passes_votes:
             return True, f'"{keyword}" matched ({deal.votes_pos} votes)', None
-        return True, f'"{keyword}" matched, {deal.discount_percent:.0f}% off', None
+        if passes_discount:
+            return True, f'"{keyword}" matched, {deal.discount_percent:.0f}% off', None
+        return True, f'"{keyword}" matched', None
 
     return False, "", None
 
