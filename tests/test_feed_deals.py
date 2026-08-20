@@ -7,6 +7,7 @@ the documented field inventory in docs/GLOBAL_DEALS_PLAN.md — the live feed
 note that Slickdeals 403s readily even from CI.
 """
 
+from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
@@ -59,8 +60,11 @@ def test_parses_rss_items():
 
 
 def test_rss_categories_and_currency():
+    # Fixture has 2 items; the SuperGrok one is dated Dec 2025 (~8 months old)
+    # and is dropped by the default staleness filter — see
+    # test_stale_item_dropped_and_logged below. Only NordVPN (Aug 2026) survives.
     deals = _slickdeals()
-    assert len(deals) == 2
+    assert len(deals) == 1
     assert all(d.categories == ["Software"] for d in deals)
     assert all(d.currency == "USD" for d in deals)
 
@@ -143,8 +147,14 @@ def test_region_allow_pattern_overrides_block():
         desc="US only, but also available worldwide.",
         guid="g1",
     )
+    # RSS_ITEM's fixed pubDate predates the default staleness cutoff — disable
+    # it here since this test is about region-pattern precedence, not age.
     src = FeedDealsSource(
-        name="dealnews", feed_urls=[], block_patterns=["US only"], allow_patterns=["worldwide"]
+        name="dealnews",
+        feed_urls=[],
+        block_patterns=["US only"],
+        allow_patterns=["worldwide"],
+        max_item_age_hours=None,
     )
     deals = src.parse(xml)
     assert len(deals) == 1
@@ -184,10 +194,13 @@ def test_cross_query_dedupe_by_key(monkeypatch):
         return httpx.Response(200, text=xml, request=httpx.Request("GET", url))
 
     monkeypatch.setattr(mod.httpx, "get", fake_get)
+    # RSS_ITEM's fixed pubDate predates the default staleness cutoff — disable
+    # it here since this test is about cross-query dedupe, not age.
     src = FeedDealsSource(
         name="slickdeals",
         feed_urls=["https://example.com/q=a", "https://example.com/q=b"],
         request_delay_seconds=0,
+        max_item_age_hours=None,
     )
     deals = src.fetch()
     assert len(deals) == 1
@@ -213,3 +226,52 @@ def test_foreign_currency_title_regex_prices_stay_unconfirmed():
     # stays None for these even when a price was extracted from the title.
     for deals in (_slickdeals(), _v2ex()):
         assert all(d.price_confidence is None for d in deals)
+
+
+# -- staleness filter: drop months/years-old items at parse time -----------------
+
+
+def test_stale_item_dropped_and_logged(caplog):
+    # SuperGrok (pubDate Dec 2025, ~8 months old) is older than the 30-day
+    # default cutoff and is dropped; NordVPN (Aug 2026) survives.
+    with caplog.at_level("INFO"):
+        deals = _slickdeals()
+    assert [d.title for d in deals] == ["NordVPN 2-Year Plan for $2.99/mo + 3 months free"]
+    assert "dropped 1 stale item" in caplog.text
+
+
+def test_item_older_than_cutoff_is_dropped():
+    xml = RSS_ITEM.format(title="Old deal", link="https://x.example/1", desc="", guid="g1")
+    src = FeedDealsSource(name="dealnews", feed_urls=[], max_item_age_hours=48)
+    # RSS_ITEM's fixed pubDate is 2026-06-01T10:00Z; anchor "now" 49h later
+    # (just past the 48h cutoff) for a deterministic, non-flaky assertion.
+    now = datetime(2026, 6, 3, 11, 0, 0, tzinfo=UTC)
+    assert src.parse(xml, now=now) == []
+
+
+def test_item_within_cutoff_is_kept():
+    xml = RSS_ITEM.format(title="Fresh deal", link="https://x.example/1", desc="", guid="g1")
+    src = FeedDealsSource(name="dealnews", feed_urls=[], max_item_age_hours=48)
+    now = datetime(2026, 6, 3, 9, 0, 0, tzinfo=UTC)  # 47h after pubDate
+    assert len(src.parse(xml, now=now)) == 1
+
+
+def test_max_item_age_hours_none_disables_filter():
+    xml = RSS_ITEM.format(title="Ancient deal", link="https://x.example/1", desc="", guid="g1")
+    src = FeedDealsSource(name="dealnews", feed_urls=[], max_item_age_hours=None)
+    assert len(src.parse(xml)) == 1  # real "now" — item is months old but kept
+
+
+def test_item_with_unparseable_posted_at_is_kept_not_dropped():
+    """Missing/unparseable posted_at must never be silently treated as stale —
+    the source can't tell an untimestamped item apart from a fresh one."""
+    xml = (
+        '<?xml version="1.0"?><rss version="2.0"><channel>'
+        "<item><title>No date deal</title><link>https://x.example/2</link>"
+        "<description>desc</description><guid>g2</guid></item>"
+        "</channel></rss>"
+    )
+    src = FeedDealsSource(name="dealnews", feed_urls=[], max_item_age_hours=48)
+    deals = src.parse(xml)
+    assert len(deals) == 1
+    assert deals[0].posted_at is None
