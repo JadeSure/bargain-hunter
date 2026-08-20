@@ -29,6 +29,9 @@ class Deal(BaseModel):
     was_price: float | None = None
     discount_percent: float | None = None
     price_confidence: Literal["high", "low"] | None = None
+    # ISO 4217 code for `price`/`was_price`. Defaults to AUD so every existing
+    # source and persisted row stays valid without a backfill.
+    currency: str = "AUD"
     expired: bool = False
     # Cashback that can be stacked on top of this deal (populated by cashback.py
     # from the config-maintained merchant→rate map). None = no known rate.
@@ -72,6 +75,9 @@ class Subscriber(BaseModel):
     min_hot_level: str | None = None
     max_alerts_per_day: int = 10        # hot track daily cap
     max_watch_alerts_per_day: int = 10  # watch track daily cap (independent)
+    # digital track daily cap (independent) — dealnews/slickdeals/v2ex/openrouter/
+    # bank_rates/iknowthepilot (see main.DIGITAL_SOURCES)
+    max_digital_alerts_per_day: int = 10
     block_keywords: list[str] = Field(default_factory=list)
     # Per-subscriber quiet-hours override, "HH:MM" local time (run.timezone).
     # None/empty = fall back to the global run.quiet_hours_start/end config.
@@ -95,4 +101,4 @@ class Notification(BaseModel):
 
     subscriber: Subscriber
     deals: list[Deal] = Field(default_factory=list)
-    track: Literal["hot", "watch", "mixed"] = "hot"
+    track: Literal["hot", "watch", "mixed", "digital"] = "hot"

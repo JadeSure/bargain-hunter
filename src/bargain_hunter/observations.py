@@ -79,6 +79,7 @@ def build_observation(
         "click_velocity": round(click_vel, 4),
         "age_hours": age_hours,
         "price": deal.price,
+        "currency": deal.currency,
         "price_confidence": deal.price_confidence,
         "discount_percent": deal.discount_percent,
         "cashback_percent": deal.cashback_percent,
