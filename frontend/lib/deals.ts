@@ -67,17 +67,38 @@ function dealUrl(key: string): string {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function readObservationsFile(date: string): Promise<any[]> {
+  const { promises: fs } = await import('fs')
+  const { join } = await import('path')
+  const { default: process } = await import('process')
+  const dir = join(process.cwd(), '..', 'data', 'observations')
+
+  // maintain-obs gzips each day file once it's no longer today's AET date
+  // (see src/bargain_hunter/observations.py), so most of RETENTION_HOURS'
+  // 72h window lives in `.gz`, not `.jsonl`. Try plain first, then gunzip.
+  let content: string
   try {
-    const { promises: fs } = await import('fs')
-    const { join } = await import('path')
-    const { default: process } = await import('process')
-    const p = join(process.cwd(), '..', 'data', 'observations', `${date}.jsonl`)
-    const content = await fs.readFile(p, 'utf-8')
-    return content
-      .split('\n')
-      .filter(Boolean)
-      .map((line) => JSON.parse(line))
+    content = await fs.readFile(join(dir, `${date}.jsonl`), 'utf-8')
   } catch {
+    try {
+      const { gunzipSync } = await import('zlib')
+      const gz = await fs.readFile(join(dir, `${date}.jsonl.gz`))
+      content = gunzipSync(gz).toString('utf-8')
+    } catch (err: unknown) {
+      // A missing day inside the retention window is normal (neither file
+      // exists) and must stay silent; anything else — corrupt gzip, bad
+      // permissions — should not fail silently like the missing .gz support
+      // did for two days in production.
+      if ((err as NodeJS.ErrnoException)?.code !== 'ENOENT') {
+        console.error(`readObservationsFile: ${date} unreadable`, err)
+      }
+      return []
+    }
+  }
+
+  try {
+    return content.split('\n').filter(Boolean).map((line) => JSON.parse(line))
+  } catch (err) {
+    console.error(`readObservationsFile: ${date} failed to parse`, err)
     return []
   }
 }
@@ -218,6 +239,13 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
   // inside the retention window) still gets topped up.
   const FALLBACK_GREAT_LIMIT = 8
   const MIN_DISPLAY_COUNT = 6
+  // The AU tier ladder above is bounded by vote velocity; the new-source
+  // sections below have no such signal, and some (Slickdeals' 6 keyword
+  // queries alone) return 100+ items per fetch. Cap each rendered section
+  // (Australia — banking & travel / North America / China / LLM token
+  // prices) the same way, so the board stays a curated page, not a dump.
+  // Do not remove this — it exists because these sources emit in bulk.
+  const NEW_SOURCE_SECTION_CAP = 12
 
   const topCandidates: [string, Agg][] = []
   const greatCandidates: [string, Agg][] = []
@@ -253,15 +281,33 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
   // instead: any deal still within RETENTION_HOURS (byKey only holds those)
   // that is still in its own source's latest scan batch. ozbargain/
   // camelcamelcamel are excluded here since they're already handled above.
-  const recencyCandidates: [string, Agg][] = []
+  // Grouped by rendered section (region, minus the AU tier-ladder sources
+  // already handled above) so the cap applies per section, not globally —
+  // North America shouldn't starve China just because Slickdeals is noisy.
+  const recencyBySection = new Map<DealRegion, [string, Agg][]>()
   for (const entry of byKey) {
     const [key, agg] = entry
     const source = sourceFromKey(key)
     if (source === 'ozbargain' || source === 'camelcamelcamel') continue
     if (!EVENT_EMITTING_SOURCES.has(source) && !isStillInLatestSourceBatch(key, agg)) continue
-    recencyCandidates.push(entry)
+    const region = dealRegion(source)
+    const bucket = recencyBySection.get(region)
+    if (bucket) bucket.push(entry)
+    else recencyBySection.set(region, [entry])
   }
-  recencyCandidates.sort((a, b) => (b[1].latest.ts as string).localeCompare(a[1].latest.ts as string))
+
+  const recencyCandidates: [string, Agg][] = []
+  for (const bucket of recencyBySection.values()) {
+    // Biggest discount first (a 57%-off flight beats an undiscounted forum
+    // post); undated/undiscounted deals sort by recency instead of vanishing.
+    bucket.sort((a, b) => {
+      const da = (a[1].latest.discount_percent as number) ?? 0
+      const db = (b[1].latest.discount_percent as number) ?? 0
+      if (da !== db) return db - da
+      return (b[1].latest.ts as string).localeCompare(a[1].latest.ts as string)
+    })
+    recencyCandidates.push(...bucket.slice(0, NEW_SOURCE_SECTION_CAP))
+  }
   const recencyLive = await keepLive(toEntries(recencyCandidates))
 
   return [...live, ...recencyLive].map((e) => e.deal)
