@@ -3,6 +3,7 @@
 run:
   dry_run: false
   max_alerts_per_user_per_day: 10
+  max_digital_alerts_per_day: 10    # default digital-track daily cap (Notion has no matching property)
   timezone: "Australia/Sydney"      # AET/AEDT — used for daily caps, quiet hours, and midnight boundary
   quiet_hours_start: "22:00"        # AEST — no alerts after 10pm
   quiet_hours_end: "07:00"          # AEST — no alerts before 7am (overnight window)
@@ -15,6 +16,118 @@ sources:
   camelcamelcamel:
     enabled: true
     feed_url: "https://au.camelcamelcamel.com/top_drops/feed"
+
+  # --- Global digital deals. All voteless (see scoring.hot.voteless_sources)
+  # and reach subscribers via watch keywords (scoring.watch.trusted_sources).
+  dealnews:
+    enabled: true
+    poll_interval_minutes: 60
+    currency: "USD"
+    feed_urls:
+      - "https://www.dealnews.com/c124/Computers/Software/?rss=1"
+    region_allow_patterns: ["global", "worldwide", "any region",
+                            "international card", "全球可用", "支持国际信用卡"]
+    region_block_patterns:
+      - "US only"
+      - "USA only"
+      - "U\\.S\\. residents"
+      - "US/CA residents"
+      - "United States and Canada only"
+      - "requires US billing"
+      - "US billing (address|zip)"
+      - "not available outside the US"
+      - "US App Store"
+      - "\\.edu email"
+      - "(T-Mobile|Verizon|AT&T|Xfinity|Spectrum) customers"
+      - "US (PayPal|Venmo)"
+      - "region-locked"
+      - "EU key"
+      - "ROW excluded"
+  slickdeals:
+    enabled: true
+    poll_interval_minutes: 60
+    currency: "USD"
+    # The query string IS the filter. Keep terms specific; bare "grok" collides
+    # with "Grokking Simplicity" and "Grokit VR".
+    feed_urls:
+      - "https://slickdeals.net/newsearch.php?rss=1&q=supergrok&searcharea=deals&searchin=first"
+      - "https://slickdeals.net/newsearch.php?rss=1&q=chatgpt&searcharea=deals&searchin=first"
+      - "https://slickdeals.net/newsearch.php?rss=1&q=claude+ai&searcharea=deals&searchin=first"
+      - "https://slickdeals.net/newsearch.php?rss=1&q=perplexity&searcharea=deals&searchin=first"
+      - "https://slickdeals.net/newsearch.php?rss=1&q=vpn&searcharea=deals&searchin=first"
+      - "https://slickdeals.net/newsearch.php?rss=1&q=cloud+storage&searcharea=deals&searchin=first"
+    region_allow_patterns: ["global", "worldwide", "any region",
+                            "international card", "全球可用", "支持国际信用卡"]
+    region_block_patterns:
+      - "US only"
+      - "USA only"
+      - "U\\.S\\. residents"
+      - "US/CA residents"
+      - "United States and Canada only"
+      - "requires US billing"
+      - "US billing (address|zip)"
+      - "not available outside the US"
+      - "US App Store"
+      - "\\.edu email"
+      - "(T-Mobile|Verizon|AT&T|Xfinity|Spectrum) customers"
+      - "US (PayPal|Venmo)"
+      - "region-locked"
+      - "EU key"
+      - "ROW excluded"
+  v2ex:
+    enabled: true
+    poll_interval_minutes: 180
+    currency: "CNY"
+    feed_urls:
+      - "https://www.v2ex.com/feed/deals.xml"
+    region_allow_patterns: ["global", "worldwide", "any region",
+                            "international card", "全球可用", "支持国际信用卡"]
+    region_block_patterns:
+      - "仅限中国大陆"
+      - "仅限大陆用户"
+      - "大陆不发"
+      - "中国大陆手机号"
+      - "\\+86"
+      - "实名认证"
+      - "仅支持支付宝"
+      - "仅支持微信"
+      - "不支持境外"
+      - "海外用户不可用"
+  openrouter:
+    enabled: true
+    poll_interval_minutes: 1440
+    min_drop_percent: 10.0
+    model_allowlist: []          # e.g. ["x-ai/", "anthropic/", "deepseek/"]
+
+  # --- AU finance: CDR product reference data ---
+  bank_rates:
+    enabled: true
+    poll_interval_minutes: 1440        # daily; rates do not move hourly
+    currency: "AUD"
+    min_rate_rise_bps: 10              # alert when a deposit rate rises >= 10bp
+    min_bonus_points_rise: 10000       # alert when card signup points rise
+    brands:                            # publicBaseUri verified 2026-08-20
+      - {name: "ING",       base: "https://id.ob.ing.com.au",              x_v: 4}
+      - {name: "UBank",     base: "https://public.cdr-api.86400.com.au",   x_v: 4}
+      - {name: "Macquarie", base: "https://api.macquariebank.io",          x_v: 4}
+      - {name: "Up",        base: "https://api.up.com.au",                 x_v: 4}
+      - {name: "CommBank",  base: "https://api.commbank.com.au/public",    x_v: 4}
+      - {name: "Westpac",   base: "https://digital-api.westpac.com.au",    x_v: 4}
+      - {name: "NAB",       base: "https://openbank.api.nab.com.au",       x_v: 4}
+      - {name: "ANZ",       base: "https://api.anz",                       x_v: 4}
+      - {name: "Bendigo",   base: "https://api.cdr.bendigobank.com.au",    x_v: 4}
+      - {name: "BOQ",       base: "https://api.cds.boq.com.au",            x_v: 5}
+    product_categories:
+      - "TRANS_AND_SAVINGS_ACCOUNTS"
+      - "TERM_DEPOSITS"
+      - "CRED_AND_CHRG_CARDS"
+
+  # --- Travel: AU-departure airfare deals ---
+  iknowthepilot:
+    enabled: true
+    poll_interval_minutes: 120
+    currency: "AUD"
+    feed_urls: ["https://www.iknowthepilot.com.au/feed/"]
 
 scoring:
   window_minutes: 15               # 15-min window: accurate current momentum, 2-run detection
@@ -42,6 +155,10 @@ scoring:
     # while keeping genuine product discounts (e.g. 13 votes, 50% off).
     quality_min_discount_pct: 20.0  # deals below threshold need ≥20% discount
     quality_high_votes_threshold: 40  # deals with ≥40 votes skip the discount requirement
+    # Sources with no vote signal at all — kept out of the OzBargain-calibrated
+    # site velocity index (see the `watch.trusted_sources` counterpart below).
+    voteless_sources: ["camelcamelcamel", "dealnews", "slickdeals", "v2ex",
+                        "openrouter", "bank_rates", "iknowthepilot"]
     # Hot ladder (calibrated on ObservationLog: among distinct hot deals ~57%
     # reach 4.0 and ~36% reach 7.0). A deal earns the highest tier it qualifies
     # for; below `good` (= the old hot_threshold) it is not hot. `top` adds a
@@ -70,6 +187,10 @@ scoring:
     min_votes: 15                  # minimum positive votes after keyword match (raised to 15)
     min_discount_percent: 15       # discount threshold when no votes available (e.g. CCC) — raised to 15%
     max_deal_age_hours: 36         # skip deals older than 36h to avoid backlog filling daily cap
+    # Editorially curated / keyword-scoped feeds carry neither votes nor a
+    # parseable discount; the keyword match is itself the quality guard.
+    trusted_sources: ["dealnews", "slickdeals", "v2ex", "openrouter",
+                       "bank_rates", "iknowthepilot"]
 
 dedup:
   lookback_days: 7                 # read recent Sent Log window for local dedup
@@ -158,6 +279,10 @@ categories:
                 "Spirits", "Coffee", "Snack", "Chocolate", "Restaurant"]
   travel:      ["Travel", "Flight", "Flights", "Hotel", "Accommodation",
                 "Theme Park", "Cruise", "Holiday", "Airline"]
+  digital:     ["Software", "Internet", "Subscription", "Streaming", "Cloud",
+                "VPN", "Antivirus", "Domain", "Web Hosting", "Mobile Plan",
+                "Steam", "PC Game", "eBook", "Online Course", "AI", "SaaS",
+                "Credit", "API"]
 
 # ---------------------------------------------------------------------------
 # Strategy guide collection (strategy_hunter). GitHub Actions harvests daily
@@ -188,7 +313,7 @@ strategy:
     sources:
       ozbargain_tags:
         enabled: true
-        tags: ["referral", "cashback"]
+        tags: ["referral", "cashback", "giftcard", "bonus"]
       reddit:
         enabled: true
         subreddits: ["AusFinance", "AusFrugal"]
@@ -198,9 +323,15 @@ strategy:
         max_retries: 5
         max_backoff_seconds: 120
   sources:
+    rss:
+      enabled: true
+      request_delay_seconds: 2.0
+      feeds:
+        - {url: "https://www.pointhacks.com.au/feed/",              board: "PointHacks"}
+        - {url: "https://www.australianfrequentflyer.com.au/feed/", board: "AusFrequentFlyer"}
     reddit:
       enabled: true
-      subreddits: ["AusFinance", "AusFrugal", "fiaustralia"]
+      subreddits: ["AusFinance", "AusFrugal", "fiaustralia", "churning", "LocalLLaMA"]
       listing: "hot"              # hot | new | top
       limit: 25
       request_delay_seconds: 8     # gentle gap between subs (nightly run, not urgent)
