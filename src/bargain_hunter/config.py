@@ -114,6 +114,15 @@ class HotConfig(StrictConfigModel):
     # Minimum discount % for a voteless-source deal to become a hot candidate.
     # None disables the discount candidacy path entirely.
     discount_candidate_min: float | None = 40.0
+    # Age cap for the voteless discount-only candidacy path (hours since
+    # posted_at). This is the *only* staleness gate on that path — a deal
+    # with no vote signal never ages out via score decay the way vote-based
+    # deals do. Global feed sources (dealnews/slickdeals/v2ex/...) return
+    # months-to-years-old reposts, and `top` bypasses category routing to
+    # every hot subscriber (universal_top), so an ungated old deal at high
+    # discount would reach everyone. 48h mirrors early_burst freshness intent
+    # while giving global-feed poll cadences (up to 3h) headroom.
+    max_voteless_age_hours: float = 48.0
     # Discount % thresholds mapped to hot-ladder tier names, used to classify a
     # voteless-source candidate directly (no hot score is computed for these —
     # there is no velocity signal to score). A tier absent from this mapping is

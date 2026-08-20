@@ -106,6 +106,9 @@ sources:
     currency: "AUD"
     min_rate_rise_bps: 10              # alert when a deposit rate rises >= 10bp
     min_bonus_points_rise: 10000       # alert when card signup points rise
+    max_detail_fetches_per_run: 40   # bound the cold-start burst: a full 197-product
+                                     # seed spreads over ~5 runs instead of blowing
+                                     # past the 5-minute hunt.yml cadence
     brands:                            # publicBaseUri verified 2026-08-20
       - {name: "ING",       base: "https://id.ob.ing.com.au",              x_v: 4}
       - {name: "UBank",     base: "https://public.cdr-api.86400.com.au",   x_v: 4}
@@ -159,6 +162,13 @@ scoring:
     # site velocity index (see the `watch.trusted_sources` counterpart below).
     voteless_sources: ["camelcamelcamel", "dealnews", "slickdeals", "v2ex",
                         "openrouter", "bank_rates", "iknowthepilot"]
+    # Age cap (hours since posted_at) for the voteless discount-only candidacy
+    # path — the only staleness gate on it, since there's no vote velocity to
+    # decay a score. Without this, an old high-discount item from a global
+    # feed (measured live: slickdeals/v2ex/dealnews return months-to-years-old
+    # reposts) can classify `top`, which reaches every hot subscriber
+    # regardless of category (universal_top below).
+    max_voteless_age_hours: 48
     # Hot ladder (calibrated on ObservationLog: among distinct hot deals ~57%
     # reach 4.0 and ~36% reach 7.0). A deal earns the highest tier it qualifies
     # for; below `good` (= the old hot_threshold) it is not hot. `top` adds a
