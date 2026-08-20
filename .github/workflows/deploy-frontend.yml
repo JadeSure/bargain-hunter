@@ -95,8 +95,16 @@ jobs:
       # beacon is rendered; no other setup needed.
       NEXT_PUBLIC_CF_ANALYTICS_TOKEN: ${{ secrets.NEXT_PUBLIC_CF_ANALYTICS_TOKEN }}
     steps:
+      # Explicit ref: main. Without it, actions/checkout@v4 on a workflow_run event
+      # checks out the SHA the triggering run *started from*, not main's current
+      # tip -- so a deploy fired by the pipeline's completion would build the site
+      # one pipeline cycle (and possibly that run's own observations/state commits)
+      # behind. push/schedule/workflow_dispatch already resolve to main's tip, so
+      # this is a no-op for them.
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
