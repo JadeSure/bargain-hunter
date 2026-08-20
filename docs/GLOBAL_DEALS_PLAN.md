@@ -273,12 +273,15 @@ class FeedDealsSource(Source):
         posted_at = self._parse_ts(ts_text)
         price, was_price, discount_pct = extract_price_signals(title)
         currency = self.currency
-        # DealNews gives a structured price; prefer it over the title regex.
+        price_confidence = None
+        # DealNews gives a structured price; prefer it over the title regex, and
+        # trust it enough to render the "$" badge (see per-instance rule below).
         dn_price = item.find(f"{{{_DEALNEWS}}}price")
         if dn_price is not None and (dn_price.text or "").strip():
             with contextlib.suppress(TypeError, ValueError):
                 price = float(dn_price.text.strip().lstrip("$"))
                 currency = dn_price.get("currency") or currency
+                price_confidence = "high"
         expiry = self._parse_ts((item.findtext(f"{{{_DEALNEWS}}}expires") or "").strip() or None)
         categories = [
             (c.text or "").strip()
@@ -300,7 +303,7 @@ class FeedDealsSource(Source):
             price=price,
             was_price=was_price,
             discount_percent=discount_pct,
-            price_confidence=None,      # suppresses the "$" badge; currency is not AUD
+            price_confidence=price_confidence,
             currency=currency,
         )
 
@@ -323,8 +326,13 @@ class FeedDealsSource(Source):
 Notes for the implementer:
 - **Confirm the `dealnews:` namespace URI** from the live feed's root element
   before trusting `_DEALNEWS`. `curl -s '<dealnews url>' | head -5`.
-- `price_confidence=None` is deliberate: `Deal` has no per-currency rendering in
-  the email until Phase 1c, and a bare `$` on a USD price misleads an AU reader.
+- **`price_confidence` is per-instance, not blanket-`None`.** Phase 1c landed the
+  currency-aware badge (`US$`/`$` by `deal.currency`), so suppressing every price
+  is now obsolete and hides a price we do have. `dealnews` sets `"high"` when the
+  price came from the **structured** `dealnews:price` element (same class of
+  signal as `camelcamelcamel.py:115`) — a US deal renders `US$29.99`.
+  `slickdeals`/`v2ex`/`iknowthepilot` only ever parse from the title regex, so
+  they leave it `None`.
 - Return `Deal` objects even when `price is None`; the watch track does not need
   a price once `trusted_sources` is in place.
 - Ruff `DTZ` forbids naive datetimes. Every datetime above is tz-aware.
@@ -348,7 +356,9 @@ Behaviour, exactly:
 - Build `current = {id: (float(prompt), float(completion))}` from
   `pricing.prompt` / `pricing.completion`. Skip entries whose pricing is missing
   or unparseable.
-- Compare against `previous = state.llm_prices()`. For each id:
+- Compare against `previous = state.snapshot("llm_prices")` (the generic
+  feature-snapshot accessor — see §1c; there is no `llm_prices()`-specific
+  method). For each id:
   - **Skip ids absent from `previous`** — dated variants
     (`deepseek/deepseek-v4-pro-0813`) mean a cheap *new* id is a new model, not a
     price cut. Getting this wrong produces a flood on every model launch.
@@ -364,8 +374,8 @@ Behaviour, exactly:
   - `price=new*1e6`, `was_price=old*1e6`, `discount_percent=round(drop,1)`,
     `currency="USD"`, `price_confidence=None`, `posted_at=now`
   - `categories=["AI", "API", "Software"]` so the `digital` bucket matches
-- Always write `current` back via `state.set_llm_prices(current)`, including on
-  the first run (no snapshot → zero alerts, snapshot seeded).
+- Always write `current` back via `state.set_snapshot("llm_prices", current)`,
+  including on the first run (no snapshot → zero alerts, snapshot seeded).
 
 ### 1c. Edits to existing files
 
@@ -374,7 +384,7 @@ Behaviour, exactly:
 | `src/bargain_hunter/config.py` | `WatchConfig`: add `trusted_sources: list[str] = Field(default_factory=list)`. `WatchConfig` is `StrictConfigModel` (`extra="forbid"`) so the field must exist before the YAML key. |
 | `src/bargain_hunter/models.py` | `Deal`: add `currency: str = "AUD"` (keeps every existing source and every persisted row valid). |
 | `src/bargain_hunter/matching.py` (~line 186) | see below — **not optional** |
-| `src/bargain_hunter/state.py` | add `last_fetch` + `llm_prices` accessors — see below |
+| `src/bargain_hunter/state.py` | add `due_for_fetch`/`mark_fetched` + generic `snapshot(key)`/`set_snapshot(key, value)` — see below |
 | `src/bargain_hunter/main.py` (~86-110) | two fetch blocks — see below |
 | `src/bargain_hunter/notify/render.py:23` | `SOURCE_LABELS` += `{"dealnews": "DealNews (US)", "slickdeals": "Slickdeals (US)", "v2ex": "V2EX (CN)", "openrouter": "OpenRouter"}` — without this the email prints a title-cased raw slug. |
 | `src/bargain_hunter/templates/email.html.j2:56` | price badge currently `${{ "%.2f"|format(deal.price) }}`. Make it `{{ "US$" if deal.currency != "AUD" else "$" }}{{ ... }}`. |
@@ -415,26 +425,42 @@ Without this **every keyword hit from the new feeds is silently dropped** —
 they have zero votes and usually no parseable percentage. This is the single
 most important line in Phase 1.
 
-**`state.py`.** Add to the `StateStore` dict (it currently holds `cold_start`,
-`snapshots`, `first_seen`, `seeded`, `site_baseline`; `_prune()` only touches
-`snapshots`, so new keys are safe):
+**`state.py` — landed, described here for reference (do not re-implement).**
+`StateStore` gained two new instance dicts, `self._last_fetch: dict[str,
+datetime]` and `self._feature_snapshots: dict[str, dict]` — kept separate from
+`self._data` (the per-deal vote-velocity store) rather than shoehorned into it,
+so the two concepts don't collide. Persisted under new top-level JSON keys
+`last_fetch` and `feature_snapshots` in `deals_state.json`; `_prune()` does not
+touch either, so they survive indefinitely (as intended — a source's last-fetch
+time and its feature snapshot are not vote-velocity history that ages out).
 
 ```python
 def due_for_fetch(self, source: str, interval_minutes: float, now: datetime) -> bool:
-    last = self._data.get("last_fetch", {}).get(source)
-    if not last:
+    last = self._last_fetch.get(source)
+    if last is None:
         return True
-    return (now - datetime.fromisoformat(last)).total_seconds() >= interval_minutes * 60
+    return (now - last).total_seconds() >= interval_minutes * 60
 
 def mark_fetched(self, source: str, now: datetime) -> None:
-    self._data.setdefault("last_fetch", {})[source] = now.isoformat()
+    self._last_fetch[source] = now
 
-def llm_prices(self) -> dict[str, list[float]]:
-    return self._data.get("llm_prices", {})
+def snapshot(self, key: str) -> dict:
+    """Generic per-feature snapshot, e.g. state.snapshot("llm_prices") or
+    state.snapshot("bank_rates"). Not `llm_prices()`/`set_llm_prices()` — those
+    were dropped before implementation once bank_rates (Phase B3) turned up
+    needing the identical shape."""
+    return self._feature_snapshots.get(key, {})
 
-def set_llm_prices(self, prices: dict[str, tuple[float, float]]) -> None:
-    self._data["llm_prices"] = {k: [v[0], v[1]] for k, v in prices.items()}
+def set_snapshot(self, key: str, value: dict) -> None:
+    self._feature_snapshots[key] = value
 ```
+
+On load, every `datetime.fromisoformat(...)` call in `state.py` (including
+`last_fetch`) is wrapped in a small `_aware()` helper that coerces a naive
+result to UTC — `deals_state.json` is committed to `main` and therefore
+human-touchable, and a naive timestamp read back would otherwise raise
+`TypeError` the first time it's subtracted from a tz-aware `now`. This was not
+anticipated in the original plan; see HIGH_VALUE_SOURCES_PLAN.md "As-built".
 
 Storing the price snapshot here (rather than a new `data/llm_prices.json`) means
 **no `.github/workflows/hunt.yml` change**: `data/deals_state.json` is already in
@@ -474,7 +500,11 @@ if or_cfg and or_cfg.enabled and state.due_for_fetch(
             min_drop_percent=getattr(or_cfg, "min_drop_percent", 10.0),
             model_allowlist=list(getattr(or_cfg, "model_allowlist", [])),
         )
-        all_deals.extend(src.fetch(previous=state.llm_prices(), setter=state.set_llm_prices, now=now))
+        all_deals.extend(src.fetch(
+            previous=state.snapshot("llm_prices"),
+            setter=lambda v: state.set_snapshot("llm_prices", v),
+            now=now,
+        ))
         state.mark_fetched("openrouter", now)
     except Exception as exc:
         summary["errors"].append(f"openrouter fetch failed: {exc}")
@@ -623,6 +653,16 @@ correct design is a **third track value, `"digital"`**: any deal whose source is
 in the digital set is tagged `digital` regardless of whether it qualified via hot
 or watch, and counted against its own cap.
 
+**Decision: all six new sources share `track="digital"`** — `dealnews`,
+`slickdeals`, `v2ex`, `openrouter` here, plus `bank_rates` and `iknowthepilot`
+from HIGH_VALUE_SOURCES_PLAN.md. `bank_rates`/`iknowthepilot` aren't digital
+*goods*, but they're the same class of source as the other four: non-physical,
+voteless, watch-track, low volume. Each is too thin to justify its own fourth
+quota — rate rises are ~1-3/week after the 10bp gate, flight deals under 1/day
+after `max_deal_age_hours: 36` plus keyword gating — but exactly why they'd be
+crowded out sharing the AU hot/watch caps, which is the whole reason this
+quota exists. One `digital` set, six sources.
+
 1. `models.py` — `Subscriber.max_digital_alerts_per_day: int = 10`;
    `Notification.track` literal `+= "digital"`.
 2. `subscribers.py` — `_P_MAX_DIGITAL = "Max Digital Alerts/Day"` (~line 24) plus
@@ -683,13 +723,30 @@ Both gates exclude the new sources, and each needs a fix:
    never set. Fix: define `const DIGITAL_SOURCES = new Set(['dealnews',
    'slickdeals', 'v2ex', 'openrouter'])` and, for those sources, keep the deal on
    recency inside the existing 72h window instead of requiring `is_hot`. Volume
-   is ~1-2 items/day so the board will not flood.
-2. **(b)** they poll hourly/daily, so most runs emit no rows for them and the
-   "latest batch" is empty → **everything would silently disappear**. Fix:
-   resolve the latest batch **per source** (the most recent `ts` at which that
-   source appeared at all), not per run.
+   is ~1-2 items/day so the board will not flood. **This was real and was fixed.**
+2. **(b) was a non-problem — verify before "fixing" it.** This plan assumed the
+   latest-batch check resolves per *run*, so a daily-polling source's batch
+   would go empty on every run but the poll day and everything would silently
+   vanish. As-built: `latestTsBySource` in `frontend/lib/deals.ts` is already a
+   `Map<string, string>` keyed by `sourceFromKey(key)`, updated across every row
+   in the retention window — the batch has always been resolved **per source**,
+   not per run. No fix was needed here and none was made; don't re-implement it.
 3. The live OzBargain expiry re-check (`isOzbargainInactive`, ~lines 39-52) is
    already source-gated; leave it alone.
+4. **Event-emitting vs re-emitting sources — a real distinction this plan never
+   drew.** `dealnews`/`slickdeals`/`v2ex`/`iknowthepilot` are *re-emitting*: the
+   deal persists in the upstream feed, so every poll re-emits it and it lives
+   out the full 72h `RETENTION_HOURS` window under the batch gate above.
+   `openrouter`/`bank_rates` are *differs*: each emits a Deal exactly once, at
+   the moment its diff fires, and never again — under the batch gate they'd
+   expire the moment the source's *next* fetch happens (as little as a day
+   later for `openrouter`), well short of 72h. As-built: `frontend/lib/deals.ts`
+   defines `EVENT_EMITTING_SOURCES = new Set(['openrouter', 'bank_rates'])` and
+   skips the batch gate for them, relying on the 72h window alone. This
+   property isn't just a frontend concern — it also governs how `should_notify`,
+   dedup, and observation retention should be reasoned about for these two
+   sources vs the other four (a differ's single emission is the whole signal;
+   a re-emitter's repeat rows are not re-alerts).
 
 Region lives **only in the frontend** — a literal map beside the existing
 `sourceLabel()` (~line 248). Python never needs it, because filtering is already
@@ -768,8 +825,9 @@ nothing. Confirm the Australia section is byte-identical in content to before.
      not fire.
    - `tests/test_main.py`: digital cap independent of hot/watch caps; poll
      interval gating skips a fetch.
-   - `tests/test_state.py`: `due_for_fetch` / `mark_fetched` / `llm_prices`
-     round-trip and survive `save()`/`load()` and `_prune()`.
+   - `tests/test_state.py`: `due_for_fetch` / `mark_fetched` / `snapshot` /
+     `set_snapshot` round-trip and survive `save()`/`load()` and `_prune()`; a
+     naive (no-offset) timestamp on load is coerced tz-aware, not raised.
 4. **Regression:** full `pytest` and `ruff check .`. `config/settings.yaml` is
    read by **both** packages — `bargain_hunter.config.Settings` is
    `extra="forbid"` at the top level, and `strategy_hunter.load_strategy_config`
@@ -849,7 +907,12 @@ unauthenticated) · X / @grok (402 Payment Required — the fastest first-party
 channel is paywalled) · `x.ai/news` (10 recent posts, all model/feature
 launches, never subscription pricing) · `x.ai/api` (API token prices only, no
 consumer subscription tiers) · Artificial Analysis, Perplexity changelog (401) ·
-Slickdeals `mode=frontpage` (90-95% physical retail).
+Slickdeals `mode=frontpage` (90-95% physical retail) ·
+NodeSeek (`nodeseek.com/rss.xml` — 200/20 items, reachable, but sampled content is
+predominantly seat-sharing, region-spoofing, and account-resale — a content-legality
+rejection, not a payment-gating one; see HIGH_VALUE_SOURCES_PLAN.md Correction C2) ·
+linux.do (403 on every endpoint tried — `/latest.json`, `/latest.rss`, `/posts.json` —
+and `robots.txt` declares `ai-train=no`).
 
 Tier 2, with triggers: **HN Algolia**
 (`https://hn.algolia.com/api/v1/search_by_date?tags=story&numericFilters=points>30`)
