@@ -130,6 +130,13 @@ const LEVEL_RANK: Record<string, number> = { top: 3, great: 2, good: 1 }
 // later), so they skip that gate and rely on the 72h RETENTION_HOURS window
 // alone. Every other new source re-emits every poll, so the batch gate is
 // correct for them.
+// Sources switched off in config/settings.yaml. The 72h retention window
+// exists so a good deal doesn't vanish the moment its spike passes — but a
+// source that was deliberately disabled is a different thing, and without this
+// its cards linger on the board for three days after the decision. Keep in
+// sync with `enabled: false` entries in settings.yaml.
+const RETIRED_SOURCES = new Set(['smzdm'])
+
 const EVENT_EMITTING_SOURCES = new Set(['openrouter', 'bank_rates', 'cn_llm_docs', 'free_llm'])
 
 type ObsRow = Awaited<ReturnType<typeof readObservationsFile>>[number]
@@ -310,6 +317,7 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     const [key, agg] = entry
     const source = sourceFromKey(key)
     if (source === 'ozbargain' || source === 'camelcamelcamel') continue
+    if (RETIRED_SOURCES.has(source)) continue
     if (!EVENT_EMITTING_SOURCES.has(source) && !isStillInLatestSourceBatch(key, agg)) continue
     // A card the reader can't act on is worse than a missing one — see
     // resolveUrl().
@@ -364,21 +372,34 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     // discount_percent (the title says "for free", not "90% off"), so they
     // sort as 0 and lose to any discounted SaaS licence. Interleaving keeps
     // each source's own ordering while guaranteeing it a share of the section.
+    // Round-robin runs WITHIN a capture tier, never across tiers. Measured live
+    // 2026-08-21: interleaving by source alone handed smzdm's Apple Watch and
+    // T-shirt listings every second slot in the CN section, pushing the v2ex
+    // deals that are actually claimable from Australia down between them —
+    // the capture rating was computed correctly and then discarded one step
+    // later. Tier first (instant > unknown > shipped), source fairness inside
+    // it, existing discount/recency ordering inside that.
     const capBase = recencyCandidates.length  // the cap is per section, not global
-    const bySource = new Map<string, [string, Agg][]>()
-    for (const entry of deduped) {
-      const src = sourceFromKey(entry[0])
-      const list = bySource.get(src)
-      if (list) list.push(entry)
-      else bySource.set(src, [entry])
-    }
-    const queues = [...bySource.values()]
-    for (let i = 0; recencyCandidates.length < capBase + NEW_SOURCE_SECTION_CAP; i++) {
-      const round = queues.filter((q) => q.length > i)
-      if (!round.length) break
-      for (const q of round) {
-        if (recencyCandidates.length >= capBase + NEW_SOURCE_SECTION_CAP) break
-        recencyCandidates.push(q[i])
+    const limit = capBase + NEW_SOURCE_SECTION_CAP
+    for (const tier of [2, 1, 0]) {
+      if (recencyCandidates.length >= limit) break
+      const bySource = new Map<string, [string, Agg][]>()
+      for (const entry of deduped) {
+        const mode = captureMode(sourceFromKey(entry[0]), entry[1].latest.title as string)
+        if (CAPTURE_RANK[mode] !== tier) continue
+        const src = sourceFromKey(entry[0])
+        const list = bySource.get(src)
+        if (list) list.push(entry)
+        else bySource.set(src, [entry])
+      }
+      const queues = [...bySource.values()]
+      for (let i = 0; recencyCandidates.length < limit; i++) {
+        const round = queues.filter((q) => q.length > i)
+        if (!round.length) break
+        for (const q of round) {
+          if (recencyCandidates.length >= limit) break
+          recencyCandidates.push(q[i])
+        }
       }
     }
   }
