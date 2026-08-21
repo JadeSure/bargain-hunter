@@ -7,6 +7,7 @@ on:
       - "frontend/**"
       - "data/strategies/guides/**"
       - "data/strategies/onboarding/**"
+      - "data/leaderboard.json"
       - ".github/workflows/deploy-frontend.yml"
   schedule:
     # Backup refresh. GitHub heavily throttles scheduled runs, so the primary

@@ -103,9 +103,7 @@ def test_5bp_rise_produces_no_deal(monkeypatch):
             "depositRates": [{"rate": "0.0495"}],
         }
     }
-    fake = _fake_get(
-        {LIST_URL: (200, LIST_ONE_PRODUCT_UPDATED), DETAIL_URL: (200, detail_495)}
-    )
+    fake = _fake_get({LIST_URL: (200, LIST_ONE_PRODUCT_UPDATED), DETAIL_URL: (200, detail_495)})
     monkeypatch.setattr(mod.httpx, "get", fake)
     previous = {
         "Macquarie:SV001MBLSAV001": {
@@ -113,9 +111,7 @@ def test_5bp_rise_produces_no_deal(monkeypatch):
             "lastUpdated": "x",
         }
     }
-    src = BankRatesSource(
-        brands=[BRAND], product_categories=CATEGORIES, previous_snapshot=previous
-    )
+    src = BankRatesSource(brands=[BRAND], product_categories=CATEGORIES, previous_snapshot=previous)
     assert src.fetch() == []
 
 
@@ -133,9 +129,7 @@ def test_rate_fall_produces_no_deal(monkeypatch):
             "lastUpdated": "x",
         }
     }
-    src = BankRatesSource(
-        brands=[BRAND], product_categories=CATEGORIES, previous_snapshot=previous
-    )
+    src = BankRatesSource(brands=[BRAND], product_categories=CATEGORIES, previous_snapshot=previous)
     assert src.fetch() == []
 
 
@@ -188,6 +182,106 @@ def test_category_filter_excludes_other_categories(monkeypatch):
     src = BankRatesSource(brands=[BRAND], product_categories=CATEGORIES, previous_snapshot={})
     src.fetch()
     assert not any("LN1" in url for url, _ in calls)
+
+
+# -- leaderboard rows (frontend artifact, see leaderboard.py) -----------------
+
+
+def test_leaderboard_row_written_for_freshly_detailed_product(monkeypatch):
+    fake = _fake_get(
+        {LIST_URL: (200, LIST_ONE_PRODUCT), DETAIL_URL: (200, _json("cds_product_detail_490.json"))}
+    )
+    monkeypatch.setattr(mod.httpx, "get", fake)
+    src = BankRatesSource(brands=[BRAND], product_categories=CATEGORIES)
+    src.fetch()
+
+    row = src.next_leaderboard["Macquarie:SV001MBLSAV001"]
+    assert row["brand"] == "Macquarie"
+    assert row["name"] == "Macquarie Savings Account"
+    assert row["category"] == "TRANS_AND_SAVINGS_ACCOUNTS"
+    assert row["best_rate"] == 0.0490
+    assert row["bonus_points"] is None
+
+
+def test_leaderboard_row_carried_forward_when_unchanged(monkeypatch):
+    # lastUpdated matches the snapshot -> no detail call this run, but the row
+    # must still be present (carried from previous_leaderboard).
+    fake = _fake_get({LIST_URL: (200, LIST_ONE_PRODUCT)})
+    monkeypatch.setattr(mod.httpx, "get", fake)
+    previous_snapshot = {
+        "Macquarie:SV001MBLSAV001": {
+            "rates": {"best_rate": 0.0490, "bonus_points": None},
+            "lastUpdated": "2026-06-11T00:01:00.001Z",
+        }
+    }
+    previous_leaderboard = {
+        "Macquarie:SV001MBLSAV001": {
+            "brand": "Macquarie",
+            "name": "Macquarie Savings Account",
+            "category": "TRANS_AND_SAVINGS_ACCOUNTS",
+            "best_rate": 0.0490,
+            "bonus_points": None,
+            "url": BASE,
+        }
+    }
+    src = BankRatesSource(
+        brands=[BRAND],
+        product_categories=CATEGORIES,
+        previous_snapshot=previous_snapshot,
+        previous_leaderboard=previous_leaderboard,
+    )
+    src.fetch()
+
+    assert (
+        src.next_leaderboard["Macquarie:SV001MBLSAV001"]
+        == previous_leaderboard["Macquarie:SV001MBLSAV001"]
+    )
+
+
+def test_leaderboard_row_carried_forward_on_brand_failure(monkeypatch):
+    def fake_get_blip(url, params=None, headers=None, timeout=None):
+        raise httpx.ConnectError("boom", request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(mod.httpx, "get", fake_get_blip)
+    previous_leaderboard = {
+        "Macquarie:SV001MBLSAV001": {
+            "brand": "Macquarie",
+            "name": "Macquarie Savings Account",
+            "category": "TRANS_AND_SAVINGS_ACCOUNTS",
+            "best_rate": 0.0490,
+            "bonus_points": None,
+            "url": BASE,
+        }
+    }
+    src = BankRatesSource(
+        brands=[BRAND],
+        product_categories=CATEGORIES,
+        previous_leaderboard=previous_leaderboard,
+    )
+    src.fetch()
+
+    # Whole brand's list call failed -- row must stay exactly as seeded, not vanish.
+    assert src.next_leaderboard == previous_leaderboard
+
+
+def test_leaderboard_row_omitted_when_product_has_no_rate_or_bonus(monkeypatch):
+    product = _list_body(
+        [
+            {
+                "productId": "OD1",
+                "lastUpdated": "x",
+                "productCategory": "TRANS_AND_SAVINGS_ACCOUNTS",
+                "name": "Plain",
+            }
+        ]
+    )
+    detail_url = LIST_URL + "/OD1"
+    fake = _fake_get({LIST_URL: (200, product), detail_url: (200, {"data": {}})})
+    monkeypatch.setattr(mod.httpx, "get", fake)
+    src = BankRatesSource(brands=[BRAND], product_categories=CATEGORIES)
+    src.fetch()
+
+    assert src.next_leaderboard == {}
 
 
 # -- version negotiation --------------------------------------------------------
@@ -454,9 +548,7 @@ def test_bonus_points_rise_emits_deal(monkeypatch):
             "lastUpdated": "x",
         }
     }
-    src = BankRatesSource(
-        brands=[BRAND], product_categories=CATEGORIES, previous_snapshot=previous
-    )
+    src = BankRatesSource(brands=[BRAND], product_categories=CATEGORIES, previous_snapshot=previous)
     deals = src.fetch()
     assert len(deals) == 1
     assert deals[0].title == "Macquarie Altitude Velocity Black: 150,000 bonus points (was 90,000)"
@@ -476,9 +568,7 @@ def test_bonus_points_rise_below_threshold_no_deal(monkeypatch):
             "lastUpdated": "x",
         }
     }
-    src = BankRatesSource(
-        brands=[BRAND], product_categories=CATEGORIES, previous_snapshot=previous
-    )
+    src = BankRatesSource(brands=[BRAND], product_categories=CATEGORIES, previous_snapshot=previous)
     assert src.fetch() == []
 
 
@@ -573,9 +663,7 @@ def test_card_without_bonus_rewards_feature_yields_no_deal(monkeypatch):
     loyalty_only = {
         "data": {
             **_json("cds_card_detail_velocity_black.json")["data"],
-            "features": [
-                {"featureType": "LOYALTY_PROGRAM", "additionalInfo": "0.5 points per $1"}
-            ],
+            "features": [{"featureType": "LOYALTY_PROGRAM", "additionalInfo": "0.5 points per $1"}],
         }
     }
     fake = _fake_get({LIST_URL: (200, LIST_ONE_CARD), CARD_DETAIL_URL: (200, loyalty_only)})
@@ -586,7 +674,5 @@ def test_card_without_bonus_rewards_feature_yields_no_deal(monkeypatch):
             "lastUpdated": "x",
         }
     }
-    src = BankRatesSource(
-        brands=[BRAND], product_categories=CATEGORIES, previous_snapshot=previous
-    )
+    src = BankRatesSource(brands=[BRAND], product_categories=CATEGORIES, previous_snapshot=previous)
     assert src.fetch() == []

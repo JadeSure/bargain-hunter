@@ -25,6 +25,28 @@ def _patch(monkeypatch, payload: dict, status: int = 200) -> None:
     monkeypatch.setattr(mod.httpx, "get", fake_get)
 
 
+def test_last_models_populated_for_leaderboard_artifact(monkeypatch):
+    """check()'s return value is diffs only; the leaderboard writer (see
+    leaderboard.py) needs the full raw list, exposed as this side-effect
+    attribute -- same pattern as BankRatesSource.next_leaderboard."""
+    raw = _raw_models()
+    _patch(monkeypatch, {"data": raw})
+
+    src = LlmPriceSource()
+    src.check({}, now=NOW)
+
+    assert src.last_models == raw
+
+
+def test_last_models_empty_on_fetch_failure(monkeypatch):
+    _patch(monkeypatch, {}, status=500)
+
+    src = LlmPriceSource()
+    src.check({"qwen/qwen3.8-27b": [0.0000006, 0.0000032]}, now=NOW)
+
+    assert src.last_models == []
+
+
 def test_drop_at_or_above_threshold_detected(monkeypatch):
     _patch(monkeypatch, {"data": _raw_models()})
     previous = {"qwen/qwen3.8-27b": [0.0000006, 0.0000032]}
@@ -144,8 +166,8 @@ def test_negative_one_sentinel_price_not_treated_as_a_real_drop(monkeypatch):
 def test_model_allowlist_filters_and_empty_allowlist_means_all(monkeypatch):
     _patch(monkeypatch, {"data": _raw_models()})
     previous = {
-        "qwen/qwen3.8-27b": [0.0000006, 0.0000032],   # 25% drop
-        "z-ai/glm-5.3": [0.0000020, 0.0000044],       # 30% drop
+        "qwen/qwen3.8-27b": [0.0000006, 0.0000032],  # 25% drop
+        "z-ai/glm-5.3": [0.0000020, 0.0000044],  # 30% drop
     }
 
     scoped, _ = LlmPriceSource(model_allowlist=["qwen/"]).check(previous, now=NOW)
