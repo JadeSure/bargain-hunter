@@ -139,6 +139,8 @@ def test_fetch_paginates_both_endpoints_and_dedupes(monkeypatch):
         (mod.BASE_URL + mod._HOME_PATH, 20): empty,
         (mod.BASE_URL + mod._YOUHUI_PATH, 0): httpx.Response(200, json=FIXTURE_YOUHUI),
         (mod.BASE_URL + mod._YOUHUI_PATH, 20): empty,
+        (mod.BASE_URL + mod._FAXIAN_PATH, 0): empty,
+        (mod.BASE_URL + mod._FAXIAN_PATH, 20): empty,
     }
     requested = _patch_get(monkeypatch, responses)
 
@@ -159,6 +161,8 @@ def test_fetch_one_bad_page_does_not_sink_the_others(monkeypatch, caplog):
         (mod.BASE_URL + mod._HOME_PATH, 20): empty,
         (mod.BASE_URL + mod._YOUHUI_PATH, 0): httpx.Response(200, json=FIXTURE_YOUHUI),
         (mod.BASE_URL + mod._YOUHUI_PATH, 20): empty,
+        (mod.BASE_URL + mod._FAXIAN_PATH, 0): empty,
+        (mod.BASE_URL + mod._FAXIAN_PATH, 20): empty,
     }
     _patch_get(monkeypatch, responses)
 
@@ -167,3 +171,37 @@ def test_fetch_one_bad_page_does_not_sink_the_others(monkeypatch, caplog):
 
     assert "smzdm:180330849" in deals  # came from youhui despite home page 0 failing
     assert any("smzdm" in r.message and "home" in r.message for r in caplog.records)
+
+
+# -- faxian: article_date is naive Beijing time, not UTC -------------------------
+
+
+def test_faxian_article_date_is_parsed_as_beijing_not_utc():
+    """/v1/faxian/list has no article_unix_date; its timestamp is `article_date`,
+    a naive "YYYY-MM-DD HH:MM:SS" string in Beijing time. Measured 2026-08-21:
+    fetched at 06:16:16Z, newest article_date read "14:16:17" — exactly +8.
+    Reading it as UTC would put every item 8 hours in the FUTURE, which makes
+    the max-age filter silently never fire while the feed still looks healthy.
+    """
+    from bargain_hunter.sources.smzdm import _posted_at
+
+    got = _posted_at({"article_date": "2026-08-21 14:16:17"})
+    assert got is not None
+    assert got.tzinfo is not None, "must be timezone-aware (ruff DTZ)"
+    assert got == datetime(2026, 8, 21, 6, 16, 17, tzinfo=UTC)
+
+
+def test_article_unix_date_wins_over_article_date_when_both_present():
+    from bargain_hunter.sources.smzdm import _posted_at
+
+    unix = 1755756977  # 2025-08-21T05:76:17Z-ish; exact value irrelevant
+    got = _posted_at({"article_unix_date": unix, "article_date": "2026-08-21 14:16:17"})
+    assert got == datetime.fromtimestamp(unix, UTC)
+
+
+def test_posted_at_returns_none_when_neither_field_is_usable():
+    from bargain_hunter.sources.smzdm import _posted_at
+
+    for row in ({}, {"article_date": ""}, {"article_date": "not a date"},
+                {"article_unix_date": None, "article_date": None}):
+        assert _posted_at(row) is None

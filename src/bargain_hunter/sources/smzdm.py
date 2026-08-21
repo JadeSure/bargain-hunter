@@ -50,6 +50,7 @@ import logging
 import re
 import time
 from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -61,9 +62,18 @@ log = logging.getLogger(__name__)
 BASE_URL = "https://api.smzdm.com"
 _HOME_PATH = "/v1/home/list"
 _YOUHUI_PATH = "/v1/youhui/list"
+_FAXIAN_PATH = "/v1/faxian/list"
 APP_UA = "smzdm_android_V10.4.20 rv:864 (Redmi K30;Android10;zh)"
 _PAGE_SIZE = 20  # offset step between pages -- verified live, `limit` has no effect
 _HOME_CHANNEL = "优惠"
+
+# /v1/faxian/list carries no article_unix_date at all -- its timestamp is
+# `article_date`, a NAIVE "YYYY-MM-DD HH:MM:SS" string in Beijing time.
+# Measured 2026-08-21: fetched at 06:16:16Z, newest article_date read
+# "14:16:17" -- exactly +8. Reading it as UTC puts every item 8 hours in the
+# FUTURE, which makes the max-age filter silently never fire: the feed looks
+# perfectly healthy while the gate it is supposed to pass through does nothing.
+_CN_TZ = ZoneInfo("Asia/Shanghai")
 
 # Bare "12.34元" / "12元" only -- anything else (conditions, ranges like "低至
 # 5折起") is left unparsed rather than guessed at.
@@ -82,6 +92,22 @@ def _parse_unix(value: object) -> datetime | None:
         return datetime.fromtimestamp(int(value), UTC)
     except (TypeError, ValueError, OSError):
         return None
+
+
+def _parse_cn_datetime(value: object) -> datetime | None:
+    """Parse a naive Beijing-time "YYYY-MM-DD HH:MM:SS" string to aware UTC."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        aware = datetime.strptime(value.strip(), "%Y-%m-%d %H:%M:%S").replace(tzinfo=_CN_TZ)
+    except ValueError:
+        return None
+    return aware.astimezone(UTC)
+
+
+def _posted_at(row: dict) -> datetime | None:
+    """article_unix_date where present (home/youhui), else article_date (faxian)."""
+    return _parse_unix(row.get("article_unix_date")) or _parse_cn_datetime(row.get("article_date"))
 
 
 def _parse_price(text: str | None) -> tuple[float | None, str | None]:
@@ -119,6 +145,10 @@ class SmzdmSource(Source):
         endpoints = (
             ("home", _HOME_PATH, True),
             ("youhui", _YOUHUI_PATH, False),
+            # 发现: 拼多多百亿补贴 / 天猫超市 / 天猫国际 — mainland retail the
+            # other two endpoints barely surface. No article_channel_name here
+            # either, so nothing to filter on.
+            ("faxian", _FAXIAN_PATH, False),
         )
         first_request = True
         for label, path, filter_channel in endpoints:
@@ -183,7 +213,7 @@ class SmzdmSource(Source):
         if not article_id or not title:
             return None
 
-        posted_at = _parse_unix(row.get("article_unix_date"))
+        posted_at = _posted_at(row)
         if posted_at is not None:
             age_hours = (now - posted_at).total_seconds() / 3600
             if age_hours > self.max_item_age_hours:
@@ -204,7 +234,9 @@ class SmzdmSource(Source):
             url=url,
             description=_describe(row.get("article_mall"), row.get("article_price")),
             posted_at=posted_at,
-            votes_pos=_to_int(row.get("article_worthy")),
+            # faxian carries no article_worthy; article_favorite is its nearest
+            # engagement counter.
+            votes_pos=_to_int(row.get("article_worthy") or row.get("article_favorite")),
             comment_count=_to_int(row.get("article_comment")),
             price=price,
             price_confidence=confidence,
