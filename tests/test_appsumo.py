@@ -25,7 +25,7 @@ def _deals() -> dict[str, "mod.Deal"]:
 
 def test_only_current_started_non_addon_visible_items_kept():
     deals = _deals()
-    assert set(deals) == {"cleanvoice-ai", "tidycal", "crowdflow"}
+    assert set(deals) == {"cleanvoice-ai", "tidycal", "crowdflow", "worklm", "timetuna"}
 
 
 def test_expired_item_with_future_start_date_excluded():
@@ -71,6 +71,32 @@ def test_posted_at_parsed_from_dates_start_date():
     cleanvoice = _deals()["cleanvoice-ai"]
     assert cleanvoice.posted_at is not None
     assert cleanvoice.posted_at.isoformat() == "2026-06-01T00:00:00+00:00"
+
+
+# -- description composition ---------------------------------------------
+
+
+def test_description_composed_from_features_rating_and_refund():
+    worklm = _deals()["worklm"]
+    assert worklm.description == (
+        "AI chat · Multi-LLM access · BYOK · Team AI · 4.9★ (20 reviews) · 60-day refund"
+    )
+
+
+def test_description_none_when_no_features_rating_or_refund_present():
+    # cleanvoice-ai's fixture row has no core_features/common_features/
+    # deal_review/refundable_days at all.
+    cleanvoice = _deals()["cleanvoice-ai"]
+    assert cleanvoice.description is None
+
+
+def test_description_empty_feature_lists_and_no_rating_yet_still_clean():
+    # timetuna: both feature lists are [], review_count is 0 with
+    # average_rating None -- only the refund signal should survive, no
+    # dangling separators or a bare "·".
+    timetuna = _deals()["timetuna"]
+    assert timetuna.description == "60-day refund"
+    assert "·" not in timetuna.description  # no other parts to join
 
 
 # -- fetch(): pagination, pacing, and per-page failure isolation --------------

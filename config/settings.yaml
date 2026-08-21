@@ -205,7 +205,24 @@ sources:
   # votes_pos is still populated — it shows on the board, it just doesn't feed
   # the AU baseline.
   smzdm:
-    enabled: true
+    # DISABLED 2026-08-21, same day it shipped. It works — 72-92 deals/poll,
+    # three endpoints, real 值 counts — but it surfaces the wrong thing. Live
+    # sample of 41 items: 京东 31, 拼多多 5, 天猫 4, and the content is 月饼,
+    # 薯片, 牛角面包, a ¥4.99 packet of biscuits. Measured digital/remotely-
+    # redeemable share: 3/41 hits on a generous keyword probe, and all three
+    # were false positives (88VIP 沐浴露 matched "VIP", a tablet and a keyboard
+    # both matched "游戏"). True share ≈ 0%.
+    #
+    # The lesson, recorded so this isn't relitigated: "can he capture it" and
+    # "is it worth capturing" are two different axes, and this pass conflated
+    # them. The owner has a mainland address and family there, so these ARE
+    # deliverable — they are simply groceries. A ¥5 biscuit alert is not 羊毛.
+    # 什么值得买 is built for domestic Chinese shoppers; there is no digital
+    # slice inside it to filter down to.
+    #
+    # Flip to true if the goal ever becomes deliberate CN household shopping.
+    # The source, its three endpoints and its tests all still work.
+    enabled: false
     poll_interval_minutes: 60
     max_pages: 2
     max_item_age_hours: 72

@@ -54,6 +54,29 @@ def test_build_observation_has_expected_fields():
     assert 0 <= row["neg_ratio"] <= 1
 
 
+def test_build_observation_carries_description_through():
+    now = datetime.now(UTC)
+    row = build_observation(
+        _deal(description="A widget that does things."),
+        _snaps(now),
+        ScoringConfig(),
+        is_hot=True,
+        now=now,
+    )
+    assert row["description"] == "A widget that does things."
+
+    row_absent = build_observation(_deal(), _snaps(now), ScoringConfig(), is_hot=True, now=now)
+    assert row_absent["description"] is None
+
+
+def test_build_observation_caps_description_length():
+    now = datetime.now(UTC)
+    row = build_observation(
+        _deal(description="x" * 1000), _snaps(now), ScoringConfig(), is_hot=True, now=now
+    )
+    assert len(row["description"]) == 300
+
+
 def test_build_observation_records_hot_level():
     now = datetime.now(UTC)
     row = build_observation(

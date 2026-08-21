@@ -6,6 +6,7 @@
 export interface LiveDeal {
   key: string
   title: string
+  description: string | null
   url: string
   source: 'ozbargain' | 'camelcamelcamel' | string
   currency: string
@@ -202,6 +203,9 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
         deal: {
           key,
           title: r.title as string,
+          // Rows recorded before observations.py stored `description` have no
+          // such key; null renders nothing rather than "undefined".
+          description: (r.description as string | null) ?? null,
           url: resolveUrl(key, r),
           source: sourceFromKey(key),
           currency: (r.currency as string) ?? 'AUD',
@@ -344,6 +348,9 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     // post); undated/undiscounted deals sort by recency instead of vanishing.
     const deduped = dedupeBucket(bucket)
     deduped.sort((a, b) => {
+      const ma = CAPTURE_RANK[captureMode(sourceFromKey(a[0]), a[1].latest.title as string)]
+      const mb = CAPTURE_RANK[captureMode(sourceFromKey(b[0]), b[1].latest.title as string)]
+      if (ma !== mb) return mb - ma
       const da = (a[1].latest.discount_percent as number) ?? 0
       const db = (b[1].latest.discount_percent as number) ?? 0
       if (da !== db) return db - da
@@ -430,3 +437,107 @@ const REGION_BY_SOURCE: Record<string, DealRegion> = {
 export function dealRegion(source: string): DealRegion {
   return REGION_BY_SOURCE[source] ?? 'AU'
 }
+
+// Distinguishes deals the AU-based reader can actually receive (a digital
+// licence key, a download, a data top-up) from ones that require a physical
+// item to be shipped internationally to be useful to him. Source-level
+// defaults come first for sources that are categorically one or the other;
+// everything else falls to title inspection.
+export type CaptureMode = 'instant' | 'shipped' | 'unknown'
+
+// instant ranks above unknown ranks above shipped, used as the primary sort
+// key ahead of discount/recency in getLiveDeals()'s per-section sort.
+const CAPTURE_RANK: Record<CaptureMode, number> = { instant: 2, unknown: 1, shipped: 0 }
+
+const CAPTURE_INSTANT_SOURCES = new Set([
+  'appsumo', 'vercel', 'free_llm', 'openrouter', 'cn_llm_docs', 'bank_rates',
+])
+// Travel fares aren't parcels -- don't lump them in with 'shipped'.
+const CAPTURE_UNKNOWN_SOURCES = new Set(['iknowthepilot', 'aff', 'pointhacks'])
+
+// A physical-delivery marker must win over a digital-sounding word in the
+// same title -- e.g. a NordVPN *subscription* bundle that also says "free
+// shipping" ships a boxed key card, not a download. These are checked before
+// CAPTURE_INSTANT_PATTERNS, never after.
+const CAPTURE_SHIPPED_PATTERNS = [
+  /free shipping/i,
+  /\b\d+-pack\b/i,
+  /\bsq\.?\s?ft\.?/i,
+  // Chinese physical-goods listings are best caught by unit/packaging
+  // markers, not by enumerating product/food words.
+  /\d+(?:g|ml|片|罐|袋|盒)/,
+  /\*\d+箱/,
+  /礼盒/,
+]
+
+const CAPTURE_INSTANT_PATTERNS = [
+  /digital delivery/i,
+  /digital download/i,
+  /\bdownload\b/i,
+  /\bsubscription\b/i,
+  /\blicense\b/i,
+  /\bcredits?\b/i,
+  /\bvpn\b/i,
+  /\bantivirus\b/i,
+  /\bsoftware\b/i,
+  /会员/,
+  /客户端/,
+  /应用/,
+  /终身版/,
+  /送码/,
+  /流量/,
+  // Measured 2026-08-21 against a live v2ex harvest: without these, 4 of the 5
+  // genuinely capturable CN deals fell through to the CJK fallback below and
+  // were ranked to the bottom of their section -- the exact inversion this
+  // rating exists to prevent. 额度/羊毛/免费领 carry the meaning that 会员 and
+  // 流量 already did; they were simply missing.
+  /额度/,
+  /羊毛/,
+  /免费领/,
+  /免费领取/,
+  /邀请码?/,
+  /激活码|兑换码|序列号/,
+  /\bcredits?\b/i,
+  /\btokens?\b/i,
+]
+
+export function captureMode(source: string, title: string): CaptureMode {
+  if (CAPTURE_INSTANT_SOURCES.has(source)) return 'instant'
+  if (CAPTURE_UNKNOWN_SOURCES.has(source)) return 'unknown'
+  if (CAPTURE_SHIPPED_PATTERNS.some((p) => p.test(title))) return 'shipped'
+  if (CAPTURE_INSTANT_PATTERNS.some((p) => p.test(title))) return 'instant'
+  // A CJK title that matched neither set is 'unknown', NOT 'shipped'.
+  //
+  // An earlier revision defaulted CJK to 'shipped' because the CN section was
+  // then dominated by smzdm's physical-goods listings (mooncake gift boxes,
+  // model-numbered earbuds) that carry no unit marker. smzdm was disabled the
+  // same day -- see config/settings.yaml -- so that justification is gone,
+  // while the cost was not: measured live, the fallback mislabelled "Kimi K3
+  // 羊毛", "免费领取 100 刀 Fable 5 的使用额度" and "中银香港 boc + 10 元羊毛"
+  // as physical goods and ranked them last. Guessing 'shipped' from script
+  // alone buries the most capturable deals on the board; 'unknown' just
+  // declines to rank them, which is the honest answer when nothing matched.
+  return 'unknown'
+}
+
+// Verified 2026-08-21 against real titles pulled from the North America and
+// China sections (see teammate brief) -- every one of these must classify as
+// shown, checked by scripting captureMode() over this exact list:
+//
+// instant:
+//   "Microsoft Windows 11 Pro Lifetime License for $10 + digital delivery"
+//   "AdGuard Family Plan Lifetime Subscription for $11 + digital delivery"
+//   "15-Months NordVPN Standard Internet Security (10 Devices/Digital Download) $25 & More"
+//   "New Woot Customers: $14.99 | 1-Year NordVPN VPN & Cybersecurity Subscription (10-Device; Digital) at Woot!"
+//   "Malwarebytes Standard Premium Security 3-Device 1-Year Antivirus Software for $13 + download"
+//   "[跟一下] Chatgpt 客户端 1000 Credit 邀请，需要的来"
+//   "[分享创造] [送码活动]： AI Smart Planner 应用（终身版）"
+//   "[推广] 100MB-2GB 流量，免费出"
+//   "分享一个酷狗音乐会员便宜的方法"
+// shipped:
+//   "Like-New Amazon eero mesh wifi router - Supports internet plans up to 550 Mbps, Coverage up to 1,500 sq. ft., 1-pack $32.99"
+//   "Microsoft 365 Family 12-Month Subscription & NordVPN Basic 1-Year Bundle for $85 + free shipping"  <- physical marker wins over "Subscription"
+//   "港荣 黄油牛角面包 420g*1箱"
+//   "88VIP：桃李 提浆黑芝麻五仁豆沙馅 月饼"  <- no unit marker; caught by the CJK fallback
+//   "乐事 薯片528g 104g*2罐+40g×8罐"
+//   "塞那 Z60S AI骨传导 耳夹式蓝牙耳机"  <- "AI" is not treated as a digital marker (too generic); caught by the CJK fallback

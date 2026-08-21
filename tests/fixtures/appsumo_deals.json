@@ -99,6 +99,68 @@
         "end_date": null,
         "schema_end_date": "2026-08-28T00:00:00Z"
       }
+    },
+    {
+      "id": 10412,
+      "slug": "worklm",
+      "public_name": "WorkLLM",
+      "get_absolute_url": "/products/worklm",
+      "product_url": "https://worklm.example/?ref=appsumo",
+      "clickthrough_url": null,
+      "price": 89.0,
+      "original_price": 890.0,
+      "browse_deal_status": "current",
+      "has_ended": false,
+      "has_started": true,
+      "is_addon": false,
+      "display_on_browse": true,
+      "dates": {
+        "start_date": "2026-08-01T00:00:00Z",
+        "end_date": null,
+        "schema_end_date": "2026-08-28T00:00:00Z"
+      },
+      "core_features": [
+        {"feature": "AI chat"},
+        {"feature": "Multi-LLM access"},
+        {"feature": "BYOK"},
+        {"feature": "Team AI"},
+        {"feature": "Web search & deep research"}
+      ],
+      "common_features": [
+        {"text": "No API key needed"},
+        {"text": "Bring your own AI key"},
+        {"text": "AI chat assistant"}
+      ],
+      "deal_review": {"review_count": 20, "average_rating": "4.90"},
+      "deal_comment": {"comment_count": 12},
+      "refundable_days": 60,
+      "is_ending_soon": false
+    },
+    {
+      "id": 10488,
+      "slug": "timetuna",
+      "public_name": "TimeTuna",
+      "get_absolute_url": "/products/timetuna",
+      "product_url": "https://timetuna.example/?ref=appsumo",
+      "clickthrough_url": null,
+      "price": 39.0,
+      "original_price": 390.0,
+      "browse_deal_status": "current",
+      "has_ended": false,
+      "has_started": true,
+      "is_addon": false,
+      "display_on_browse": true,
+      "dates": {
+        "start_date": "2026-08-10T00:00:00Z",
+        "end_date": null,
+        "schema_end_date": "2026-08-28T00:00:00Z"
+      },
+      "core_features": [],
+      "common_features": [],
+      "deal_review": {"review_count": 0, "average_rating": null},
+      "deal_comment": {"comment_count": 0},
+      "refundable_days": 60,
+      "is_ending_soon": false
     }
   ],
   "meta": {

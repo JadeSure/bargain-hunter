@@ -23,6 +23,12 @@ Three measured traps in the raw payload:
   - ``product_url`` is the *vendor's* own site and ``clickthrough_url`` is
     always ``None`` -- neither is the deal page. The deal page is
     ``"https://appsumo.com" + get_absolute_url``.
+
+``description`` is composed in ``_describe`` from three optional signals:
+``core_features``/``common_features`` (dicts, text under ``feature`` vs
+``text`` respectively -- either list can be empty), ``deal_review``
+(``average_rating`` is a *string* and can be ``None`` alongside
+``review_count: 0`` on a brand-new deal), and ``refundable_days``.
 """
 
 import contextlib
@@ -51,6 +57,54 @@ def _parse_ts(text: str | None) -> datetime | None:
         dt = datetime.fromisoformat(text.replace("Z", "+00:00"))
         return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
     return None
+
+
+_MAX_FEATURES = 4  # card display, not a product page -- a handful, not the full list
+
+
+def _feature_texts(items: object, key: str) -> list[str]:
+    """Extract non-empty feature strings from a `core_features`/`common_features` list.
+
+    Both lists hold dicts, but the text lives under a different key in each
+    (`feature` vs `text`) -- measured live 2026-08-21. Either list can also be
+    empty on a given deal.
+    """
+    texts = []
+    for item in items or []:
+        if not isinstance(item, dict):
+            continue
+        text = (item.get(key) or "").strip()
+        if text:
+            texts.append(text)
+    return texts
+
+
+def _describe(item: dict) -> str | None:
+    """Compose a short "what is this / should I care" card description.
+
+    Features answer "what is this", the rating is the quality signal, and the
+    refund window is the risk signal -- in that order. Any of the three can be
+    absent (empty feature lists, a brand-new deal with no reviews yet, no
+    refund window), so parts are collected and joined only where present.
+    """
+    features = _feature_texts(item.get("core_features"), "feature") or _feature_texts(
+        item.get("common_features"), "text"
+    )
+    parts = features[:_MAX_FEATURES]
+
+    review = item.get("deal_review") or {}
+    review_count = review.get("review_count") or 0
+    rating = review.get("average_rating")
+    if rating is not None and review_count:
+        with contextlib.suppress(TypeError, ValueError):
+            parts.append(f"{float(rating):.1f}★ ({review_count} reviews)")
+
+    refundable_days = item.get("refundable_days")
+    is_number = isinstance(refundable_days, int | float) and not isinstance(refundable_days, bool)
+    if is_number and refundable_days > 0:
+        parts.append(f"{int(refundable_days)}-day refund")
+
+    return " · ".join(parts) or None
 
 
 class AppSumoSource(Source):
@@ -140,6 +194,7 @@ class AppSumoSource(Source):
             deal_id=slug,
             title=title,
             url=url,
+            description=_describe(item),
             posted_at=_parse_ts((item.get("dates") or {}).get("start_date")),
             price=price,
             was_price=was_price,

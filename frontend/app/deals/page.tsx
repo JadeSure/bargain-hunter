@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { getLiveDeals, formatAge, sourceLabel, currencySymbol, dealRegion } from '@/lib/deals'
+import { getLiveDeals, formatAge, sourceLabel, currencySymbol, dealRegion, captureMode } from '@/lib/deals'
 import type { LiveDeal } from '@/lib/deals'
 import { getGuideDealMatches } from '@/lib/guide-deal-matching'
 import type { Guide } from '@/lib/guides'
@@ -43,12 +43,20 @@ function SourceBadge({ source }: { source: string }) {
   return <span className="deals-badge deals-badge-source">{sourceLabel(source)}</span>
 }
 
+function CaptureBadge({ source, title }: { source: string; title: string }) {
+  const mode = captureMode(source, title)
+  if (mode === 'instant') return <span className="deals-badge deals-badge-instant">⚡ Instant</span>
+  if (mode === 'shipped') return <span className="deals-badge deals-badge-shipped">📦 Ships</span>
+  return null
+}
+
 function DealCard({ deal, guides }: { deal: LiveDeal; guides: Guide[] }) {
   return (
     <div className="deal-live-card">
       <div className="deal-live-top">
         <div className="deal-live-badges">
           <HotLevelBadge level={deal.hotLevel} />
+          <CaptureBadge source={deal.source} title={deal.title} />
           <SourceBadge source={deal.source} />
         </div>
         <span className="deal-live-age">{formatAge(deal.ageHours)}</span>
@@ -86,6 +94,10 @@ function DealCard({ deal, guides }: { deal: LiveDeal; guides: Guide[] }) {
         </div>
       )}
 
+      {deal.description && (
+        <p className="deal-live-desc">{deal.description}</p>
+      )}
+
       {deal.cashbackPercent !== null && (
         <div className="deal-live-cashback">
           + up to {deal.cashbackPercent}% cashback
@@ -108,7 +120,7 @@ function DealCard({ deal, guides }: { deal: LiveDeal; guides: Guide[] }) {
       )}
 
       <div className="deal-live-footer">
-        {deal.source === 'ozbargain' && (
+        {deal.votesPos > 0 && (
           <span className="deal-live-votes">
             <svg width="10" height="9" viewBox="0 0 11 10" fill="none" aria-hidden="true">
               <path d="M5.5 0.5L10 9H1L5.5 0.5Z" fill="#4ade80" />
@@ -117,7 +129,7 @@ function DealCard({ deal, guides }: { deal: LiveDeal; guides: Guide[] }) {
             {deal.commentCount > 0 && <> · {deal.commentCount} comments</>}
           </span>
         )}
-        <span className="deal-live-score">peak {deal.peakScore.toFixed(2)}</span>
+        {deal.peakScore > 0 && <span className="deal-live-score">peak {deal.peakScore.toFixed(2)}</span>}
         <span className="deal-live-link-hint">View deal ↗</span>
       </div>
     </div>

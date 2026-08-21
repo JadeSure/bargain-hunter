@@ -35,6 +35,11 @@ log = logging.getLogger(__name__)
 _AET = ZoneInfo("Australia/Sydney")
 DEFAULT_OBS_DIR = Path("data/observations")
 
+# A card only shows a preview, and this field is appended to a JSONL file every
+# run and committed to git -- an unbounded description would bloat repo history
+# for no benefit over a capped one.
+_MAX_DESCRIPTION_CHARS = 300
+
 
 def build_observation(
     deal: Deal,
@@ -67,6 +72,7 @@ def build_observation(
         "ts": now.isoformat(),
         "deal_key": deal.key,
         "title": deal.title,
+        "description": deal.description[:_MAX_DESCRIPTION_CHARS] if deal.description else None,
         "url": deal.url,
         "votes_pos": deal.votes_pos,
         "votes_neg": deal.votes_neg,

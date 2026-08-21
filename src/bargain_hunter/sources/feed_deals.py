@@ -161,6 +161,16 @@ class FeedDealsSource(Source):
             r"封号", r"被封", r"炸了", r"跑路", r"翻车", r"缩水", r"没了",
             # scam warnings
             r"警惕", r"小心", r"谨慎", r"别急", r"避雷", r"骗",
+            # self-promotion: [推广] is V2EX's own commercial tag, but commercial
+            # is not the same as offering anything — a founder announcing their
+            # new site is tagged [推广] and has no deal in it. Measured live
+            # 2026-08-21: "[推广] 做了一个 AI Code Detector" and "[推广] 做了个 AI
+            # 视频生成网站" were 2 of the 3 noise items in an 8-item harvest.
+            r"做了一?个", r"做了款", r"开发了", r"上线了",
+            r"我的.{0,6}(网站|产品|应用|工具)", r"求.{0,4}体验", r"求个?反馈",
+            # complaints that a discount is absent, which match 优惠 while saying
+            # the opposite: "[深圳] 现在自如换租很少优惠" was the third.
+            r"很少优惠", r"没有优惠", r"不划算",
             # on-topic vocabulary, off-topic subject
             r"公益", r"心理咨询",
         ],

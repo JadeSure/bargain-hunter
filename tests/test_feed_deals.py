@@ -471,3 +471,28 @@ def test_title_block_is_scoped_to_v2ex_not_shared():
         src = FeedDealsSource(name=name, feed_urls=[])
         assert src._title_block == [], name
         assert not any(p.search(transit_fare) for p in src._title_block)
+
+
+def test_v2ex_title_block_rejects_self_promotion_and_absent_discounts():
+    """[推广] is V2EX's commercial tag, but commercial != offering anything.
+
+    All three strings are real titles from one live 8-item harvest on
+    2026-08-21 — they were the entire noise residue after every other filter.
+    """
+    for title in (
+        "[推广] 做了一个 AI Code Detector：粘贴代码或上传文件，给出代码 AI 风险线索",
+        "[推广] 做了个 AI 视频生成网站",
+        "[深圳] 现在自如换租很少优惠，另外自如搬家好贵",
+    ):
+        assert _v2ex_blocks(title), title
+
+
+def test_v2ex_title_block_keeps_the_real_deals_from_that_same_harvest():
+    for title in (
+        "中银香港 boc + 10 元羊毛",
+        "支付宝免费领无糖可乐，亲测一次即中",
+        "免费领取 100 刀 Fable 5 的使用额度",
+        "Kimi K3 羊毛",
+        "[跟一下] Chatgpt 客户端 1000 Credit 邀请，需要的来（老号或免费账号也可）",
+    ):
+        assert not _v2ex_blocks(title), title
