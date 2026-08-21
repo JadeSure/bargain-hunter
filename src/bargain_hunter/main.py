@@ -23,7 +23,7 @@ from . import leaderboard
 from .alert_throttle import AlertThrottle
 from .cashback import enrich_cashback
 from .categories import deal_matches_categories
-from .config import Settings, effective_tiers, load_dotenv, load_settings
+from .config import Settings, SourceConfig, effective_tiers, load_dotenv, load_settings
 from .dedup import DedupStore
 from .matching import _keyword_pattern, filter_watch_matches
 from .models import Deal, Subscriber
@@ -85,6 +85,33 @@ def _save_state(state: StateStore, dry_run: bool) -> None:
         state.save()
 
 
+def _fetch_gate(
+    state: StateStore,
+    source: str,
+    cfg: SourceConfig | None,
+    interval_minutes: float,
+    now: datetime,
+) -> bool:
+    """Log this poll-cadence-gated source's fetch decision at INFO; return
+    whether the caller should fetch.
+
+    A source that's disabled, or just not due yet on its poll interval, must
+    not look identical in the logs to a silently broken one — that ambiguity
+    (a run log showing nothing for a source, with no way to tell "waiting"
+    from "broken") has cost real debugging time. One line either way, next to
+    the "<source>: fetched N deals." line on success.
+    """
+    if not (cfg and cfg.enabled):
+        log.info("%s: skipped (not enabled).", source)
+        return False
+    if not state.due_for_fetch(source, interval_minutes, now):
+        last = state.last_fetch(source)
+        due_in = max(interval_minutes - (now - last).total_seconds() / 60, 0.0) if last else 0.0
+        log.info("%s: skipped (not due for another %.0fm).", source, due_in)
+        return False
+    return True
+
+
 def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     """Execute one full run.  Returns a summary dict (counts only, no PII)."""
     summary: dict = {
@@ -140,10 +167,8 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     # the 5-min hot-path loop doesn't hammer them every run.
     for src_name in ("dealnews", "slickdeals", "v2ex", "iknowthepilot"):
         cfg = settings.sources.get(src_name)
-        if not (cfg and cfg.enabled):
-            continue
         interval = getattr(cfg, "poll_interval_minutes", 60)
-        if not state.due_for_fetch(src_name, interval, now):
+        if not _fetch_gate(state, src_name, cfg, interval, now):
             continue
         try:
             src = FeedDealsSource(
@@ -163,10 +188,8 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             summary["errors"].append(msg)
 
     or_cfg = settings.sources.get("openrouter")
-    if (
-        or_cfg
-        and or_cfg.enabled
-        and state.due_for_fetch("openrouter", getattr(or_cfg, "poll_interval_minutes", 1440), now)
+    if _fetch_gate(
+        state, "openrouter", or_cfg, getattr(or_cfg, "poll_interval_minutes", 1440), now
     ):
         try:
             src = LlmPriceSource(
@@ -188,10 +211,8 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             summary["errors"].append(msg)
 
     br_cfg = settings.sources.get("bank_rates")
-    if (
-        br_cfg
-        and br_cfg.enabled
-        and state.due_for_fetch("bank_rates", getattr(br_cfg, "poll_interval_minutes", 1440), now)
+    if _fetch_gate(
+        state, "bank_rates", br_cfg, getattr(br_cfg, "poll_interval_minutes", 1440), now
     ):
         try:
             src = BankRatesSource(
