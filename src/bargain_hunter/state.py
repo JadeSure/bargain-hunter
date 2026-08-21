@@ -240,6 +240,11 @@ class StateStore:
             return True
         return (now - last).total_seconds() >= interval_minutes * 60
 
+    def last_fetch(self, source: str) -> datetime | None:
+        """When `source` was last fetched, or None if never (lets callers log
+        a 'not due yet' skip with a remaining-time estimate)."""
+        return self._last_fetch.get(source)
+
     def mark_fetched(self, source: str, now: datetime) -> None:
         self._last_fetch[source] = now
 

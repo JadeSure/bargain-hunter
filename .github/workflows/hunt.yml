@@ -83,21 +83,7 @@ jobs:
         env:
           TZ: Australia/Sydney
         run: |
-          # main moves often (the deal pipeline commits every ~5 min), so every
-          # push needs a rebase-and-retry.
-          push_with_retry() {
-            for attempt in 1 2 3 4 5; do
-              if git push; then
-                echo "Pushed on attempt $attempt."
-                return 0
-              fi
-              echo "Push rejected (attempt $attempt); rebasing on latest main."
-              if ! git pull --rebase -X theirs origin main; then
-                git rebase --abort 2>/dev/null || true
-              fi
-            done
-            return 1
-          }
+          source .github/scripts/push-with-retry.sh
 
           today=$(date +%Y-%m-%d)
           last=$(git log -1 --format=%cd --date=format-local:%Y-%m-%d -- data/deals_state.json 2>/dev/null || true)
@@ -130,21 +116,7 @@ jobs:
             exit 0
           fi
 
-          # main moves often (the deal pipeline commits every ~5 min), so every
-          # push needs a rebase-and-retry.
-          push_with_retry() {
-            for attempt in 1 2 3 4 5; do
-              if git push; then
-                echo "Pushed on attempt $attempt."
-                return 0
-              fi
-              echo "Push rejected (attempt $attempt); rebasing on latest main."
-              if ! git pull --rebase -X theirs origin main; then
-                git rebase --abort 2>/dev/null || true
-              fi
-            done
-            return 1
-          }
+          source .github/scripts/push-with-retry.sh
 
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -163,21 +135,7 @@ jobs:
             exit 0
           fi
 
-          # main moves often (the deal pipeline commits every ~5 min), so every
-          # push needs a rebase-and-retry.
-          push_with_retry() {
-            for attempt in 1 2 3 4 5; do
-              if git push; then
-                echo "Pushed on attempt $attempt."
-                return 0
-              fi
-              echo "Push rejected (attempt $attempt); rebasing on latest main."
-              if ! git pull --rebase -X theirs origin main; then
-                git rebase --abort 2>/dev/null || true
-              fi
-            done
-            return 1
-          }
+          source .github/scripts/push-with-retry.sh
 
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
