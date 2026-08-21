@@ -129,7 +129,7 @@ const LEVEL_RANK: Record<string, number> = { top: 3, great: 2, good: 1 }
 // later), so they skip that gate and rely on the 72h RETENTION_HOURS window
 // alone. Every other new source re-emits every poll, so the batch gate is
 // correct for them.
-const EVENT_EMITTING_SOURCES = new Set(['openrouter', 'bank_rates'])
+const EVENT_EMITTING_SOURCES = new Set(['openrouter', 'bank_rates', 'cn_llm_docs'])
 
 type ObsRow = Awaited<ReturnType<typeof readObservationsFile>>[number]
 
@@ -373,6 +373,7 @@ const SOURCE_LABELS: Record<string, string> = {
   openrouter: 'OpenRouter',
   bank_rates: 'AU Bank Rates',
   iknowthepilot: 'Flight Deals (AU)',
+  cn_llm_docs: 'CN AI Pricing',
 }
 export function sourceLabel(source: string): string {
   return SOURCE_LABELS[source] ?? source
@@ -393,6 +394,7 @@ const REGION_BY_SOURCE: Record<string, DealRegion> = {
   bank_rates: 'AU', iknowthepilot: 'AU',
   dealnews: 'NA', slickdeals: 'NA',
   v2ex: 'CN', openrouter: 'GLOBAL',
+  cn_llm_docs: 'CN',
 }
 export function dealRegion(source: string): DealRegion {
   return REGION_BY_SOURCE[source] ?? 'AU'

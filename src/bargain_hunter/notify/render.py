@@ -29,6 +29,7 @@ SOURCE_LABELS = {
     "openrouter": "OpenRouter",
     "bank_rates": "AU Bank Rates",
     "iknowthepilot": "Flight Deals (AU)",
+    "cn_llm_docs": "CN AI Pricing",
 }
 
 _warned_missing_unsubscribe_config = False

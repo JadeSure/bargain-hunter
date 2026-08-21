@@ -134,6 +134,45 @@ sources:
     currency: "AUD"
     feed_urls: ["https://www.iknowthepilot.com.au/feed/"]
 
+  # --- CN AI token 羊毛: DeepSeek/Kimi/Zhipu/SiliconFlow pricing & policy docs.
+  # /v1/models is 401 without a key on all of these, and the CN deal
+  # aggregators are anti-bot walled -- these are the platforms' own published
+  # docs (Mintlify llms.txt convention, or DeepSeek's statically-rendered
+  # Docusaurus site), fetched and diffed the same way as llm_prices.py.
+  cn_llm_docs:
+    enabled: true
+    # Docs move monthly, not hourly -- weekly is the compromise: catches a
+    # time-limited promo (e.g. Kimi's file-API "限时免费" window) without
+    # hammering static doc pages daily.
+    poll_interval_minutes: 10080     # 7 days
+    currency: "CNY"
+    pages:                            # verified live 2026-08-21 (llms.txt convention
+                                       # / static HTML); owner has WeChat + Alipay +
+                                       # a mainland phone number, so mainland-only
+                                       # promos on these are fully actionable for him
+      - {tag: kimi, slug: chat, label: "Kimi 定价说明",
+         url: "https://platform.kimi.com/docs/pricing/chat.md"}
+      - {tag: kimi, slug: chat-k3, label: "Kimi K3",
+         url: "https://platform.kimi.com/docs/pricing/chat-k3.md"}
+      - {tag: kimi, slug: chat-k27-code, label: "Kimi K2.7 Code",
+         url: "https://platform.kimi.com/docs/pricing/chat-k27-code.md"}
+      - {tag: kimi, slug: chat-k26, label: "Kimi K2.6",
+         url: "https://platform.kimi.com/docs/pricing/chat-k26.md"}
+      - {tag: kimi, slug: chat-k25, label: "Kimi K2.5",
+         url: "https://platform.kimi.com/docs/pricing/chat-k25.md"}
+      - {tag: kimi, slug: chat-v1, label: "Moonshot V1",
+         url: "https://platform.kimi.com/docs/pricing/chat-v1.md"}
+      - {tag: kimi, slug: limits, label: "Kimi 充值等级",
+         url: "https://platform.kimi.com/docs/pricing/limits.md"}
+      - {tag: deepseek, slug: pricing, label: "DeepSeek 定价",
+         url: "https://api-docs.deepseek.com/quick_start/pricing/"}
+      - {tag: deepseek, slug: updates, label: "DeepSeek Change Log",
+         url: "https://api-docs.deepseek.com/updates/"}
+      - {tag: zhipu, slug: model-overview, label: "智谱 模型概览",
+         url: "https://docs.bigmodel.cn/cn/guide/start/model-overview.md"}
+      - {tag: siliconflow, slug: rate-limits, label: "SiliconFlow Rate Limits",
+         url: "https://docs.siliconflow.cn/cn/userguide/rate-limits/rate-limit-and-upgradation.md"}
+
 scoring:
   window_minutes: 15               # 15-min window: accurate current momentum, 2-run detection
   hot:
@@ -163,7 +202,7 @@ scoring:
     # Sources with no vote signal at all — kept out of the OzBargain-calibrated
     # site velocity index (see the `watch.trusted_sources` counterpart below).
     voteless_sources: ["camelcamelcamel", "dealnews", "slickdeals", "v2ex",
-                        "openrouter", "bank_rates", "iknowthepilot"]
+                        "openrouter", "bank_rates", "iknowthepilot", "cn_llm_docs"]
     # Age cap (hours since posted_at) for the voteless discount-only candidacy
     # path — the only staleness gate on it, since there's no vote velocity to
     # decay a score. Without this, an old high-discount item from a global
@@ -202,7 +241,7 @@ scoring:
     # Editorially curated / keyword-scoped feeds carry neither votes nor a
     # parseable discount; the keyword match is itself the quality guard.
     trusted_sources: ["dealnews", "slickdeals", "v2ex", "openrouter",
-                       "bank_rates", "iknowthepilot"]
+                       "bank_rates", "iknowthepilot", "cn_llm_docs"]
 
 dedup:
   lookback_days: 7                 # read recent Sent Log window for local dedup
