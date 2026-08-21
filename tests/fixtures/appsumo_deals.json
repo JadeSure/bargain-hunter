@@ -1,0 +1,110 @@
+{
+  "deals": [
+    {
+      "id": 10231,
+      "slug": "cleanvoice-ai",
+      "public_name": "CleanVoice AI",
+      "get_absolute_url": "/products/cleanvoice-ai",
+      "product_url": "https://cleanvoice.ai/?ref=appsumo",
+      "clickthrough_url": null,
+      "price": 29.0,
+      "original_price": 299.0,
+      "browse_deal_status": "current",
+      "has_ended": false,
+      "has_started": true,
+      "is_addon": false,
+      "display_on_browse": true,
+      "dates": {
+        "start_date": "2026-06-01T00:00:00Z",
+        "end_date": null,
+        "schema_end_date": "2026-08-28T00:00:00Z"
+      }
+    },
+    {
+      "id": 10188,
+      "slug": "tidycal",
+      "public_name": "TidyCal",
+      "get_absolute_url": "/products/tidycal",
+      "product_url": "https://tidycal.com/?ref=appsumo",
+      "clickthrough_url": null,
+      "price": 59.0,
+      "original_price": 708.0,
+      "browse_deal_status": "current",
+      "has_ended": false,
+      "has_started": true,
+      "is_addon": false,
+      "display_on_browse": true,
+      "dates": {
+        "start_date": "2026-05-15T00:00:00Z",
+        "end_date": null,
+        "schema_end_date": "2026-08-28T00:00:00Z"
+      }
+    },
+    {
+      "id": 4021,
+      "slug": "vectera-2019",
+      "public_name": "Vectera",
+      "get_absolute_url": "/products/vectera",
+      "product_url": "https://vectera.com/?ref=appsumo",
+      "clickthrough_url": null,
+      "price": 49.0,
+      "original_price": 490.0,
+      "browse_deal_status": "expired",
+      "has_ended": true,
+      "has_started": true,
+      "is_addon": false,
+      "display_on_browse": false,
+      "dates": {
+        "start_date": "2030-10-03T00:00:00Z",
+        "end_date": "2019-11-01T00:00:00Z",
+        "schema_end_date": "2019-11-01T00:00:00Z"
+      }
+    },
+    {
+      "id": 10305,
+      "slug": "cleanvoice-ai-penetration-testing",
+      "public_name": "Penetration testing",
+      "get_absolute_url": "/products/cleanvoice-ai/penetration-testing",
+      "product_url": "https://cleanvoice.ai/?ref=appsumo",
+      "clickthrough_url": null,
+      "price": 19.0,
+      "original_price": 199.0,
+      "browse_deal_status": "current",
+      "has_ended": false,
+      "has_started": true,
+      "is_addon": true,
+      "display_on_browse": true,
+      "dates": {
+        "start_date": "2026-06-01T00:00:00Z",
+        "end_date": null,
+        "schema_end_date": "2026-08-28T00:00:00Z"
+      }
+    },
+    {
+      "id": 10299,
+      "slug": "crowdflow",
+      "public_name": "Crowdflow",
+      "get_absolute_url": "/products/crowdflow",
+      "product_url": "https://crowdflow.io/?ref=appsumo",
+      "clickthrough_url": null,
+      "price": 29.0,
+      "original_price": 0.0,
+      "browse_deal_status": "current",
+      "has_ended": false,
+      "has_started": true,
+      "is_addon": false,
+      "display_on_browse": true,
+      "dates": {
+        "start_date": "2026-07-01T00:00:00Z",
+        "end_date": null,
+        "schema_end_date": "2026-08-28T00:00:00Z"
+      }
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "per_page": 10,
+    "total_results": 4230,
+    "total_pages": 423
+  }
+}

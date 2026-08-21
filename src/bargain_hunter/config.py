@@ -237,6 +237,13 @@ class RunConfig(StrictConfigModel):
     # (see queue_store.py). A queued entry older than this many hours is treated
     # as stale and discarded when the queue is drained after quiet hours end.
     quiet_hours_queue_max_age_hours: float = 12.0
+    # Staleness ceiling: warn when a source's own freshest item is older than
+    # this. Catches the failure this repo has hit repeatedly — a feed that
+    # still returns HTTP 200 with well-formed content but has gone dark (the
+    # measured specimen: God Save The Points, 10 valid items, newest 386 days
+    # old, site closed). Neither a status check nor an item-count check sees
+    # it. Set to None to disable.
+    source_staleness_ceiling_days: float | None = 45.0
 
 
 class Settings(StrictConfigModel):

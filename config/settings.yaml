@@ -134,6 +134,83 @@ sources:
     currency: "AUD"
     feed_urls: ["https://www.iknowthepilot.com.au/feed/"]
 
+  # --- Sources gated by what the owner can actually transact, not by country.
+  # See docs/GLOBAL_EXPANSION_PLAN.md: the developed-country consumer and
+  # welfare categories were probed and scored a total wipeout (26 candidates,
+  # 0 kept) — foreign welfare needs a national ID and foreign retail needs a
+  # local address. That finding stands. Read the ⚠️ Correction in that doc
+  # before extending this logic to anywhere the owner holds citizenship: it was
+  # wrongly applied to mainland China once already, on an owner model nobody
+  # had verified.
+
+  # Vercel's changelog. Measured live 2026-08-21: 3.3 MB Atom, 1492 entries back
+  # to 2016, newest 10.6h. 125 entries fall inside 30 days and 9 of those are
+  # real time-boxed offers (AI Gateway model discounts, free windows, free
+  # domain for Pro) — account-level and card-billed, claimable from AU the same
+  # day. max_item_age_hours + title_keywords live in feed_deals.py's per-name
+  # defaults; without the age cutoff every poll would flood on 10 years of
+  # entries. Polled 12-hourly: these offers run days to weeks, not hours.
+  vercel:
+    enabled: true
+    poll_interval_minutes: 720
+    currency: "USD"
+    feed_urls: ["https://vercel.com/atom"]
+
+  # AppSumo lifetime SaaS/dev-tooling licences. Digitally delivered, USD,
+  # chargeable to an AU card, no residency gate. The API ignores every query
+  # parameter except `page` (verified by slug-list comparison — a byte compare
+  # is invalid here, `dates.schema_end_date` is derived from request time), so
+  # the source filters client-side and pages sequentially.
+  appsumo:
+    enabled: true
+    poll_interval_minutes: 360
+    currency: "USD"
+    max_pages: 4
+
+  # AU frequent-flyer. Both feeds share one `name` (one name = one filter, see
+  # the v2ex note above). The deals subforum is low-volume (~0.7 threads/week)
+  # but 17/20 sampled threads carry a concrete ex-AU fare with a price; the blog
+  # adds ~1 "Airfare of the Week" plus Velocity/KrisFlyer/Qantas program news.
+  # Deliberately NO title_keywords on aff/pointhacks: at this volume a filter is
+  # the failure mode, not the fix — the publisher changes its title convention,
+  # the filter matches zero forever, and the feed stays a healthy 200.
+  aff:
+    enabled: true
+    poll_interval_minutes: 180
+    currency: "AUD"
+    feed_urls:
+      - "https://www.australianfrequentflyer.com.au/community/forums/cheap-flights-travel-deals.222/index.rss"
+      - "https://www.australianfrequentflyer.com.au/feed/"
+
+  # Point Hacks: 100% AU-native. Deal density is the weakness (~1 in 10 items is
+  # a live offer, mostly the recurring gift-card-offer post), but that slice is
+  # recurring AUD off spend the owner already makes.
+  pointhacks:
+    enabled: true
+    poll_interval_minutes: 180
+    currency: "AUD"
+    feed_urls: ["https://www.pointhacks.com.au/feed/"]
+
+  # 什么值得买 — mainland China's main deal aggregator, and the biggest gap in
+  # this pipeline until now. The web frontend sits behind a JS challenge, but
+  # the app API does not: no auth, no key, no CAPTCHA, just the app UA (a
+  # browser UA gets HTTP 202 + a JS probe stub instead of JSON). Verified live
+  # 2026-08-21. Two endpoints — /v1/home/list (好价, filtered to the 优惠
+  # channel) and /v1/youhui/list (券/服务) — offset-paginated, de-duped.
+  #
+  # In voteless_sources despite carrying a real 值 count (article_worthy): its
+  # scale (0-15 on fresh items) is not commensurable with OzBargain's, and
+  # compute_site_velocity_index is a percentile over all non-voteless deals, so
+  # mixing them would corrupt a baseline that has been calibrating for weeks.
+  # votes_pos is still populated — it shows on the board, it just doesn't feed
+  # the AU baseline.
+  smzdm:
+    enabled: true
+    poll_interval_minutes: 60
+    max_pages: 2
+    max_item_age_hours: 72
+    request_delay_seconds: 1.0
+
   # --- CN AI token 羊毛: DeepSeek/Kimi/Zhipu/SiliconFlow pricing & policy docs.
   # /v1/models is 401 without a key on all of these, and the CN deal
   # aggregators are anti-bot walled -- these are the platforms' own published
@@ -172,6 +249,15 @@ sources:
          url: "https://docs.bigmodel.cn/cn/guide/start/model-overview.md"}
       - {tag: siliconflow, slug: rate-limits, label: "SiliconFlow Rate Limits",
          url: "https://docs.siliconflow.cn/cn/userguide/rate-limits/rate-limit-and-upgradation.md"}
+      # 阿里云百炼 (Alibaba Model Studio) — the largest CN LLM platform that was
+      # missing here. Both verified live 2026-08-21: HTTP 200, text/markdown,
+      # zero redirects (19,202 B and 8,473 B respectively). new-free-quota is
+      # the new-account free allowance per model; coding-plan is a fixed-CNY
+      # monthly bundle of Qwen/GLM/Kimi/MiniMax, payable via Alipay/WeChat.
+      - {tag: aliyun, slug: new-free-quota, label: "百炼 新人免费额度",
+         url: "https://help.aliyun.com/zh/model-studio/new-free-quota.md"}
+      - {tag: aliyun, slug: coding-plan, label: "百炼 Coding Plan",
+         url: "https://help.aliyun.com/zh/model-studio/coding-plan.md"}
 
 scoring:
   window_minutes: 15               # 15-min window: accurate current momentum, 2-run detection
@@ -202,7 +288,9 @@ scoring:
     # Sources with no vote signal at all — kept out of the OzBargain-calibrated
     # site velocity index (see the `watch.trusted_sources` counterpart below).
     voteless_sources: ["camelcamelcamel", "dealnews", "slickdeals", "v2ex",
-                        "openrouter", "bank_rates", "iknowthepilot", "cn_llm_docs"]
+                        "openrouter", "bank_rates", "iknowthepilot", "cn_llm_docs",
+                        "vercel", "appsumo", "aff", "pointhacks",
+                        "smzdm"]
     # Age cap (hours since posted_at) for the voteless discount-only candidacy
     # path — the only staleness gate on it, since there's no vote velocity to
     # decay a score. Without this, an old high-discount item from a global
@@ -241,7 +329,9 @@ scoring:
     # Editorially curated / keyword-scoped feeds carry neither votes nor a
     # parseable discount; the keyword match is itself the quality guard.
     trusted_sources: ["dealnews", "slickdeals", "v2ex", "openrouter",
-                       "bank_rates", "iknowthepilot", "cn_llm_docs"]
+                       "bank_rates", "iknowthepilot", "cn_llm_docs",
+                       "vercel", "appsumo", "aff", "pointhacks",
+                        "smzdm"]
 
 dedup:
   lookback_days: 7                 # read recent Sent Log window for local dedup

@@ -82,6 +82,13 @@ class StateStore:
         # source -> last successful fetch time, for poll_interval_minutes gating
         # on sources slower-cadence than the 5-min hot-path loop.
         self._last_fetch: dict[str, datetime] = {}
+        # source -> newest item timestamp the source itself reported (before
+        # any staleness/keyword filtering). This is the staleness-ceiling
+        # guard's signal that a source has gone dark even though it still
+        # returns HTTP 200 with well-formed content (see GLOBAL_EXPANSION_PLAN.md
+        # Lane C) -- distinct from _last_fetch, which only says we polled it,
+        # not that what it returned was fresh.
+        self._freshness: dict[str, datetime] = {}
         # Generic per-feature snapshot store (e.g. "llm_prices", "bank_rates") —
         # each feature keeps whatever JSON-able dict it needs between runs. Not
         # to be confused with `snapshots()` below (per-deal vote-velocity history).
@@ -149,6 +156,10 @@ class StateStore:
             with contextlib.suppress(ValueError):
                 self._last_fetch[src] = _aware(datetime.fromisoformat(ts_str))
 
+        for src, ts_str in (raw.get("freshness") or {}).items():
+            with contextlib.suppress(ValueError):
+                self._freshness[src] = _aware(datetime.fromisoformat(ts_str))
+
         self._feature_snapshots = raw.get("feature_snapshots") or {}
 
         self._cold_start = raw.get("cold_start", False)
@@ -187,6 +198,7 @@ class StateStore:
                 },
             },
             "last_fetch": {src: ts.isoformat() for src, ts in self._last_fetch.items()},
+            "freshness": {src: ts.isoformat() for src, ts in self._freshness.items()},
             "feature_snapshots": self._feature_snapshots,
         }
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -247,6 +259,16 @@ class StateStore:
 
     def mark_fetched(self, source: str, now: datetime) -> None:
         self._last_fetch[source] = now
+
+    # ------------------------------------------------------------------
+    # Staleness ceiling (source's own freshest-evidence timestamp)
+    # ------------------------------------------------------------------
+
+    def record_freshness(self, source: str, when: datetime) -> None:
+        self._freshness[source] = when
+
+    def freshness(self, source: str) -> datetime | None:
+        return self._freshness.get(source)
 
     # ------------------------------------------------------------------
     # Generic per-feature snapshots (e.g. LLM prices, bank rates)

@@ -30,6 +30,11 @@ SOURCE_LABELS = {
     "bank_rates": "AU Bank Rates",
     "iknowthepilot": "Flight Deals (AU)",
     "cn_llm_docs": "CN AI Pricing",
+    "smzdm": "什么值得买",
+    "appsumo": "AppSumo (SaaS)",
+    "vercel": "Vercel Offers",
+    "aff": "Frequent Flyer (AU)",
+    "pointhacks": "Point Hacks (AU)",
 }
 
 _warned_missing_unsubscribe_config = False

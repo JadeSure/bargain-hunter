@@ -220,7 +220,10 @@ class CnLlmDocsSource:
                 # _carry_forward_brand reasoning): losing it would make the
                 # next successful fetch look like a brand-new page (seed
                 # only, never a diff) and silently swallow whatever changed
-                # during this outage.
+                # during this outage. Carrying it verbatim also preserves its
+                # "ok_at" (rather than bumping it to now) -- that's what lets
+                # a permanently-dead page be told apart from one that's just
+                # unchanged (see GLOBAL_EXPANSION_PLAN.md Lane C).
                 prev_entry = previous.get(key)
                 if prev_entry is not None:
                     current[key] = prev_entry
@@ -245,14 +248,14 @@ class CnLlmDocsSource:
         table = _parse_doctable(raw)
         if table is not None:
             titles, rows = table
-            entry = {"kind": "table", "rows": rows}
+            entry = {"kind": "table", "rows": rows, "ok_at": now.isoformat()}
             if prev_entry is None or prev_entry.get("kind") != "table":
                 return [], entry  # cold start, or the page's rendering changed shape
             deals = self._diff_rows(url, tag, slug, label, titles, rows, prev_entry["rows"], now)
             return deals, entry
 
         text = _normalize_text(raw)
-        entry = {"kind": "text", "text": text}
+        entry = {"kind": "text", "text": text, "ok_at": now.isoformat()}
         if prev_entry is None or prev_entry.get("kind") != "text":
             return [], entry
         deals = self._diff_text(url, tag, slug, label, text, prev_entry["text"], now)

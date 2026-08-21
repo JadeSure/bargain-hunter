@@ -198,7 +198,7 @@ export default async function DealsPage() {
           <DealsSection title="Australia — banking & travel" deals={auOtherDeals} dealToGuides={dealToGuides} />
           <DealsSection title="North America" deals={naDeals} dealToGuides={dealToGuides} />
           <DealsSection title="中国 / China" deals={cnDeals} dealToGuides={dealToGuides} />
-          <DealsSection title="LLM token prices" deals={llmDeals} dealToGuides={dealToGuides} />
+          <DealsSection title="Global — software & AI credits" deals={llmDeals} dealToGuides={dealToGuides} />
         </>
       )}
     </main>

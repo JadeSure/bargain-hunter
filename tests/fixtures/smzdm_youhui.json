@@ -1,0 +1,46 @@
+{
+  "error_code": "0",
+  "error_msg": "data",
+  "data": {
+    "rows": [
+      {
+        "article_id": "180330849",
+        "article_title": "Arale 黑麦全麦面包吐司",
+        "article_url": "https://www.smzdm.com/p/180330849",
+        "article_link": "https://go.smzdm.com/redirect/180330849",
+        "article_channel_name": null,
+        "article_worthy": "10",
+        "article_comment": "3",
+        "article_unix_date": 1787310000,
+        "article_price": "11.12元",
+        "article_mall": "京东"
+      },
+      {
+        "article_id": "180330222",
+        "article_title": "某品牌保温杯 99元包邮",
+        "article_url": "https://www.smzdm.com/p/180330222",
+        "article_link": "https://go.smzdm.com/redirect/180330222",
+        "article_channel_name": null,
+        "article_worthy": "15",
+        "article_comment": "8",
+        "article_unix_date": 1787310000,
+        "article_price": "99.00元",
+        "article_mall": "淘宝",
+        "article_is_sold_out": "",
+        "article_is_timeout": ""
+      },
+      {
+        "article_id": "170000001",
+        "article_title": "沉船贴：多年前的老促销帖",
+        "article_url": "https://www.smzdm.com/p/170000001",
+        "article_link": "https://go.smzdm.com/redirect/170000001",
+        "article_channel_name": null,
+        "article_worthy": "1",
+        "article_comment": "0",
+        "article_unix_date": 1624035600,
+        "article_price": "1元",
+        "article_mall": "京东"
+      }
+    ]
+  }
+}

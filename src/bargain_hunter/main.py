@@ -9,6 +9,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import logging
 import os
 import sys
@@ -41,12 +42,14 @@ from .scoring import (
     enrich_deal,
     is_voteless_source,
 )
+from .sources.appsumo import AppSumoSource
 from .sources.bank_rates import BankRatesSource
 from .sources.camelcamelcamel import CamelCamelCamelSource
 from .sources.cn_llm_docs import CnLlmDocsSource
 from .sources.feed_deals import FeedDealsSource
 from .sources.llm_prices import LlmPriceSource
 from .sources.ozbargain import OzBargainSource
+from .sources.smzdm import SmzdmSource
 from .state import StateStore
 from .subscribers import fetch_subscribers, make_notion_client
 
@@ -62,10 +65,12 @@ log = logging.getLogger(__name__)
 # day's dilution isn't misread as (or masked by) the normal 3am lull.
 _AET = ZoneInfo("Australia/Sydney")
 
-# Non-physical, voteless, watch-track sources that share one separate daily
-# quota (Subscriber.max_digital_alerts_per_day) instead of the AU hot/watch
-# caps — each is too thin to justify its own quota, but too easily crowded
-# out if it shared the OzBargain/CamelCamelCamel caps.
+# Sources outside the AU hot ladder that share one separate daily quota
+# (Subscriber.max_digital_alerts_per_day) instead of the AU hot/watch caps.
+# Most are thin and non-physical — too small to justify their own quota, too
+# easily crowded out if they shared OzBargain/CamelCamelCamel's. smzdm is the
+# opposite case and lands here for the mirror reason: it is a mainland
+# physical-goods firehose (~80 items/poll) that would swamp the AU caps.
 DIGITAL_SOURCES = {
     "dealnews",
     "slickdeals",
@@ -74,7 +79,61 @@ DIGITAL_SOURCES = {
     "bank_rates",
     "iknowthepilot",
     "cn_llm_docs",
+    "appsumo",
+    "vercel",
+    "aff",
+    "pointhacks",
+    "smzdm",
 }
+
+
+# Sources whose freshness is a single scalar (the newest item their feed
+# reports). cn_llm_docs is deliberately absent: it is per-page, and a scalar
+# rollup would hide one dead page among healthy ones — it gets its own sweep
+# over the "ok_at" stamps below.
+_FRESHNESS_TRACKED = (
+    "dealnews", "slickdeals", "v2ex", "iknowthepilot", "vercel", "aff", "pointhacks",
+    "smzdm",
+)
+
+
+def _check_staleness(settings: Settings, state: StateStore, now: datetime) -> list[str]:
+    """Warn about sources that still return HTTP 200 but have gone dark.
+
+    Neither a status check nor an item-count check catches this: the measured
+    specimen (God Save The Points) served 10 well-formed items whose newest
+    pubDate was 386 days old. Yielding zero deals is *not* the signal either —
+    aff legitimately runs ~0.7 threads/week. The signal is the age of the
+    freshest evidence the source itself reports.
+    """
+    ceiling = settings.run.source_staleness_ceiling_days
+    if ceiling is None:
+        return []
+    stale: list[str] = []
+
+    def _flag(label: str, when: datetime) -> None:
+        age_days = (now - when).total_seconds() / 86400
+        if age_days > ceiling:
+            msg = (
+                f"{label}: staleness ceiling exceeded — freshest evidence is "
+                f"{age_days:.0f}d old (ceiling {ceiling:g}d)."
+            )
+            log.warning(msg)
+            stale.append(msg)
+
+    for src_name in _FRESHNESS_TRACKED:
+        when = state.freshness(src_name)
+        if when is not None:  # never recorded yet is not a defect, just no data
+            _flag(src_name, when)
+
+    for key, entry in (state.snapshot("cn_llm_docs") or {}).items():
+        ok_at = (entry or {}).get("ok_at")
+        if not ok_at:
+            continue
+        with contextlib.suppress(ValueError):
+            when = datetime.fromisoformat(ok_at)
+            _flag(f"cn_llm_docs page {key}", when if when.tzinfo else when.replace(tzinfo=UTC))
+    return stale
 
 
 def _save_state(state: StateStore, dry_run: bool) -> None:
@@ -167,7 +226,9 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
 
     # Slower-cadence sources (hourly/daily), gated on state.due_for_fetch so
     # the 5-min hot-path loop doesn't hammer them every run.
-    for src_name in ("dealnews", "slickdeals", "v2ex", "iknowthepilot"):
+    for src_name in (
+        "dealnews", "slickdeals", "v2ex", "iknowthepilot", "vercel", "aff", "pointhacks"
+    ):
         cfg = settings.sources.get(src_name)
         interval = getattr(cfg, "poll_interval_minutes", 60)
         if not _fetch_gate(state, src_name, cfg, interval, now):
@@ -184,6 +245,12 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             log.info("%s: fetched %d deals.", src_name, len(raw_deals))
             all_deals.extend(raw_deals)
             state.mark_fetched(src_name, now)
+            # The feed's own freshest item, recorded before our staleness and
+            # keyword filters — a source can legitimately yield zero deals for
+            # weeks (aff runs ~0.7 threads/week), so "produced nothing" is not
+            # the signal. "Its newest item is ancient" is.
+            if src.newest_item_at is not None:
+                state.record_freshness(src_name, src.newest_item_at)
         except Exception as exc:
             msg = f"{src_name} fetch failed: {exc}"
             log.error(msg)
@@ -238,6 +305,42 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             log.error(msg)
             summary["errors"].append(msg)
 
+    as_cfg = settings.sources.get("appsumo")
+    if _fetch_gate(state, "appsumo", as_cfg, getattr(as_cfg, "poll_interval_minutes", 360), now):
+        try:
+            src = AppSumoSource(
+                max_pages=getattr(as_cfg, "max_pages", 4),
+                request_delay_seconds=getattr(as_cfg, "request_delay_seconds", 2.0),
+            )
+            raw_deals = src.fetch()
+            log.info("appsumo: fetched %d deals.", len(raw_deals))
+            all_deals.extend(raw_deals)
+            state.mark_fetched("appsumo", now)
+        except Exception as exc:
+            msg = f"appsumo fetch failed: {exc}"
+            log.error(msg)
+            summary["errors"].append(msg)
+
+    sm_cfg = settings.sources.get("smzdm")
+    if _fetch_gate(state, "smzdm", sm_cfg, getattr(sm_cfg, "poll_interval_minutes", 60), now):
+        try:
+            src = SmzdmSource(
+                max_pages=getattr(sm_cfg, "max_pages", 2),
+                max_item_age_hours=getattr(sm_cfg, "max_item_age_hours", 72.0),
+                request_delay_seconds=getattr(sm_cfg, "request_delay_seconds", 1.0),
+            )
+            raw_deals = src.fetch()
+            log.info("smzdm: fetched %d deals.", len(raw_deals))
+            all_deals.extend(raw_deals)
+            state.mark_fetched("smzdm", now)
+            newest = max((d.posted_at for d in raw_deals if d.posted_at), default=None)
+            if newest is not None:
+                state.record_freshness("smzdm", newest)
+        except Exception as exc:
+            msg = f"smzdm fetch failed: {exc}"
+            log.error(msg)
+            summary["errors"].append(msg)
+
     cn_cfg = settings.sources.get("cn_llm_docs")
     if _fetch_gate(
         state, "cn_llm_docs", cn_cfg, getattr(cn_cfg, "poll_interval_minutes", 10080), now
@@ -253,6 +356,8 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             msg = f"cn_llm_docs fetch failed: {exc}"
             log.error(msg)
             summary["errors"].append(msg)
+
+    summary["stale_sources"] = _check_staleness(settings, state, now)
 
     if not all_deals and not summary["errors"]:
         # Feed returned 0 deals without error — likely a format change.

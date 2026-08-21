@@ -1,0 +1,58 @@
+{
+  "error_code": "0",
+  "error_msg": "data",
+  "data": {
+    "rows": [
+      {
+        "article_id": "180330849",
+        "article_title": "Arale 黑麦全麦面包吐司",
+        "article_url": "http://www.smzdm.com/p/180330849",
+        "article_link": "https://go.smzdm.com/redirect/180330849",
+        "article_channel_name": "优惠",
+        "article_worthy": "10",
+        "article_comment": "3",
+        "article_unix_date": 1787310000,
+        "article_price": "11.12元",
+        "article_mall": "京东",
+        "article_is_sold_out": "",
+        "article_is_timeout": ""
+      },
+      {
+        "article_id": "180330900",
+        "article_title": "促销活动：京东光威品牌燃动日",
+        "article_url": "https://www.smzdm.com/p/180330900",
+        "article_link": "https://go.smzdm.com/redirect/180330900",
+        "article_channel_name": "优惠",
+        "article_worthy": "5",
+        "article_comment": "1",
+        "article_unix_date": 1787310000,
+        "article_price": "10.96元（需买3件，需用券）",
+        "article_mall": "京东"
+      },
+      {
+        "article_id": "180331111",
+        "article_title": "某品牌运动鞋 低至5折起限时促销",
+        "article_url": "https://www.smzdm.com/p/180331111",
+        "article_link": "https://go.smzdm.com/redirect/180331111",
+        "article_channel_name": "优惠",
+        "article_worthy": "2",
+        "article_comment": "0",
+        "article_unix_date": 1787310000,
+        "article_price": "低至5折起",
+        "article_mall": "天猫"
+      },
+      {
+        "article_id": "180331000",
+        "article_title": "拍了张风光照，说说我的相机选购心得",
+        "article_url": "https://www.smzdm.com/p/180331000",
+        "article_link": "",
+        "article_channel_name": "原创",
+        "article_worthy": "0",
+        "article_comment": "0",
+        "article_unix_date": 1787310000,
+        "article_price": "",
+        "article_mall": ""
+      }
+    ]
+  }
+}

@@ -73,8 +73,12 @@ def test_rss_categories_and_currency():
 
 
 def test_parses_atom_entries():
+    # 2 of the fixture's 3 keyword-matching items, not 3: the third is
+    # "别急着薅羊毛，先看看 mirasim 的隐私协议", a scam warning that uses the
+    # 羊毛 vocabulary while offering nothing, and _DEFAULT_TITLE_BLOCK now
+    # rejects it. See test_v2ex_title_block_matches_the_hand_classified_live_sample.
     deals = _v2ex()
-    assert len(deals) == 3
+    assert len(deals) == 2
     assert all(d.source == "v2ex" for d in deals)
     assert all(d.currency == "CNY" for d in deals)
     boc = {d.title: d for d in deals}["中银香港 boc + 10 元羊毛"]
@@ -331,3 +335,133 @@ def test_dealnews_and_slickdeals_unaffected_by_v2ex_default_keywords():
     for name in ("dealnews", "slickdeals", "iknowthepilot"):
         src = FeedDealsSource(name=name, feed_urls=[], max_item_age_hours=None)
         assert len(src.parse(xml)) == 1
+
+
+# -- vercel: mandatory 30-day age cutoff + offer-vs-noise title_keywords ---------
+
+
+def _rss_with_titles(titles: list[str]) -> str:
+    items = "".join(
+        f"<item><title>{t}</title><link>https://x.example/{i}</link>"
+        f"<description></description><guid>g{i}</guid></item>"
+        for i, t in enumerate(titles)
+    )
+    return f'<?xml version="1.0"?><rss version="2.0"><channel>{items}</channel></rss>'
+
+
+VERCEL_OFFER_TITLES = [
+    "Fish Audio models now available on Vercel AI Gateway for free",
+    "GPT-5.6 Sol is 50% off on AI Gateway for the next month",
+    "GLM 5.2 free for eve agents through August 27 via Blackbox on AI Gateway",
+    "Exa web search free through August 31 on AI Gateway and eve",
+    "DeepSeek V4 Flash is 90% off through Novita on AI Gateway",
+]
+VERCEL_NOISE_TITLES = [
+    "Manage Vercel Toolbar comments from the CLI",
+    "Bun 1.4 is now available in Vercel Functions",
+    "Algolia joins the Vercel Marketplace",
+]
+
+
+def test_vercel_default_title_keywords_keep_offers_drop_noise():
+    xml = _rss_with_titles(VERCEL_OFFER_TITLES + VERCEL_NOISE_TITLES)
+    src = FeedDealsSource(name="vercel", feed_urls=[], max_item_age_hours=None)
+    kept = {d.title for d in src.parse(xml)}
+    assert kept == set(VERCEL_OFFER_TITLES)
+
+
+def test_vercel_default_max_item_age_is_30_days():
+    src = FeedDealsSource(name="vercel", feed_urls=[])
+    assert src.max_item_age_hours == 24 * 30
+
+
+def test_vercel_default_timeout_is_raised():
+    # 20s default is thin for the measured 3.3MB feed on a slow CI runner.
+    assert FeedDealsSource(name="vercel", feed_urls=[]).timeout == 60.0
+
+
+def test_other_sources_keep_default_timeout():
+    for name in ("dealnews", "slickdeals", "v2ex", "iknowthepilot", "aff", "pointhacks"):
+        assert FeedDealsSource(name=name, feed_urls=[]).timeout == 20.0
+
+
+# -- aff / pointhacks: title_keywords deliberately unset (no filtering) ---------
+
+
+def test_aff_and_pointhacks_have_no_default_title_keywords():
+    """Unlike vercel, these get no filter at all: measured 17/20 of
+    AFF's subforum is already deal-shaped, and a filter here risks going
+    filter-shaped-inert (silently matching zero forever) — see
+    GLOBAL_EXPANSION_PLAN.md Lane B."""
+    for name in ("aff", "pointhacks"):
+        src = FeedDealsSource(name=name, feed_urls=[])
+        assert src._title_keywords == []
+        assert src.max_item_age_hours == FeedDealsSource._FALLBACK_MAX_AGE_HOURS
+
+    xml = RSS_ITEM.format(
+        title="Nothing deal-shaped about this title",
+        link="https://x.example/1",
+        desc="",
+        guid="g1",
+    )
+    for name in ("aff", "pointhacks"):
+        src = FeedDealsSource(name=name, feed_urls=[], max_item_age_hours=None)
+        assert len(src.parse(xml)) == 1
+
+
+# -- v2ex title_block: on-topic vocabulary, but not an offer ---------------------
+
+# The exact 14 items one live v2ex poll produced on 2026-08-21 *after*
+# title_keywords, with the by-hand verdict that _DEFAULT_TITLE_BLOCK was tuned
+# to reproduce. Kept verbatim rather than paraphrased: the filter's whole job is
+# to separate these specific registers, and a cleaned-up sample would stop
+# testing the thing that actually broke (中转站 quota resale reaching a digest).
+_V2EX_LIVE_SAMPLE = [
+    ("中银香港 boc + 10 元羊毛", True),
+    ("别急着 羊毛了，先看看 mirasim 的隐私协议", False),
+    ("支付宝免费领无糖可乐，亲测一次即中", True),
+    ("免费领取 100 刀 Fable 5 的使用额度", True),
+    ("Kimi K3 羊毛", True),
+    ("求大豆包 seed-2.0 官方渠道 折扣 有量", False),
+    ("[推广] 最有性价比的 Cursor 插件中转 模型保真 注册免费体验", False),
+    ("[程序员] 为程序员朋友提供免费公益心理咨询服务", False),
+    ("[Oracle] Oracle 刚开免费服务器就被封号", False),
+    ("[分享创造] 这两天晚上把 LaunchX 的股票面板又优化了一下，有没有试用给我点建议", False),
+    ("[推广] [中转站] plus 炸了你们用什么？来我这 0.03 opus4.6，无敌平替", False),
+    ("[跟一下] Chatgpt 客户端 1000 Credit 邀请，需要的来（老号或免费账号也可）", True),
+    ("哪里有便宜的 Luna 可以用？", False),
+    ("Codex 重置是什么力度的活动？可能没有想象的那么多", False),
+]
+
+
+def _v2ex_blocks(title: str) -> bool:
+    src = FeedDealsSource(name="v2ex", feed_urls=[])
+    return any(p.search(title) for p in src._title_block)
+
+
+def test_v2ex_title_block_matches_the_hand_classified_live_sample():
+    for title, should_keep in _V2EX_LIVE_SAMPLE:
+        assert _v2ex_blocks(title) is not should_keep, title
+
+
+def test_v2ex_title_block_rejects_grey_market_quota_resale():
+    """The reason this filter exists: reselling someone else's LLM API quota is
+    account resale, not a merchant offer, and must never reach a digest."""
+    for title in (
+        "[推广] [中转站] plus 炸了你们用什么？来我这 0.03 opus4.6",
+        "[推广] Cursor 插件中转 模型保真",
+        "出 ChatGPT plus 车位，长期稳定",
+        "GPT 合租，一个月 15",
+    ):
+        assert _v2ex_blocks(title), title
+
+
+def test_title_block_is_scoped_to_v2ex_not_shared():
+    """中转 means 'transit' in an airfare title -- a global block list would
+    silently kill aff/iknowthepilot's real connecting-flight deals."""
+    transit_fare = "SYD-BKK 中转曼谷 商务舱 $2700"
+    assert _v2ex_blocks(transit_fare)  # would be dropped *if* v2ex saw it
+    for name in ("aff", "iknowthepilot", "pointhacks", "dealnews", "vercel"):
+        src = FeedDealsSource(name=name, feed_urls=[])
+        assert src._title_block == [], name
+        assert not any(p.search(transit_fare) for p in src._title_block)

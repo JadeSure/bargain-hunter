@@ -349,7 +349,31 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
       if (da !== db) return db - da
       return (b[1].latest.ts as string).localeCompare(a[1].latest.ts as string)
     })
-    recencyCandidates.push(...deduped.slice(0, NEW_SOURCE_SECTION_CAP))
+    // Round-robin across the sources in this section rather than taking the
+    // top N outright. A straight slice lets one source eat the whole section:
+    // measured 2026-08-21, GLOBAL holds ~42 candidates of which AppSumo
+    // contributes 33 at 40-75% off, so all 12 slots went to AppSumo and every
+    // one of Vercel's free-AI-credit offers fell off — they carry no
+    // discount_percent (the title says "for free", not "90% off"), so they
+    // sort as 0 and lose to any discounted SaaS licence. Interleaving keeps
+    // each source's own ordering while guaranteeing it a share of the section.
+    const capBase = recencyCandidates.length  // the cap is per section, not global
+    const bySource = new Map<string, [string, Agg][]>()
+    for (const entry of deduped) {
+      const src = sourceFromKey(entry[0])
+      const list = bySource.get(src)
+      if (list) list.push(entry)
+      else bySource.set(src, [entry])
+    }
+    const queues = [...bySource.values()]
+    for (let i = 0; recencyCandidates.length < capBase + NEW_SOURCE_SECTION_CAP; i++) {
+      const round = queues.filter((q) => q.length > i)
+      if (!round.length) break
+      for (const q of round) {
+        if (recencyCandidates.length >= capBase + NEW_SOURCE_SECTION_CAP) break
+        recencyCandidates.push(q[i])
+      }
+    }
   }
   const recencyLive = await keepLive(toEntries(recencyCandidates))
 
@@ -374,6 +398,11 @@ const SOURCE_LABELS: Record<string, string> = {
   bank_rates: 'AU Bank Rates',
   iknowthepilot: 'Flight Deals (AU)',
   cn_llm_docs: 'CN AI Pricing',
+  smzdm: '什么值得买',
+  appsumo: 'AppSumo (SaaS)',
+  vercel: 'Vercel Offers',
+  aff: 'Frequent Flyer (AU)',
+  pointhacks: 'Point Hacks (AU)',
 }
 export function sourceLabel(source: string): string {
   return SOURCE_LABELS[source] ?? source
@@ -392,9 +421,10 @@ export type DealRegion = 'AU' | 'NA' | 'CN' | 'GLOBAL'
 const REGION_BY_SOURCE: Record<string, DealRegion> = {
   ozbargain: 'AU', camelcamelcamel: 'AU',
   bank_rates: 'AU', iknowthepilot: 'AU',
+  aff: 'AU', pointhacks: 'AU',
   dealnews: 'NA', slickdeals: 'NA',
-  v2ex: 'CN', openrouter: 'GLOBAL',
-  cn_llm_docs: 'CN',
+  v2ex: 'CN', cn_llm_docs: 'CN', smzdm: 'CN',
+  openrouter: 'GLOBAL', appsumo: 'GLOBAL', vercel: 'GLOBAL',
 }
 export function dealRegion(source: string): DealRegion {
   return REGION_BY_SOURCE[source] ?? 'AU'

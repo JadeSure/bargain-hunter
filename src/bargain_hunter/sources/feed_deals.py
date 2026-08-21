@@ -1,10 +1,11 @@
 """Generic digital-deal feed source (RSS 2.0 + Atom), config-driven.
 
 Serves DealNews (NA software category), Slickdeals (keyword-scoped search),
-V2EX (优惠信息) and iknowthepilot (AU-departure flight deals). Except for
-iknowthepilot, these feeds carry no vote or comment signal, so they reach a
-subscriber through the watch track (see scoring.hot.voteless_sources and
-scoring.watch.trusted_sources) rather than the hot ladder.
+V2EX (优惠信息), iknowthepilot (AU-departure flight deals), Vercel's changelog
+(Atom), and the AFF/Point Hacks AU-travel feeds. Except for iknowthepilot,
+these feeds carry no vote or comment signal, so they
+reach a subscriber through the watch track (see scoring.hot.voteless_sources
+and scoring.watch.trusted_sources) rather than the hot ladder.
 
 These feeds also re-emit months-to-years-old items on every poll (no window
 param on the query side), so parse() drops anything older than
@@ -63,7 +64,14 @@ class FeedDealsSource(Source):
     # slickdeals and v2ex return genuine years-old reposts (slickdeals max
     # ~24000h / 2.7 years, v2ex max ~3200h / 4.4 months) and get the tighter
     # fallback.
-    _DEFAULT_MAX_AGE_HOURS = {"dealnews": 24 * 60}  # 60 days
+    #
+    # vercel is a mandatory override, not just documentation of what the
+    # fallback already computes to: measured live 2026-08-21, the feed carries
+    # 1492 entries back to 2016 (newest 10.6h, oldest 3586 days), so without a
+    # cutoff every poll floods observations with a decade of changelog noise.
+    # Pinned explicitly so it can't silently drift if _FALLBACK_MAX_AGE_HOURS
+    # ever changes for unrelated reasons (see GLOBAL_EXPANSION_PLAN.md).
+    _DEFAULT_MAX_AGE_HOURS = {"dealnews": 24 * 60, "vercel": 24 * 30}  # 60 / 30 days
     _FALLBACK_MAX_AGE_HOURS = 24 * 30.0  # 30 days
 
     # V2EX's deals.xml is purpose-built (every post is already deal-shaped) but
@@ -78,6 +86,24 @@ class FeedDealsSource(Source):
     # ones. Applied to all of v2ex's feed_urls, including deals.xml, since one
     # `name` shares one filter (see main.py's per-source-name construction) —
     # measured no loss there (its own titles already say 羊毛/优惠/免费 etc.).
+    #
+    # Vercel's changelog Atom feed mixes real time-boxed offers ("free",
+    # "50% off") with routine product-shipped noise ("Bun 1.4 is now available
+    # in Vercel Functions"). Measured live 2026-08-21 over the 125 entries
+    # inside the 30-day cutoff above: this set hits 9/125 with zero false
+    # negatives in the sample (see GLOBAL_EXPANSION_PLAN.md for the title
+    # list). \boff\b is bounded so it doesn't fire on "Toolbar"/"Functions"
+    # etc. — also checked against "offers"/"official"/"offering": the \b right
+    # after "off" needs a non-word char, and the following letter in each of
+    # those is a word char, so none of them false-fire either. Re-measured over
+    # the feed's full 365-day window (816 entries, 25 hits, ~3%): \boff\b
+    # produced zero false positives there, and the residual noise is "price"
+    # matching feature news ("price sorting", "price per token flattens") —
+    # kept anyway because the same token catches real cuts ("Reduced prices for
+    # TLDs"). "promo" was dropped: over those 816 entries it scored zero real
+    # offers and one false positive, "Block Vercel deployment promotions with
+    # GitHub Actions" (deployment promotion, not a discount). A promo-code
+    # offer's title would still be caught by free/off/discount/credit.
     _DEFAULT_TITLE_KEYWORDS = {
         "v2ex": [
             r"\[推广\]",
@@ -85,8 +111,55 @@ class FeedDealsSource(Source):
             r"福利", r"活动", r"促销", r"特价", r"减免", r"返现", r"试用", r"赠送",
             r"券", r"限时", r"0 ?元", r"几折", r"打折", r"便宜",
         ],
+        "vercel": [
+            "free", "credit", "discount", r"\boff\b", "pricing", "price",
+            "trial", "no cost",
+        ],
     }
-    _FALLBACK_TITLE_KEYWORDS: list[str] | None = None  # no filtering
+    _FALLBACK_TITLE_KEYWORDS: list[str] | None = None  # no filtering — aff/pointhacks included:
+    # measured 17/20 of AFF's deals subforum is already deal-shaped, and a filter here is the
+    # "filter-shaped inert" trap — a title-convention change on their end would make it match
+    # zero forever while the feed still reads healthy (HTTP 200, well-formed). See
+    # GLOBAL_EXPANSION_PLAN.md Lane B.
+
+    # HTTP request timeout (seconds), by source `name`; same per-name-default
+    # mechanism as the two dicts above, reused here rather than plumbing a new
+    # config field through main.py. vercel's feed is 3.3MB (measured 1.41s
+    # locally) — thin under the 20s fallback on a slow CI runner, and a read
+    # timeout mid-body raises inside parse(), which fetch() does not catch
+    # (it only catches httpx.HTTPError) — it would escape to main.py's
+    # per-source `except Exception` as a silent zero-deal fetch.
+    _DEFAULT_TIMEOUT_SECONDS = {"vercel": 60.0}
+    _FALLBACK_TIMEOUT_SECONDS = 20.0
+
+    # Titles to reject even when they matched title_keywords, by source `name`.
+    # The keyword list answers "is this on topic"; this answers "is it actually
+    # an offer". V2EX's 优惠-adjacent register is full of posts that use the
+    # vocabulary without offering anything: questions about a deal, complaints
+    # that one died, warnings about a scam, and — the reason this exists —
+    # 中转站 ads reselling someone else's LLM API quota, which is grey-market
+    # account resale, not a merchant offer, and must not reach a digest.
+    # Measured live 2026-08-21 against a full v2ex poll: 14 items in, 9 rejected
+    # and 5 kept, matching a by-hand classification of the same 14 exactly.
+    # Deliberately per-`name`, NOT global: 中转 means "transit" in an airfare
+    # title, so a shared list would silently kill aff/iknowthepilot's real
+    # connecting-flight deals.
+    _DEFAULT_TITLE_BLOCK = {
+        "v2ex": [
+            # grey market: reselling or sharing someone else's account/quota
+            r"中转", r"逆向", r"车位", r"合租", r"成品号", r"镜像站", r"独享号",
+            # questions — used the vocabulary, offering nothing
+            r"哪里有", r"有没有", r"^求", r"求购", r"求推荐", r"是什么", r"怎么样",
+            r"如何评价",
+            # complaints and post-mortems ("the freebie is dead", "got banned")
+            r"封号", r"被封", r"炸了", r"跑路", r"翻车", r"缩水", r"没了",
+            # scam warnings
+            r"警惕", r"小心", r"谨慎", r"别急", r"避雷", r"骗",
+            # on-topic vocabulary, off-topic subject
+            r"公益", r"心理咨询",
+        ],
+    }
+    _FALLBACK_TITLE_BLOCK: list[str] | None = None  # no rejection
 
     def __init__(
         self,
@@ -97,12 +170,18 @@ class FeedDealsSource(Source):
         block_patterns: list[str] | None = None,
         allow_patterns: list[str] | None = None,
         request_delay_seconds: float = 2.0,
-        timeout: float = 20.0,
+        # HTTP request timeout in seconds. Defaults per `name` via
+        # _DEFAULT_TIMEOUT_SECONDS above when not passed explicitly.
+        timeout: float = _UNSET,  # type: ignore[assignment]
         # Drop items older than this at parse time. None disables the filter.
         # Items with no parseable posted_at are always kept — an unknown age
         # is not evidence of staleness (see _is_stale). Defaults per `name`
         # via _DEFAULT_MAX_AGE_HOURS above when not passed explicitly.
         max_item_age_hours: float | None = _UNSET,  # type: ignore[assignment]
+        # Reject items whose title matches one of these, even if they passed
+        # title_keywords. None/[] disables. Defaults per `name` via
+        # _DEFAULT_TITLE_BLOCK above when not passed explicitly.
+        title_block: list[str] | None = _UNSET,  # type: ignore[assignment]
         # Keep only items whose title matches one of these patterns (any-of).
         # None/[] disables the filter (kept for every existing call site).
         # Defaults per `name` via _DEFAULT_TITLE_KEYWORDS when not passed
@@ -116,6 +195,8 @@ class FeedDealsSource(Source):
         self._block = [re.compile(p, re.IGNORECASE) for p in (block_patterns or [])]
         self._allow = [re.compile(p, re.IGNORECASE) for p in (allow_patterns or [])]
         self.request_delay_seconds = request_delay_seconds
+        if timeout is _UNSET:
+            timeout = self._DEFAULT_TIMEOUT_SECONDS.get(name, self._FALLBACK_TIMEOUT_SECONDS)
         self.timeout = timeout
         if max_item_age_hours is _UNSET:
             max_item_age_hours = self._DEFAULT_MAX_AGE_HOURS.get(name, self._FALLBACK_MAX_AGE_HOURS)
@@ -123,6 +204,14 @@ class FeedDealsSource(Source):
         if title_keywords is _UNSET:
             title_keywords = self._DEFAULT_TITLE_KEYWORDS.get(name, self._FALLBACK_TITLE_KEYWORDS)
         self._title_keywords = [re.compile(p, re.IGNORECASE) for p in (title_keywords or [])]
+        if title_block is _UNSET:
+            title_block = self._DEFAULT_TITLE_BLOCK.get(name, self._FALLBACK_TITLE_BLOCK)
+        self._title_block = [re.compile(p, re.IGNORECASE) for p in (title_block or [])]
+        # Newest posted_at across ALL parsed items this source has seen, taken
+        # before the staleness/title_keywords filters below -- the staleness
+        # ceiling guard's signal of the feed's own health, not what survived
+        # our gates (see GLOBAL_EXPANSION_PLAN.md Lane C).
+        self.newest_item_at: datetime | None = None
 
     def fetch(self) -> list[Deal]:
         deals: dict[str, Deal] = {}  # de-dupe across queries by Deal.key
@@ -155,15 +244,23 @@ class FeedDealsSource(Source):
         out: list[Deal] = []
         dropped_stale = 0
         dropped_no_keyword = 0
+        dropped_blocked = 0
         for item in items:
             deal = self._parse_item(item, now)
             if deal is None:
                 continue
+            if deal.posted_at and (
+                self.newest_item_at is None or deal.posted_at > self.newest_item_at
+            ):
+                self.newest_item_at = deal.posted_at
             if self._is_stale(deal, now):
                 dropped_stale += 1
                 continue
             if self._title_keywords and not any(p.search(deal.title) for p in self._title_keywords):
                 dropped_no_keyword += 1
+                continue
+            if any(p.search(deal.title) for p in self._title_block):
+                dropped_blocked += 1
                 continue
             out.append(deal)
         # Aggregate, not per-item — these feeds can carry 100+ dropped items per
@@ -174,6 +271,12 @@ class FeedDealsSource(Source):
                 self.name,
                 dropped_stale,
                 self.max_item_age_hours,
+            )
+        if dropped_blocked:
+            log.info(
+                "%s: dropped %d item(s) matching title_block (not an offer)",
+                self.name,
+                dropped_blocked,
             )
         if dropped_no_keyword:
             log.info(
