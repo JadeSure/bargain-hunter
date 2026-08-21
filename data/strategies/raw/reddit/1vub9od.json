@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1vub9od",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1vub9od/fastest_nvfp4_quant_of_qwen38_27b_out_there/",
+  "title": "Fastest NVFP4 quant of Qwen3.8 27B out there",
+  "author": "/u/ionsago",
+  "body": "Here's a brand new Blackwell-native, prefill-optimized 4-bit quant that runs 50% faster on compatible hardware than a Q4 quant of the same memory footprint. And it runs 4-7% faster than other NVFP4 quants as benchmarked on RTX 5090 32GB. Quant Benchmark Speed NVFP4 pp2048 6250 t/s unsloth NVFP4 pp2048 6010 t/s Q4_0 pp2048 4130 t/s Q6_K pp2048 3210 t/s This GGUF also includes a quantized MTP draft head for a good measure. Check it out for all details and specifically recommended settings for 15% faster MTP. submitted by /u/ionsago [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-21T09:19:54Z",
+  "fetched_at": "2026-08-21T16:03:02.323916Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "18ab7100979eb2e3",
+  "key": "reddit:1vub9od"
+}

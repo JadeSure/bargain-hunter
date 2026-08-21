@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1vujgft",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1vujgft/fun_bf16_checkpoint_gotcha_1_followed_by_1_isnt/",
+  "title": "Fun BF16 checkpoint gotcha, +1 followed by -1 isn’t always a round trip",
+  "author": "/u/ReinforcedKnowledge",
+  "body": "This is probably familiar to many people who work with low-precision models, but I ran into a nice concrete example in a real checkpoint and thought it was worth sharing, especially since many people here load and convert the same models across different formats and inference engines. So I was implementing a checkpoint converter between two frameworks and noticed this: - One framework stores a BF16 offset then computes the effective scale 1 + offset in FP32 at runtime - The other stores the effective scale as 1 + the offset directly in BF16 Obviously they both use mathematically equivalent RMSNorm parameterizations obviously but the second representation moves the rounding boundary Some examples from Qwen 3.5 0.8B's checkpoint are w1=3.359375 and w2=3.390625 So the first framework promotes them to FP32 before adding one: w1=4.359375 and w2=4.390625, so they remain distinct. But, the second framework stores that result directly in BF16 so it's like: w1=(3.359375 + 1) in B16= 4.375 and w2=(3.390625 + 1) in BF16 = 4.375 And both values end up collapsing into the same representation. And obviously subtracting one later returns 3.375 for both, so an inverse converter from the second framework's format into the first can't recover the original values You can also try this that's equivalent: import torch x = torch.tensor([3.359375, 3.390625], dtype=torch.bfloat16,) print(x.float() + 1) # tensor([4.3594, 4.3906]) print(x + 1) # tensor([4.3750, 4.3750], dtype=torch.bfloat16) Nothing surprising from a floating-point perspective, and this doesn’t mean every engine or checkpoint converter has this particular issue but I just thought it was fun and a useful reminder that checkpoint conversion isn’t always just renaming, reshaping, or permuting tensors. And maybe one general rule is that if a converter performs arithmetic, or when moving weights between different parametrizations, maybe give it a sneak peek at what it's doing, especially if then it stores the result in low precision, the transformation can be lossy even when it's an isomorphism (Probably not meaningful to anyone but the frameworks are HF and OLMo-core) submitted by /u/ReinforcedKnowledge [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-21T15:25:29Z",
+  "fetched_at": "2026-08-21T16:03:02.323916Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "5af9a11d3196ca6c",
+  "key": "reddit:1vujgft"
+}
