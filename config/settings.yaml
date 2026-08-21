@@ -76,23 +76,25 @@ sources:
       - "ROW excluded"
   v2ex:
     enabled: true
-    poll_interval_minutes: 180
+    # was 180: index.xml/openai.xml are real firehoses (fresh items within the
+    # hour), tightened to give them a chance inside the 36h watch window.
+    poll_interval_minutes: 60
     currency: "CNY"
     feed_urls:
-      - "https://www.v2ex.com/feed/deals.xml"
-    region_allow_patterns: ["global", "worldwide", "any region",
-                            "international card", "全球可用", "支持国际信用卡"]
-    region_block_patterns:
-      - "仅限中国大陆"
-      - "仅限大陆用户"
-      - "大陆不发"
-      - "中国大陆手机号"
-      - "\\+86"
-      - "实名认证"
-      - "仅支持支付宝"
-      - "仅支持微信"
-      - "不支持境外"
-      - "海外用户不可用"
+      - "https://www.v2ex.com/feed/deals.xml"  # 优惠信息 node: purpose-built,
+                                                 # low volume (~0.7/day)
+      - "https://www.v2ex.com/index.xml"        # 全站最新: firehose, kept
+                                                 # on-topic by title_keywords
+                                                 # (code default, see
+                                                 # feed_deals.py)
+      - "https://www.v2ex.com/feed/openai.xml"  # OpenAI node: same reason
+    # region_block/allow_patterns removed: the owner has WeChat, Alipay and a
+    # mainland phone number, so 仅支持支付宝/仅支持微信/中国大陆手机号/实名认证
+    # etc. are all satisfiable for him, not a reason to drop a deal — keeping
+    # them would eventually misfire on real, actionable 羊毛. The allow list
+    # only existed to override the block list, so it goes with it. (The US-
+    # residency blocks on dealnews/slickdeals are unrelated and stay — those
+    # are genuinely unactionable for him.)
   openrouter:
     enabled: true
     poll_interval_minutes: 1440
