@@ -9,6 +9,12 @@ scoring.watch.trusted_sources) rather than the hot ladder.
 These feeds also re-emit months-to-years-old items on every poll (no window
 param on the query side), so parse() drops anything older than
 max_item_age_hours before it ever reaches observations/dedup/scoring.
+
+V2EX's deals.xml is a slow, purpose-built node (~0.7 posts/day) that rarely has
+anything inside the watch track's freshness window; index.xml (全站最新) and its
+per-node feeds (e.g. openai.xml) are much fresher firehoses of mostly-unrelated
+discussion, kept on-topic via title_keywords rather than by loosening any age
+gate (see _DEFAULT_TITLE_KEYWORDS below).
 """
 
 import contextlib
@@ -44,7 +50,7 @@ def _strip_html(raw: str, max_len: int = 2000) -> str:
     return html.unescape(_TAG_RE.sub(" ", raw or "")).strip()[:max_len]
 
 
-_UNSET_MAX_AGE = object()  # distinguishes "use the per-source default" from explicit None
+_UNSET = object()  # distinguishes "use the per-source default" from an explicit None/[]
 
 
 class FeedDealsSource(Source):
@@ -60,6 +66,28 @@ class FeedDealsSource(Source):
     _DEFAULT_MAX_AGE_HOURS = {"dealnews": 24 * 60}  # 60 days
     _FALLBACK_MAX_AGE_HOURS = 24 * 30.0  # 30 days
 
+    # V2EX's deals.xml is purpose-built (every post is already deal-shaped) but
+    # its index.xml (全站最新) and per-node feeds are general firehoses — most
+    # items are unrelated discussion. Measured live 2026-08-21: unfiltered, the
+    # openai node's "money" keywords hit mostly on bare 额度 (quota) complaints
+    # ("额度用的很快", "账号额度明显缩水") — 18/50 hits, ~2 genuinely deal-shaped.
+    # [推广] is V2EX's own "promotion" node tag — a post tagged with it is
+    # commercial by definition, so it's included as a standalone strong signal.
+    # Dropping bare 额度/码 (码 alone matches inside 密码/代码/编码 etc.) took
+    # openai's hits from 18 to 3 with zero loss of the genuinely deal-shaped
+    # ones. Applied to all of v2ex's feed_urls, including deals.xml, since one
+    # `name` shares one filter (see main.py's per-source-name construction) —
+    # measured no loss there (its own titles already say 羊毛/优惠/免费 etc.).
+    _DEFAULT_TITLE_KEYWORDS = {
+        "v2ex": [
+            r"\[推广\]",
+            r"羊毛", r"薅", r"优惠", r"折扣", r"免费", r"白嫖", r"领取", r"首月",
+            r"福利", r"活动", r"促销", r"特价", r"减免", r"返现", r"试用", r"赠送",
+            r"券", r"限时", r"0 ?元", r"几折", r"打折", r"便宜",
+        ],
+    }
+    _FALLBACK_TITLE_KEYWORDS: list[str] | None = None  # no filtering
+
     def __init__(
         self,
         name: str,
@@ -74,7 +102,13 @@ class FeedDealsSource(Source):
         # Items with no parseable posted_at are always kept — an unknown age
         # is not evidence of staleness (see _is_stale). Defaults per `name`
         # via _DEFAULT_MAX_AGE_HOURS above when not passed explicitly.
-        max_item_age_hours: float | None = _UNSET_MAX_AGE,  # type: ignore[assignment]
+        max_item_age_hours: float | None = _UNSET,  # type: ignore[assignment]
+        # Keep only items whose title matches one of these patterns (any-of).
+        # None/[] disables the filter (kept for every existing call site).
+        # Defaults per `name` via _DEFAULT_TITLE_KEYWORDS when not passed
+        # explicitly — needed for firehose feeds (e.g. V2EX's index.xml) that
+        # mix a source's real content with unrelated discussion.
+        title_keywords: list[str] | None = _UNSET,  # type: ignore[assignment]
     ) -> None:
         self.name = name
         self.feed_urls = feed_urls
@@ -83,9 +117,12 @@ class FeedDealsSource(Source):
         self._allow = [re.compile(p, re.IGNORECASE) for p in (allow_patterns or [])]
         self.request_delay_seconds = request_delay_seconds
         self.timeout = timeout
-        if max_item_age_hours is _UNSET_MAX_AGE:
+        if max_item_age_hours is _UNSET:
             max_item_age_hours = self._DEFAULT_MAX_AGE_HOURS.get(name, self._FALLBACK_MAX_AGE_HOURS)
         self.max_item_age_hours = max_item_age_hours
+        if title_keywords is _UNSET:
+            title_keywords = self._DEFAULT_TITLE_KEYWORDS.get(name, self._FALLBACK_TITLE_KEYWORDS)
+        self._title_keywords = [re.compile(p, re.IGNORECASE) for p in (title_keywords or [])]
 
     def fetch(self) -> list[Deal]:
         deals: dict[str, Deal] = {}  # de-dupe across queries by Deal.key
@@ -117,6 +154,7 @@ class FeedDealsSource(Source):
         )
         out: list[Deal] = []
         dropped_stale = 0
+        dropped_no_keyword = 0
         for item in items:
             deal = self._parse_item(item, now)
             if deal is None:
@@ -124,15 +162,22 @@ class FeedDealsSource(Source):
             if self._is_stale(deal, now):
                 dropped_stale += 1
                 continue
+            if self._title_keywords and not any(p.search(deal.title) for p in self._title_keywords):
+                dropped_no_keyword += 1
+                continue
             out.append(deal)
+        # Aggregate, not per-item — these feeds can carry 100+ dropped items per
+        # poll (firehose nodes especially) and a line each would flood the log.
         if dropped_stale:
-            # Aggregate, not per-item — these feeds can carry 100+ stale items
-            # per poll and a line each would flood the log.
             log.info(
                 "%s: dropped %d stale item(s) older than %gh",
                 self.name,
                 dropped_stale,
                 self.max_item_age_hours,
+            )
+        if dropped_no_keyword:
+            log.info(
+                "%s: dropped %d item(s) not matching title_keywords", self.name, dropped_no_keyword
             )
         return out
 

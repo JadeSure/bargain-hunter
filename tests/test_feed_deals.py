@@ -275,3 +275,59 @@ def test_item_with_unparseable_posted_at_is_kept_not_dropped():
     deals = src.parse(xml)
     assert len(deals) == 1
     assert deals[0].posted_at is None
+
+
+# -- title_keywords filter: keep only on-topic items in a firehose feed ----------
+
+
+def test_title_keywords_drops_non_matching_and_keeps_matching(caplog):
+    xml = (
+        '<?xml version="1.0"?><rss version="2.0"><channel>'
+        "<item><title>羊毛党薅羊毛攻略</title><link>https://x.example/1</link>"
+        "<description></description><guid>g1</guid></item>"
+        "<item><title>今天天气怎么样</title><link>https://x.example/2</link>"
+        "<description></description><guid>g2</guid></item>"
+        "</channel></rss>"
+    )
+    src = FeedDealsSource(
+        name="dealnews", feed_urls=[], max_item_age_hours=None, title_keywords=["羊毛"]
+    )
+    with caplog.at_level("INFO"):
+        deals = src.parse(xml)
+    assert [d.title for d in deals] == ["羊毛党薅羊毛攻略"]
+    assert "dropped 1 item(s) not matching title_keywords" in caplog.text
+
+
+def test_title_keywords_none_disables_filter():
+    xml = RSS_ITEM.format(title="Anything goes", link="https://x.example/1", desc="", guid="g1")
+    src = FeedDealsSource(
+        name="dealnews", feed_urls=[], max_item_age_hours=None, title_keywords=None
+    )
+    assert len(src.parse(xml)) == 1
+
+
+def test_v2ex_default_title_keywords_filters_firehose():
+    """V2EX's index.xml/openai node mix real 羊毛 posts with unrelated discussion
+    (measured live 2026-08-21) — the default keyword filter keeps only the former."""
+    xml = (
+        '<?xml version="1.0"?><rss version="2.0"><channel>'
+        "<item><title>[推广] 超值机场羊毛，速度冲</title><link>https://x.example/1</link>"
+        "<description></description><guid>g1</guid></item>"
+        "<item><title>Codex 额度越来越不经用，没怎么做事</title><link>https://x.example/2</link>"
+        "<description></description><guid>g2</guid></item>"
+        "</channel></rss>"
+    )
+    src = FeedDealsSource(name="v2ex", feed_urls=[], currency="CNY", max_item_age_hours=None)
+    deals = src.parse(xml)
+    assert [d.title for d in deals] == ["[推广] 超值机场羊毛，速度冲"]
+
+
+def test_dealnews_and_slickdeals_unaffected_by_v2ex_default_keywords():
+    """The per-name default only applies to name="v2ex" — other sources keep
+    their existing no-filter behaviour."""
+    xml = RSS_ITEM.format(
+        title="No Chinese keywords here", link="https://x.example/1", desc="", guid="g1"
+    )
+    for name in ("dealnews", "slickdeals", "iknowthepilot"):
+        src = FeedDealsSource(name=name, feed_urls=[], max_item_age_hours=None)
+        assert len(src.parse(xml)) == 1
