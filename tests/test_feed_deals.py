@@ -496,3 +496,31 @@ def test_v2ex_title_block_keeps_the_real_deals_from_that_same_harvest():
         "[跟一下] Chatgpt 客户端 1000 Credit 邀请，需要的来（老号或免费账号也可）",
     ):
         assert not _v2ex_blocks(title), title
+
+
+# -- Atom type="xhtml" bodies -----------------------------------------------------
+
+
+def test_atom_xhtml_content_is_read_not_silently_empty():
+    """`findtext` returns only a direct text node, which is empty when an Atom
+    body is nested markup — and Atom permits both that and escaped HTML.
+
+    Vercel's changelog uses `type="xhtml"`, so every entry read back with no
+    body at all. That looks identical to a feed that simply publishes no
+    descriptions, which is how it was first (wrongly) reported. Measured
+    2026-08-21 against the live feed: 8/8 entries have 651-9008 chars of body.
+    """
+    deals = FeedDealsSource(name="vercel", feed_urls=[], currency="USD").parse(
+        (FIXTURES / "vercel_xhtml_content.xml").read_text(encoding="utf-8"),
+        now=datetime(2026, 8, 17, 12, tzinfo=UTC),
+    )
+    by_title = {d.title: d for d in deals}
+
+    xhtml = by_title["GPT-5.6 Sol is 50% off on AI Gateway for the next month"]
+    assert xhtml.description, "xhtml body must not come back empty"
+    assert "through September 18" in xhtml.description, xhtml.description
+    # Nested <strong> must not swallow or duplicate the surrounding text.
+    assert "50% off on AI Gateway" in xhtml.description
+
+    escaped = by_title["A second offer, 50% off, whose body is escaped HTML not xhtml"]
+    assert escaped.description == "Plain escaped body, 50% off."

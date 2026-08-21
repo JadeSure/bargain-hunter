@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Vercel News</title>
+  <entry>
+    <id>https://vercel.com/changelog/gpt-56-sol-half-off</id>
+    <title>GPT-5.6 Sol is 50% off on AI Gateway for the next month</title>
+    <link href="https://vercel.com/changelog/gpt-56-sol-half-off"/>
+    <updated>2026-08-17T10:00:00.000Z</updated>
+    <content type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><p>GPT-5.6 Sol, the flagship of
+    OpenAI's GPT-5.6 series, is <strong>50% off</strong> on AI Gateway through September 18.</p></div></content>
+  </entry>
+  <entry>
+    <id>https://vercel.com/changelog/escaped-html</id>
+    <title>A second offer, 50% off, whose body is escaped HTML not xhtml</title>
+    <link href="https://vercel.com/changelog/escaped-html"/>
+    <updated>2026-08-17T10:00:00.000Z</updated>
+    <content type="html">&lt;p&gt;Plain escaped body, 50% off.&lt;/p&gt;</content>
+  </entry>
+</feed>

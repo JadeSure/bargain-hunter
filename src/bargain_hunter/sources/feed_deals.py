@@ -47,6 +47,22 @@ BROWSER_UA = (
 )
 
 
+def _atom_body(item, tag: str) -> str:
+    """Text of an Atom <content>/<summary>, including `type="xhtml"` elements.
+
+    `findtext` returns only the direct text node, which is empty when the body
+    is nested markup rather than escaped HTML -- and Atom allows both. Vercel's
+    changelog uses `type="xhtml"`, so every entry read back as having no body
+    at all: 0 of 9 descriptions, which looks exactly like a feed that simply
+    does not publish them. Measured 2026-08-21: itertext() recovers 8/8, e.g.
+    651 chars for "Manage Vercel Toolbar comments from the CLI".
+    """
+    el = item.find(f"{{{_ATOM}}}{tag}")
+    if el is None:
+        return ""
+    return " ".join("".join(el.itertext()).split())
+
+
 def _strip_html(raw: str, max_len: int = 2000) -> str:
     return html.unescape(_TAG_RE.sub(" ", raw or "")).strip()[:max_len]
 
@@ -312,9 +328,7 @@ class FeedDealsSource(Source):
             title = (item.findtext(f"{{{_ATOM}}}title") or "").strip()
             link_el = item.find(f"{{{_ATOM}}}link")
             url = (link_el.get("href") if link_el is not None else "") or ""
-            raw_body = (
-                item.findtext(f"{{{_ATOM}}}content") or item.findtext(f"{{{_ATOM}}}summary") or ""
-            )
+            raw_body = _atom_body(item, "content") or _atom_body(item, "summary")
             ts_text = item.findtext(f"{{{_ATOM}}}published") or item.findtext(f"{{{_ATOM}}}updated")
             guid = item.findtext(f"{{{_ATOM}}}id") or url
         else:
