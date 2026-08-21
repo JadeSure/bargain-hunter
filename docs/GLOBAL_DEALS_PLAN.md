@@ -895,6 +895,28 @@ nothing. Confirm the Australia section is byte-identical in content to before.
   actionable.
 - No portal UI for the digital alert cap.
 
+### Owner decision, 2026-08-21 — mainland-China content scope
+
+The owner has WeChat, Alipay and a mainland phone number, so payment-gated
+mainland 羊毛 is actionable for him and is no longer filtered out (v2ex's
+`region_block_patterns` were removed for that reason).
+
+He was shown that the tuned V2EX filter surfaces grey-market content —
+sampled live: `[推广] 美区 codex/claude code 独立帐号` (account sales),
+`[推广] AIX 真正不掺水的中转站` (API relay resale), `[推广] 2026 年最新开通
+chatgpt plus/pro 方法分享` (region workaround) — alongside genuine offers
+(a Lebara eSIM deal, ChatGPT referral credits). He chose to carry all of it,
+in both the digest and the public `/deals` board.
+
+That decision is his to make and is recorded here so it is not silently
+re-litigated. Note it narrows the grounds of the NodeSeek rejection below:
+that source was rejected partly for carrying this same content class, so if
+it is ever revisited, ToS-shaped content is no longer the blocker — the
+remaining objections are its low signal density (its only feed is a
+site-wide firehose; category feeds 302) and that `/guides` synthesises
+how-to guides rather than merely linking titles, which is a stronger form
+of publication than a deal card.
+
 ## Rejected sources (do not revisit without new evidence)
 
 什么值得买 smzdm (403, WAF-gated, mostly Taobao/JD physical) · 线报 sites
