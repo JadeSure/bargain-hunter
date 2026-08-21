@@ -19,6 +19,7 @@ from zoneinfo import ZoneInfo
 
 import httpx
 
+from . import leaderboard
 from .alert_throttle import AlertThrottle
 from .cashback import enrich_cashback
 from .categories import deal_matches_categories
@@ -65,7 +66,12 @@ _AET = ZoneInfo("Australia/Sydney")
 # caps — each is too thin to justify its own quota, but too easily crowded
 # out if it shared the OzBargain/CamelCamelCamel caps.
 DIGITAL_SOURCES = {
-    "dealnews", "slickdeals", "v2ex", "openrouter", "bank_rates", "iknowthepilot",
+    "dealnews",
+    "slickdeals",
+    "v2ex",
+    "openrouter",
+    "bank_rates",
+    "iknowthepilot",
 }
 
 
@@ -172,6 +178,10 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             all_deals.extend(or_deals)
             state.set_snapshot("llm_prices", or_snapshot)
             state.mark_fetched("openrouter", now)
+            # src.last_models is [] when this run's fetch failed -- leave the
+            # leaderboard's llm_models section untouched rather than blanking it.
+            if not dry_run and src.last_models:
+                leaderboard.update(llm_models=src.last_models, now=now)
         except Exception as exc:
             msg = f"openrouter fetch failed: {exc}"
             log.error(msg)
@@ -191,12 +201,15 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 min_bonus_points_rise=getattr(br_cfg, "min_bonus_points_rise", 10000),
                 max_detail_fetches_per_run=getattr(br_cfg, "max_detail_fetches_per_run", 40),
                 previous_snapshot=state.snapshot("bank_rates"),
+                previous_leaderboard=leaderboard.load().get("bank_products") or {},
             )
             br_deals = src.fetch()
             log.info("bank_rates: %d rate-change deal(s).", len(br_deals))
             all_deals.extend(br_deals)
             state.set_snapshot("bank_rates", src.next_snapshot)
             state.mark_fetched("bank_rates", now)
+            if not dry_run:
+                leaderboard.update(bank_products=src.next_leaderboard, now=now)
         except Exception as exc:
             msg = f"bank_rates fetch failed: {exc}"
             log.error(msg)
@@ -219,10 +232,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             enrich_cashback(deal, settings.cashback)
 
     # Filter expired/out-of-stock (including deals whose expiry timestamp has passed).
-    active_deals = [
-        d for d in all_deals
-        if not d.expired and (d.expiry is None or d.expiry > now)
-    ]
+    active_deals = [d for d in all_deals if not d.expired and (d.expiry is None or d.expiry > now)]
     if d := len(all_deals) - len(active_deals):
         log.info("Filtered %d expired deals.", d)
 
@@ -286,7 +296,8 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             )
     log.info(
         "Adaptive baseline: heat_ratio=%.3f site_velocity_index=%s",
-        heat_ratio, site_velocity_index,
+        heat_ratio,
+        site_velocity_index,
     )
     summary["heat_ratio"] = round(heat_ratio, 3)
     summary["site_velocity_index"] = site_velocity_index
@@ -433,17 +444,16 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         remaining_watch = sub.max_watch_alerts_per_day - watch_daily
         remaining_digital = sub.max_digital_alerts_per_day - digital_daily
 
-        if (
-            not sub_quiet
-            and remaining_hot <= 0
-            and remaining_watch <= 0
-            and remaining_digital <= 0
-        ):
+        if not sub_quiet and remaining_hot <= 0 and remaining_watch <= 0 and remaining_digital <= 0:
             log.info(
                 "Subscriber %s at daily caps (hot=%d/%d watch=%d/%d digital=%d/%d); skipping.",
-                sub.ref, hot_daily, sub.max_alerts_per_day,
-                watch_daily, sub.max_watch_alerts_per_day,
-                digital_daily, sub.max_digital_alerts_per_day,
+                sub.ref,
+                hot_daily,
+                sub.max_alerts_per_day,
+                watch_daily,
+                sub.max_watch_alerts_per_day,
+                digital_daily,
+                sub.max_digital_alerts_per_day,
             )
             continue
 
@@ -506,7 +516,11 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 if not passes_qg:
                     log.info(
                         "[%s] hot skip %s: quality gate (votes=%d disc=%s vel=%.1f)",
-                        sub.ref, deal.key, deal.votes_pos, deal.discount_percent, vel,
+                        sub.ref,
+                        deal.key,
+                        deal.votes_pos,
+                        deal.discount_percent,
+                        vel,
                     )
                     continue
                 hot_candidates.append(
@@ -540,7 +554,8 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             if len(hot_candidates) > len(hot_items):
                 log.info(
                     "[%s] hot: %d deal(s) held back by daily cap",
-                    sub.ref, len(hot_candidates) - len(hot_items),
+                    sub.ref,
+                    len(hot_candidates) - len(hot_items),
                 )
                 cap_suppressed += len(hot_candidates) - len(hot_items)
         notified_keys = {item.deal.key for item in hot_items} | {
@@ -620,7 +635,8 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             if len(watch_candidates) > len(watch_items):
                 log.info(
                     "[%s] watch: %d deal(s) held back by daily cap",
-                    sub.ref, len(watch_candidates) - len(watch_items),
+                    sub.ref,
+                    len(watch_candidates) - len(watch_items),
                 )
                 cap_suppressed += len(watch_candidates) - len(watch_items)
 
@@ -637,7 +653,8 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             if len(digital_candidates) > len(digital_items):
                 log.info(
                     "[%s] digital: %d deal(s) held back by daily cap",
-                    sub.ref, len(digital_candidates) - len(digital_items),
+                    sub.ref,
+                    len(digital_candidates) - len(digital_items),
                 )
                 cap_suppressed += len(digital_candidates) - len(digital_items)
 
@@ -751,6 +768,7 @@ def _is_blocked(deal: Deal, block_keywords: list[str]) -> bool:
     if not block_keywords:
         return False
     import re
+
     text = deal.title + " " + (deal.description or "")
     return any(re.search(_keyword_pattern(kw), text, re.IGNORECASE) for kw in block_keywords)
 

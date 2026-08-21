@@ -55,6 +55,11 @@ class LlmPriceSource:
         self.min_drop_percent = min_drop_percent
         self.model_allowlist = model_allowlist or []
         self.timeout = timeout
+        # Full raw model list from the last check(), for the leaderboard artifact
+        # (see leaderboard.py) -- check()'s own return value is diffs only, never
+        # enough to render a price board. Empty on a failed/never-run fetch; the
+        # caller should treat that as "nothing fresh to write", not "no models".
+        self.last_models: list[dict] = []
 
     def fetch(self) -> list[dict]:
         """Network only. Returns raw `data` entries, or [] on any failure.
@@ -85,6 +90,7 @@ class LlmPriceSource:
         """
         now = now or datetime.now(UTC)
         raw = self.fetch()
+        self.last_models = raw
         if not raw:
             return [], previous
 

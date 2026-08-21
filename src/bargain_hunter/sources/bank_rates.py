@@ -155,6 +155,7 @@ class BankRatesSource(Source):
         min_rate_rise_bps: int = 10,
         min_bonus_points_rise: int = 10000,
         previous_snapshot: dict[str, Any] | None = None,
+        previous_leaderboard: dict[str, dict] | None = None,
         timeout: float = 20.0,
         # Sensible default derived from a real cold-start production run: ~3s/detail
         # call observed end-to-end (network + occasional retries), so 40 keeps one
@@ -169,10 +170,20 @@ class BankRatesSource(Source):
         self.min_rate_rise_bps = min_rate_rise_bps
         self.min_bonus_points_rise = min_bonus_points_rise
         self.previous_snapshot = previous_snapshot or {}
+        # Display rows (name/brand/category/rate/bonus/link) for the frontend
+        # leaderboard artifact -- separate from previous_snapshot (diff state:
+        # numbers only, see AGENTS.md on feature_snapshots) so that file never
+        # has to widen just to carry a product name.
+        self.previous_leaderboard = previous_leaderboard or {}
         self.timeout = timeout
         self.max_detail_fetches_per_run = max_detail_fetches_per_run
         # Populated by fetch(); the caller persists this via state.set_snapshot("bank_rates", ...).
         self.next_snapshot: dict[str, Any] = {}
+        # Populated by fetch(); the caller writes this to the leaderboard artifact
+        # (see leaderboard.py). Seeded from previous_leaderboard in fetch() so a
+        # brand/product this run couldn't refresh keeps its last-known row instead
+        # of vanishing from the board.
+        self.next_leaderboard: dict[str, dict] = {}
         self._detail_budget = 0
         self._deferred_brands: list[str] = []
 
@@ -180,6 +191,7 @@ class BankRatesSource(Source):
         now = datetime.now(UTC)
         since = self.previous_snapshot.get(_SINCE_KEY)
         self.next_snapshot = {}
+        self.next_leaderboard = dict(self.previous_leaderboard)
         self._detail_budget = self.max_detail_fetches_per_run
         self._deferred_brands = []
         deals: list[Deal] = []
@@ -232,6 +244,30 @@ class BankRatesSource(Source):
         if brand_name not in self._deferred_brands:
             self._deferred_brands.append(brand_name)
 
+    def _set_leaderboard_row(
+        self,
+        key: str,
+        brand_name: str,
+        product: dict[str, Any],
+        rates: dict[str, Any],
+        url: str,
+    ) -> None:
+        """Leaderboard display row for `key` -- name/brand/category/rate/bonus/link,
+        no UUIDs. A product with neither signal (e.g. a plain transaction account)
+        isn't rankable, so it's left out rather than padding the board with nulls."""
+        best_rate, bonus_points = rates.get("best_rate"), rates.get("bonus_points")
+        if best_rate is None and bonus_points is None:
+            return
+        name = _display_name(brand_name, product.get("name") or product.get("productId", "?"))
+        self.next_leaderboard[key] = {
+            "brand": brand_name,
+            "name": name,
+            "category": product.get("productCategory"),
+            "best_rate": best_rate,
+            "bonus_points": bonus_points,
+            "url": url,
+        }
+
     def _fetch_brand(self, brand: dict[str, Any], since: str | None, now: datetime) -> list[Deal]:
         # brand["x_v"] is no longer read: version selection is server-side (see _get_json).
         brand_name = brand["name"]
@@ -256,11 +292,14 @@ class BankRatesSource(Source):
             prev = self.previous_snapshot.get(key)
             if prev is not None and prev.get("lastUpdated") == last_updated:
                 self.next_snapshot[key] = prev  # unchanged since last run, carry forward untouched
+                self._set_leaderboard_row(key, brand_name, product, prev.get("rates") or {}, base)
                 continue
 
             if self._detail_budget <= 0:
                 # Over budget this run -- carry the old baseline (if any) forward
                 # and retry the detail call on a later run instead of losing it.
+                # (Leaderboard row for `key` is left as whatever previous_leaderboard
+                # seeded next_leaderboard with -- see fetch().)
                 self._defer_product(brand_name, key, prev)
                 continue
             self._detail_budget -= 1
@@ -274,6 +313,7 @@ class BankRatesSource(Source):
             detail = detail_body.get("data") or {}
             signals = _extract_rate_signals(detail)
             self.next_snapshot[key] = {"rates": signals, "lastUpdated": last_updated}
+            self._set_leaderboard_row(key, brand_name, product, signals, _product_url(detail, base))
 
             if prev is None:
                 continue  # newly listed product: seed only, not a rate rise
