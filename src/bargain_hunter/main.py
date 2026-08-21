@@ -43,6 +43,7 @@ from .scoring import (
 )
 from .sources.bank_rates import BankRatesSource
 from .sources.camelcamelcamel import CamelCamelCamelSource
+from .sources.cn_llm_docs import CnLlmDocsSource
 from .sources.feed_deals import FeedDealsSource
 from .sources.llm_prices import LlmPriceSource
 from .sources.ozbargain import OzBargainSource
@@ -72,6 +73,7 @@ DIGITAL_SOURCES = {
     "openrouter",
     "bank_rates",
     "iknowthepilot",
+    "cn_llm_docs",
 }
 
 
@@ -233,6 +235,22 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 leaderboard.update(bank_products=src.next_leaderboard, now=now)
         except Exception as exc:
             msg = f"bank_rates fetch failed: {exc}"
+            log.error(msg)
+            summary["errors"].append(msg)
+
+    cn_cfg = settings.sources.get("cn_llm_docs")
+    if _fetch_gate(
+        state, "cn_llm_docs", cn_cfg, getattr(cn_cfg, "poll_interval_minutes", 10080), now
+    ):
+        try:
+            src = CnLlmDocsSource(pages=list(getattr(cn_cfg, "pages", [])))
+            cn_deals, cn_snapshot = src.check(state.snapshot("cn_llm_docs"), now=now)
+            log.info("cn_llm_docs: %d doc-change deal(s).", len(cn_deals))
+            all_deals.extend(cn_deals)
+            state.set_snapshot("cn_llm_docs", cn_snapshot)
+            state.mark_fetched("cn_llm_docs", now)
+        except Exception as exc:
+            msg = f"cn_llm_docs fetch failed: {exc}"
             log.error(msg)
             summary["errors"].append(msg)
 
