@@ -31,6 +31,7 @@ SOURCE_LABELS = {
     "iknowthepilot": "Flight Deals (AU)",
     "cn_llm_docs": "CN AI Pricing",
     "smzdm": "什么值得买",
+    "free_llm": "Free LLM Tiers",
     "appsumo": "AppSumo (SaaS)",
     "vercel": "Vercel Offers",
     "aff": "Frequent Flyer (AU)",

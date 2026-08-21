@@ -148,6 +148,12 @@ class FeedDealsSource(Source):
         "v2ex": [
             # grey market: reselling or sharing someone else's account/quota
             r"中转", r"逆向", r"车位", r"合租", r"成品号", r"镜像站", r"独享号",
+            # 代充/代付 is the same trade in a different wrapper: someone tops up
+            # your vendor account with their own payment rail, which is an
+            # account-terms violation and leaves you with no recourse. Measured
+            # live: "[推广] ChatGPT Codex Claude 官方订阅代充值 v2 优惠码 …"
+            # slipped through a list that only knew the word 中转.
+            r"代充", r"代付", r"代开", r"拼车", r"共享号",
             # questions — used the vocabulary, offering nothing
             r"哪里有", r"有没有", r"^求", r"求购", r"求推荐", r"是什么", r"怎么样",
             r"如何评价",

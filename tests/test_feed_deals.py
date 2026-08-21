@@ -452,6 +452,12 @@ def test_v2ex_title_block_rejects_grey_market_quota_resale():
         "[推广] Cursor 插件中转 模型保真",
         "出 ChatGPT plus 车位，长期稳定",
         "GPT 合租，一个月 15",
+        # Measured live 2026-08-21: this one slipped through a block list that
+        # only knew the word 中转. 代充 is the same trade in a different
+        # wrapper — a stranger tops up your vendor account with their payment
+        # rail, which violates the vendor's terms and leaves you no recourse.
+        "[推广] ChatGPT Codex Claude 官方订阅代充值 v2 优惠码 SSASASAV10",
+        "代付 ChatGPT Plus，安全快速",
     ):
         assert _v2ex_blocks(title), title
 

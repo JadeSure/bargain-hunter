@@ -129,7 +129,7 @@ const LEVEL_RANK: Record<string, number> = { top: 3, great: 2, good: 1 }
 // later), so they skip that gate and rely on the 72h RETENTION_HOURS window
 // alone. Every other new source re-emits every poll, so the batch gate is
 // correct for them.
-const EVENT_EMITTING_SOURCES = new Set(['openrouter', 'bank_rates', 'cn_llm_docs'])
+const EVENT_EMITTING_SOURCES = new Set(['openrouter', 'bank_rates', 'cn_llm_docs', 'free_llm'])
 
 type ObsRow = Awaited<ReturnType<typeof readObservationsFile>>[number]
 
@@ -399,6 +399,7 @@ const SOURCE_LABELS: Record<string, string> = {
   iknowthepilot: 'Flight Deals (AU)',
   cn_llm_docs: 'CN AI Pricing',
   smzdm: '什么值得买',
+  free_llm: 'Free LLM Tiers',
   appsumo: 'AppSumo (SaaS)',
   vercel: 'Vercel Offers',
   aff: 'Frequent Flyer (AU)',
@@ -424,7 +425,7 @@ const REGION_BY_SOURCE: Record<string, DealRegion> = {
   aff: 'AU', pointhacks: 'AU',
   dealnews: 'NA', slickdeals: 'NA',
   v2ex: 'CN', cn_llm_docs: 'CN', smzdm: 'CN',
-  openrouter: 'GLOBAL', appsumo: 'GLOBAL', vercel: 'GLOBAL',
+  openrouter: 'GLOBAL', appsumo: 'GLOBAL', vercel: 'GLOBAL', free_llm: 'GLOBAL',
 }
 export function dealRegion(source: string): DealRegion {
   return REGION_BY_SOURCE[source] ?? 'AU'

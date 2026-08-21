@@ -1,0 +1,64 @@
+{
+  "lastUpdated": "2026-08-21",
+  "providers": [
+    {
+      "name": "Groq",
+      "category": "inference_provider",
+      "country": "US",
+      "flag": "🇺🇸",
+      "url": "https://console.groq.com/keys",
+      "baseUrl": "https://api.groq.com/openai/v1",
+      "models": [
+        {
+          "id": "openai/gpt-oss-120b",
+          "name": "openai/gpt-oss-120b",
+          "context": "131K",
+          "maxOutput": "65K",
+          "modality": "Text",
+          "rateLimit": "30 RPM, 1,000 RPD"
+        },
+        {
+          "id": "llama-3.3-70b-versatile",
+          "name": "llama-3.3-70b-versatile",
+          "context": "128K",
+          "maxOutput": "32K",
+          "modality": "Text",
+          "rateLimit": "30 RPM, 14,400 RPD"
+        }
+      ]
+    },
+    {
+      "name": "Google Gemini",
+      "category": "inference_provider",
+      "country": "US",
+      "flag": "🇺🇸",
+      "url": "https://aistudio.google.com/apikey",
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta",
+      "models": [
+        {
+          "id": "gemini-2.5-flash",
+          "name": "gemini-2.5-flash",
+          "context": "1M",
+          "maxOutput": "8K",
+          "modality": "Text, Image, Audio",
+          "rateLimit": "10 RPM, 250,000 TPM, 250 RPD"
+        }
+      ]
+    },
+    {
+      "name": "BadProvider",
+      "url": "https://example.com/bad",
+      "models": [
+        {"name": "no id model", "context": "10K", "rateLimit": "5 RPM"}
+      ]
+    },
+    {
+      "url": "https://example.com/noname",
+      "models": [
+        {"id": "orphan-model", "context": "10K", "rateLimit": "5 RPM"}
+      ]
+    }
+  ],
+  "footnotes": ["RPM = requests per minute", "RPD = requests per day", "TPM = tokens per minute"],
+  "glossary": {"RPM": "Requests Per Minute"}
+}

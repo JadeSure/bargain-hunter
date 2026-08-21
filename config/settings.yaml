@@ -211,6 +211,19 @@ sources:
     max_item_age_hours: 72
     request_delay_seconds: 1.0
 
+  # Free LLM API tiers. Diffs mnfst/awesome-free-llm-apis' data.json (★6876,
+  # pushed daily, commits are substantive — "remove the three deprecated NVIDIA
+  # rows", not bot boilerplate). Measured 2026-08-21: 16 providers, ~112-118
+  # free models, each with context + rateLimit ("30 RPM, 1,000 RPD").
+  #
+  # The static list is discovery value, not capture value — a standing free tier
+  # has no expiry and no urgency. The *diff* is the point: "Groq raised this
+  # model to 60 RPM" or "NVIDIA NIM added a free model" is an actionable event.
+  # That distinction is why free-for-dev was rejected and this was not.
+  free_llm:
+    enabled: true
+    poll_interval_minutes: 1440   # upstream pushes at most once/day
+
   # --- CN AI token 羊毛: DeepSeek/Kimi/Zhipu/SiliconFlow pricing & policy docs.
   # /v1/models is 401 without a key on all of these, and the CN deal
   # aggregators are anti-bot walled -- these are the platforms' own published
@@ -290,7 +303,7 @@ scoring:
     voteless_sources: ["camelcamelcamel", "dealnews", "slickdeals", "v2ex",
                         "openrouter", "bank_rates", "iknowthepilot", "cn_llm_docs",
                         "vercel", "appsumo", "aff", "pointhacks",
-                        "smzdm"]
+                        "smzdm", "free_llm"]
     # Age cap (hours since posted_at) for the voteless discount-only candidacy
     # path — the only staleness gate on it, since there's no vote velocity to
     # decay a score. Without this, an old high-discount item from a global
@@ -331,7 +344,7 @@ scoring:
     trusted_sources: ["dealnews", "slickdeals", "v2ex", "openrouter",
                        "bank_rates", "iknowthepilot", "cn_llm_docs",
                        "vercel", "appsumo", "aff", "pointhacks",
-                        "smzdm"]
+                        "smzdm", "free_llm"]
 
 dedup:
   lookback_days: 7                 # read recent Sent Log window for local dedup

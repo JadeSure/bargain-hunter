@@ -47,6 +47,7 @@ from .sources.bank_rates import BankRatesSource
 from .sources.camelcamelcamel import CamelCamelCamelSource
 from .sources.cn_llm_docs import CnLlmDocsSource
 from .sources.feed_deals import FeedDealsSource
+from .sources.free_llm import FreeLlmSource
 from .sources.llm_prices import LlmPriceSource
 from .sources.ozbargain import OzBargainSource
 from .sources.smzdm import SmzdmSource
@@ -84,6 +85,7 @@ DIGITAL_SOURCES = {
     "aff",
     "pointhacks",
     "smzdm",
+    "free_llm",
 }
 
 
@@ -125,6 +127,13 @@ def _check_staleness(settings: Settings, state: StateStore, now: datetime) -> li
         when = state.freshness(src_name)
         if when is not None:  # never recorded yet is not a defect, just no data
             _flag(src_name, when)
+
+    # free_llm carries the upstream repo's own lastUpdated date, so a repo that
+    # stops being maintained is visible without inferring it from our own polls.
+    last_updated = (state.snapshot("free_llm") or {}).get("_lastUpdated")
+    if last_updated:
+        with contextlib.suppress(ValueError):
+            _flag("free_llm", datetime.strptime(last_updated, "%Y-%m-%d").replace(tzinfo=UTC))
 
     for key, entry in (state.snapshot("cn_llm_docs") or {}).items():
         ok_at = (entry or {}).get("ok_at")
@@ -338,6 +347,20 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                 state.record_freshness("smzdm", newest)
         except Exception as exc:
             msg = f"smzdm fetch failed: {exc}"
+            log.error(msg)
+            summary["errors"].append(msg)
+
+    fl_cfg = settings.sources.get("free_llm")
+    if _fetch_gate(state, "free_llm", fl_cfg, getattr(fl_cfg, "poll_interval_minutes", 1440), now):
+        try:
+            src = FreeLlmSource()
+            fl_deals, fl_snapshot = src.check(state.snapshot("free_llm"), now=now)
+            log.info("free_llm: %d free-tier change(s).", len(fl_deals))
+            all_deals.extend(fl_deals)
+            state.set_snapshot("free_llm", fl_snapshot)
+            state.mark_fetched("free_llm", now)
+        except Exception as exc:
+            msg = f"free_llm fetch failed: {exc}"
             log.error(msg)
             summary["errors"].append(msg)
 
