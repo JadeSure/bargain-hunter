@@ -97,7 +97,8 @@ def _describe(item: dict) -> str | None:
     rating = review.get("average_rating")
     if rating is not None and review_count:
         with contextlib.suppress(TypeError, ValueError):
-            parts.append(f"{float(rating):.1f}★ ({review_count} reviews)")
+            plural = "review" if review_count == 1 else "reviews"
+            parts.append(f"{float(rating):.1f}★ ({review_count} {plural})")
 
     refundable_days = item.get("refundable_days")
     is_number = isinstance(refundable_days, int | float) and not isinstance(refundable_days, bool)

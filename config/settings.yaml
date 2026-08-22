@@ -5,8 +5,18 @@ run:
   max_alerts_per_user_per_day: 10
   max_digital_alerts_per_day: 10    # default digital-track daily cap (Notion has no matching property)
   timezone: "Australia/Sydney"      # AET/AEDT — used for daily caps, quiet hours, and midnight boundary
-  quiet_hours_start: "22:00"        # AEST — no alerts after 10pm
-  quiet_hours_end: "07:00"          # AEST — no alerts before 7am (overnight window)
+  # Quiet hours OFF (2026-08-22, owner's call): overnight is when a lot of the
+  # good stuff lands — free-credit windows, flash 神价, invite codes that run
+  # out — and holding those until 7am is often holding them until they're gone.
+  # Set both to "HH:MM" to re-enable; is_in_quiet_hours() treats either being
+  # unset as disabled, and the drain branch then runs every cycle, so nothing
+  # can be stranded in the queue by this change.
+  #
+  # NOTE: a subscriber's own quiet_hours_start/end in Notion OVERRIDE this
+  # global setting (see quiet_hours.py) — turning it off here does not clear a
+  # per-subscriber window.
+  quiet_hours_start: null
+  quiet_hours_end: null
   quiet_hours_queue_max_age_hours: 12  # overnight-queued notifications older than this are dropped at drain
 
 sources:
