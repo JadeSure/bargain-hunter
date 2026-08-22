@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1vvft7b",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1vvft7b/fixed_the_mtp_head_on_ornith15_35b_a3b_3_tps_33/",
+  "title": "Fixed the MTP head on Ornith1.5 35B A3B. +3% TPS -33% wall clock",
+  "author": "/u/frankentriple",
+  "body": "I love the Ornith 35B local models, 1.0 has been running my HAM radio rig for me. I have a hackRF receiver and a 5 watt quansheng portable the both run headless through the PC. I tried out the new Ornith1.5 build and it was faster and more accurate than 1.0. I read the threads that talked about the untrained MTP head so I found a trained version of the MTP head on a quant I couldn't use so I spliced it onto an APEX requant of Ornith1.5 to make a beast that is 2.5X faster than Ornith1.0 and 33% faster than the released version of Ornith1.5. I cant believe how good this model is, and how fast it works at the same tasks. And it doesn't try to lecture me when I ask it to key up the mic on a licensed freq. The crazy thing is tokens/sec only went up by 4. From 60 to 64 t/s avg. But the time to complete the same tasks went down by 1/3, from 21 to 14 seconds average on my radio torture tests. https://ollama.com/slickwillies/ornith15-35b-a3b-apex-mtp-fixed testing methodology and results: https://github.com/h00nigan/Ornith-testing-results submitted by /u/frankentriple [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-22T15:46:27Z",
+  "fetched_at": "2026-08-22T15:47:12.339800Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "79366b05eeaf3355",
+  "key": "reddit:1vvft7b"
+}
