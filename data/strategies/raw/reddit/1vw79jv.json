@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1vw79jv",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1vw79jv/thinking_about_replacing_my_16gb_5060ti_with_an/",
+  "title": "Thinking about replacing my 16GB 5060ti with an RX 7900 XT.",
+  "author": "/u/InfinitelyRepeating",
+  "body": "Who else has made the switch from CUDA to RoC/Vulkan, and what did you learn? I've primarily been using oobabooga's TextGen and Open-WebUI with Webui Forge Neo for any for image generation. Edit to add: I appreciate everyone recommending a 2nd 5060ti. I'm looking to switch because my current 5060ti intermittently black screens (needing a reboot) when it's under any heavy load. I've troubleshot the issue for 8 months with no progress. I am going to turn it in for a warranty service, but hopefully you can understand my hesitancy to get another 5060ti right now. I also have the opportunity to switch for \"used 2023\" prices! submitted by /u/InfinitelyRepeating [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-23T13:30:12Z",
+  "fetched_at": "2026-08-23T15:48:23.468953Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "322ba90ce232500d",
+  "key": "reddit:1vw79jv"
+}

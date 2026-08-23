@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1vvthq6",
+  "url": "https://www.reddit.com/r/fiaustralia/comments/1vvthq6/1jul27_capital_gains_tax_increase_charts/",
+  "title": "1-Jul-27 Capital Gains Tax Increase, Charts",
+  "author": "/u/glyptometa",
+  "body": "See past threads for limitations and caveats. NFA, DYOR, WTF Effects of 1-Jul-27 incoming tax changes on a FIRE financial model : r/fiaustralia Future CGT not so bad, but certainly an impost on FIRE : r/fiaustralia 1-Jul-27 tax changes - material impact, yes - not as bad as some think : r/fiaustralia This post is to convey some charts that I hope illustrate the numbers that really matter for a FIRE plan. The incoming tax changes are material, but just not nearly as bad as some pundits, pollies, analysts and media make them out to be. These numbers are from models specifically designed to compare taxation, and are not provided as a FIRE planning model, nor as a recommendation for particular strategies or investments. For greater clarity, my term \"capital gains tax\" includes the effect of medicare levy rebate and LITO during the retired period because my convention is to include those where the majority of income is coming from. My term \"After-tax proceeds\" includes the effect of all taxes and FITO/franking on savings account interest and distributions from the ETF, which obscures a bit of CGT from distributed gains. The biggest number making up that bar is contributed capital. Next is indexation of cost base in NEW(Post-1-Jul-27) or the CGT discount in OLD(Pre-1-Jul-27). https://preview.redd.it/k5zylf41e0lh1.jpg?width=1279&format=pjpg&auto=webp&s=25e820274f8ef01c08b2588bbe9eb29455bfae3b https://preview.redd.it/id6qhxj7e0lh1.jpg?width=1279&format=pjpg&auto=webp&s=6946e8708c4f487c31f5a0b44e2335717a67a9bc https://preview.redd.it/vw4j2huae0lh1.jpg?width=1704&format=pjpg&auto=webp&s=80fde1252153ffa4527dc9ce0cf1aae6f5ea2b30 .jpeg didn't pick up the text boxes (Left group is 10yrs Save & 10yrs Spend, Centre group is 12Save8Spend, Right group is 15Save10Spend If you'd like to get into the weeds, or see waterfall charts for other settings, here's a link to the file: https://docs.google.com/spreadsheets/d/1_nDkO-heNJ0jCnmLuE7v6GPVanJEbGsb/edit?usp=drive_link&ouid=109596560468947975241&rtpof=true&sd=true It also has Solver settings on each model sheet (Solve OLD first, then NEW). If you have the Solver Add-in enabled, it's more convenient for playing with the variables. Cheers submitted by /u/glyptometa [link] [comments]",
+  "board": "r/fiaustralia",
+  "created_at": "2026-08-23T01:13:15Z",
+  "fetched_at": "2026-08-23T15:48:23.468953Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 2,
+  "content_hash": "37a01469ab658fbb",
+  "key": "reddit:1vvthq6"
+}
