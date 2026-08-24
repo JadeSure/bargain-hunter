@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1vwh3u7",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1vwh3u7/we_quantized_qwen_38_27b_and_compared_the_quants/",
+  "title": "We quantized Qwen 3.8 27B and compared the quants on an RTX 6000",
+  "author": "/u/Fun-Meaning-6474",
+  "body": "Me and my team made Atomic Dynamic GGUF quants for Qwen 3.8 27B, so we wanted to see the difference between them by giving each quant the same voxel island creation task First of all we were surprised at how well Qwen 3.8 27B handled the 3D scenes in general, though part of that is probably because all the scenes were voxels quant size top-1 vs BF16 mean KLD decode, RTX PRO 6000 AD-Q4_K_M 17.1 GB 95.6% 0.0113 67 tok/s AD-Q5_K_M 20.2 GB 97.3% 0.0042 57 tok/s AD-Q6_K 25.0 GB 98.7% 0.0011 49 tok/s Q8_0 28.9 GB 98.9% 0.0006 50 tok/s We think that each quant handled the scenes in a pretty similar way, the difference isn't that drastic, to the point that sometimes we preferred the Q4 output overall, though for the safest pick we recommend AD-Q6_K We ran the test inside atomic.chat and watched the output right there, the quants are available to download directly inside the app or on huggingface ( https://huggingface.co/collections/AtomicChat/qwen-38-27b ) (any feedback is appreciated, we're trying to make the product and models as good for you guys as possible) submitted by /u/Fun-Meaning-6474 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-23T19:52:11Z",
+  "fetched_at": "2026-08-24T16:06:11.020077Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "1df91903c554cf95",
+  "key": "reddit:1vwh3u7"
+}
