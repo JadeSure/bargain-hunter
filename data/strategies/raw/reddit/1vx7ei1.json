@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1vx7ei1",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1vx7ei1/best_local_vision_language_models_august_2026/",
+  "title": "Best Local Vision Language Models - August 2026",
+  "author": "/u/rm-rf-rm",
+  "body": "Share what your favorite models are right now and why . Given the nature of the beast in evaluating VLMs (untrustworthiness of benchmarks, immature tooling, intrinsic stochasticity), please be as detailed as possible in describing your setup, nature of your usage ( what applications , how much, personal/professional use), tools/frameworks/prompts etc. Rules Should be open weights models Notes Bonus points if you breakdown/classify your recommendation by model memory footprint: (you can and should be using multiple models in each size range for different tasks) Unlimited: >128GB VRAM XL: 64 to 128GB VRAM L: 32 to 64GB VRAM M: 8 to 32GB VRAM S: <8GB VRAM submitted by /u/rm-rf-rm [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-24T16:18:56Z",
+  "fetched_at": "2026-08-25T16:17:34.603432Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 2,
+  "content_hash": "22343992544c8c99",
+  "key": "reddit:1vx7ei1"
+}
