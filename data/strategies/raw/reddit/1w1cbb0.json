@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w1cbb0",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w1cbb0/saved_my_fiances_phone_with_qwen_38_27b/",
+  "title": "Saved my fiances phone with qwen 3.8 27b",
+  "author": "/u/Prudent-Objective852",
+  "body": "this model is really something incredible, saved us like 600 dollars. my fiance is always breaking her electronics and then getting me to fix them. The other day she brought me her phone and it was stuck in a boot loop that wouldn't post. tried normal stuff, managed to get it to fastboot but the recovery mode wouldn't load and I couldn't find any firmware online. It's a folding phone and out of warranty so its not cheap to repair and usually isn't worth it, and she had basically written it off as dead. So I said hey what the hell, I've got fastboot access to the computer, let's just let AI give it a shot, can't get much worse. So I loaded up pi and qwen, and basically just explained the situation. It took quite a while, but I checked up on it every once in a while and it successfully found the exact build that the phone had down to the same version, and then managed to save the device through fastboot. I am quite amazed. this is a situation I've never really trusted local models with, I found 3.6 to be incredible but not quite trustworthy enough to be left unattended or on more critical tasks. but 3.8 has been incredible in its reliability. this was on Q5 uncensored from orcarouter, xhigh submitted by /u/Prudent-Objective852 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-29T04:12:59Z",
+  "fetched_at": "2026-08-29T18:48:30.871095Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "c5e65820b746991d",
+  "key": "reddit:1w1cbb0"
+}
