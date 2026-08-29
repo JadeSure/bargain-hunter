@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w0pscn",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w0pscn/qwen3827b_q8_kv_cache_does_seem_to_actually_hurt/",
+  "title": "Qwen3.8-27b q8 KV cache does seem to actually hurt model performance",
+  "author": "/u/maddie-lovelace",
+  "body": "EDIT: Though the issue with q8 kv cache seems to arise from when and how often we run the quantize step, not that kv quantizing can't ever work - see comments --- One of the things I see debated a lot is whether to use kv cache quantization. The idea I see a lot is that q8 should be free / nearly lossless (which for model weights it usually is). But from some experiments I've been running, it actually isn't, but the reason is slightly weirder than just <quantization loses accuracy> Basically it's because most backends, e.g. llama.cpp, do kv-quantization on-write . When KV is quantized on write, every subsequent prefill step reads quantized keys So even though 8bit really is just a sub-1% rounding error, it's not a 1% error applied once - it thus compounds from slightly-wrong attention over slightly-wrong keys, at every layer, and feeds the keys written next In my tests: needle retrieval that passes at bf16 fails with q8-on-write at 125k. However!! It's not actually q8 that's the problem per-se - when I take a cache that was built at bf16 and quantize the whole thing in one go to be q8, then the error really is just the 1% and it works fine, needle retrieval restored *Caveats: this is from my tests with just one model family (Qwen3.8-27B), small number of trials, with some of the more out there experiments running on my slightly weirdo custom MLX stack. But it seems like the mechanism might be generalisable --- TL;DR If your long-context quality drops with quantized KV, it might be because of when we quantize (i.e. every token on-the-fly instead of in chunks), not that quantizing can't ever work submitted by /u/maddie-lovelace [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-28T12:54:01Z",
+  "fetched_at": "2026-08-29T00:06:29.821612Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "a6c8efbf638089ea",
+  "key": "reddit:1w0pscn"
+}

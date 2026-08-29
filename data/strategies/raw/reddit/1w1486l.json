@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w1486l",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w1486l/today_i_hit_181_tokss_aggregate_on/",
+  "title": "Today I hit 181 toks/s (aggregate) on Qwen3.8-Flash-Next on 2x DGX Sparks",
+  "author": "/u/StartupTim",
+  "body": "Hey all, and hello fellow DGX Spark-ers! Today I managed some pretty crazy numbers: 181 tok/s aggregate on 2× DGX Spark on Qwen3.8-Flash-Next at 512Kcontext (2.8M kvc) I hit 181 tok/s aggregate today across a multi-agent fleet on a 2-node DGX Spark cluster. Single-stream decode is 30–50 tok/s — the 181 is total throughput with ~9 concurrent agent sessions sharing the engine. I actually peaked to 195 while writing this. Quick rundown of how it's served: Hardware 2× NVIDIA DGX Spark (GB10 Grace Blackwell, 128 GB unified memory each, 20-core ARM) Nodes linked with a direct ConnectX-7 cable — NCCL over RDMA (RoCE, 200 Gb), TP=2 across both boxes Verify Using network IB in the NCCL log — the TCP fallback is silent and costs you half your speed Model Qwen3.8-Flash-Next, RadixArk NVFP4 quant (4-bit routed experts, FP8 n-gram table) Hybrid arch: 3/4 linear attention + 1/4 sparse full attention, 512-expert MoE, MTP speculative decoding k=3 (~40% acceptance) Native 262K context stretched to 512K with YaRN factor 2.0 — needle-verified at 487K depth The trick: PLE table on NVMe The model carries a 320M-row n-gram embedding table ( 47.7 GiB in FP8 ) that's read on every token — but each token only touches 16 rows (~2.5 KB) We mmap it straight off NVMe instead of loading it: weights per node dropped 65 → 41 GiB Two things made it fast: madvise(MADV_RANDOM) on the mapping (hash-scattered lookups + kernel readahead = 30× read amplification — one 405K prefill read 603 GB from disk before the fix, 19 GB after) and 64 gather threads (the wall was fault latency serialization, not disk bandwidth) Freed memory went into KV: pool is now 2.89M tokens (5.5× full contexts) at a 40.6 GiB pin vLLM config (official day-0 image, vllm/vllm-openai) --kv-cache-memory 40600000000 — pin the pool explicitly; heads-up, a manual pin ignores --gpu-memory-utilization , size it from measured free RAM --max-num-batched-tokens 8192 , --long-prefill-token-threshold 4096 — protects decode latency during cold prefills --enforce-eager — CUDA graphs crash this build on GB10/SM121 (torch.compile AOT dies on rank 1) --enable-prefix-caching — 99% hit rate with agent traffic, this is the single biggest real-world win --speculative-config '{\"method\":\"mtp\",\"num_speculative_tokens\":3}' Small scheduler patch: cap concurrent cold long prefills (admission gate) so N agents prefilling at once can't balloon host RAM — on unified memory, prefill transients eat the same pool as your weights Serving stack llama-swap in front (one model resident at a time, API-key auth, model swap on request), nginx TLS for outside access earlyoom with absolute floors as the only watchdog — on a unified-memory box, low free RAM with a big model resident is normal , percentage-based OOM killers will shoot a healthy model Happy to answer questions about any of it. submitted by /u/StartupTim [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-28T22:00:36Z",
+  "fetched_at": "2026-08-29T00:06:29.821612Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "405b64ce28013b60",
+  "key": "reddit:1w1486l"
+}

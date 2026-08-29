@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w0mmk7",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w0mmk7/micron_hbm_requires_three_times_more_wafer_area/",
+  "title": "Micron: HBM Requires Three Times More Wafer Area Than DDR5",
+  "author": "/u/FullstackSensei",
+  "body": "\"At Hot Chips 2026, Micron drew a notable comparison: For the same memory capacity, HBM requires approximately three times the wafer area of DDR5.\" \"When asked whether this ratio would improve with newer generations, the Micron Fellow reportedly explained that it definitely would not get better.\" \"According to the data shown at Hot Chips, an HBM4 die, for example, operates with 256 memory banks, while DDR5 is specified with 32. Additional data paths, the power supply, and the Through-Silicon Vias, which connect the stacked memory dies to one another, must also be taken into account.\" So, for each 1GB of HBM going in a datacebter GPU, 3GB of regular DRAM capacity are being taken away. This explains a lot about the shortage. Each B100 has 144GB of HBM, which take the same wafer area as 432GB of regular DDR5. The shift by the big three (Micron, Samsung and SK) to HBM has effectively cut DRAM supply by 2/3rds in terms of GB output. Even as new wafer capacity comes online next year, and even if we assume all this extra capacity is allocated to DRAM rather than HBM, it doesn't seem like supply constraints will get better anytime soon. submitted by /u/FullstackSensei [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-28T10:19:44Z",
+  "fetched_at": "2026-08-29T00:06:29.821612Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "aff775f898f2c175",
+  "key": "reddit:1w0mmk7"
+}

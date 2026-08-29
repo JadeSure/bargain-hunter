@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w0u24k",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w0u24k/qwen38flash_on_rtx3090_64gb_ram_but_you_only_need/",
+  "title": "Qwen3.8-Flash on RTX3090 + 64GB RAM (but you only need 12GB VRAM)",
+  "author": "/u/crusaderky",
+  "body": "I've got Qwen3.8-Flash-next running on RTX 3090, Ryzen 9 3950X, a PCIe 3.0 motherboard, and 64GB DDR RAM from 2020. IQ4_XS weights, full kvarn5 context, vision on GPU, experts in host RAM, n-grams on disk. MTP works but actually slows decode down even with 80% draft acceptance, as expected since every rejected token eats into the host RAM bandwidth. I get 160 tok/s prefill 16 tok/s decode , which makes it a decent option whenever I know I'll be AFK for at least a couple of hours, but not usable for interactive work. Variant setups kvarn5 is unrecognizable from q8/q8 on the KLD charts for the Qwen models. If you don't want to use Beellama, q5_0/q5_0 is also fine (just a very minor drop). Nonetheless, there's plenty of headroom so you can bump up the KV quant to q8/q8 if you prefer. You can go down to 16GB VRAM, with enough room for desktop, if you drop KV to kvarn4 and offload the vision tower to CPU - but then you'll need to make sure you don't breathe too hard because you're going to have very little spare host RAM for running anything else. I do not recommend using plain q4_0/q4_0 KV as the drop starts being measurable. You can fit in a 12GB card by further dropping ub from 2048 to 512, but your prefill will halve. How to deploy One-line deployment (CUDA Linux): https://github.com/crusaderky/pixi-llm-recipes . Choose llamacpp-source-cuda when starting the server. It should also work on Vulkan and ROCm, but it's untested. Just the llamacpp fork: https://github.com/crusaderky/llama.cpp/releases/tag/beellama-staging-v0.4.4-r9 ; if you wait it will eventually land in the main beellama branch. Or you can just use llamacpp master without kvarn. Just the llamacpp preset: https://github.com/crusaderky/pixi-llm-recipes/blob/26ed50ace2a40772aa2b45d1358aaf0993fd5596/models.ini#L3-L94 u/andbeeld can we have one more merge from llamacpp main before v0.4.4 final? Your latest merge is *just* before support for Qwen3.8-Flash was added. But I heard that you should never reduce KV cache quant below q8/q8? I don't care about people's vibes. I have not tested this model yet but I have tested submitted by /u/crusaderky [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-28T15:40:53Z",
+  "fetched_at": "2026-08-29T00:06:29.821612Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "99f07c2f68c130a8",
+  "key": "reddit:1w0u24k"
+}
