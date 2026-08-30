@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w2nz07",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w2nz07/qwen_38_flash_next_locally_on_simple_mobile_phone/",
+  "title": "Qwen 3.8 Flash Next locally on simple mobile phone at 3.5 tok/s",
+  "author": "/u/dai_app",
+  "body": "Qwen 3.8 Flash Next (80gb) now at 3.5 tok/s on 12gb mid range android phone thanks to some optimizations and with a low quantization on dense part. I don't want to promote the project, but simply show that it's possible on a $400–$500 phone submitted by /u/dai_app [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-30T17:39:30Z",
+  "fetched_at": "2026-08-30T18:47:00.180864Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "336f021e573bf037",
+  "key": "reddit:1w2nz07"
+}

@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w2ip5z",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w2ip5z/got_minimax_h3_video_generation_running_in/",
+  "title": "Got MiniMax H3 video generation running in TensorSharp",
+  "author": "/u/fuzhongkai",
+  "body": "I’ve been experimenting with MiniMax H3 and finally have video generation working in TensorSharp. TensorSharp started primarily as a local GGUF/LLM inference engine, so getting a video-generation pipeline working in the same runtime has been an interesting change of direction. The attached demo is image-to-video: an image is provided as context, followed by a prompt describing the motion/scene, and H3 generates the resulting video locally through TensorSharp. What interests me most here isn’t really the UI — it’s having LLM, multimodal, image, and now video inference converge into the same local inference engine rather than requiring a completely separate Python stack for every model family. There is still quite a bit to optimize. Video models put very different pressure on memory management, tensor scheduling, attention, and model offloading compared with autoregressive LLMs. I’m curious what people here would prioritize next for H3 inference: lower VRAM usage faster generation better quantized-model support multi-GPU longer video generation reference/video-to-video workflows Repo if anyone wants to look at the implementation: https://github.com/zhongkaifu/TensorSharp submitted by /u/fuzhongkai [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-30T14:14:25Z",
+  "fetched_at": "2026-08-30T18:47:00.180864Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "69f270fe06f5e954",
+  "key": "reddit:1w2ip5z"
+}

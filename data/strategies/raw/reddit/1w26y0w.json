@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w26y0w",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w26y0w/ran_qwen38flashnext_79_gb_2bit_at_350k_ctx_for_35/",
+  "title": "Ran Qwen3.8-Flash-Next (79 GB, 2-bit) at 350K ctx for 3.5 hours on a 128 GB M5 Max — speed vs context depth, 100 turns, one graph",
+  "author": "/u/Artistic_Okra7288",
+  "body": "Setup: MacBook Pro M5 Max, 128 GB unified, macOS 26.5.2 · llama.cpp b10686 (Metal, 12 threads, batch 2048, flash-attn, kv-unified, ngram-mod spec decode) · Qwen3.8-Flash-Next UD-Q2_K_XL (Unsloth), 78.9 GB · 358,400-token context slot via YaRN from the native 262,144, fp16 KV. Weights + full 350K KV fit under the default 96 GB GPU wired limit — no sysctl hack. The session: one slot, 100 turns, two conversations. Conv 1 grew 0 → 48K ctx on prefix reuse; after a ~20 min idle the slot kept only its 5.5K system prefix, so the next turn cold-prefilled the whole 105K prompt in 333 s — the run's longest prefill — and the conversation kept growing to 169,425 ctx, the session's deepest point (350K was slot capacity, never filled). Slot reset; conv 2 grew to ~125K where I stopped capture. The graph: x = slot context size where each measurement happened; y = printed tokens/s, log scale (the two phases span ~2 decades). Green = prompt processing, red = token generation. Dots = in-flight checkpoints, squares = per-turn finals. No smoothing, no fitting. Prefill (green): the smooth top curve is cold prefills — 1,561 t/s at the first checkpoint (5.6K ctx), tapering to 318 t/s at 111K as the KV fills. The green band below is what a normal turn looks like: a few thousand new tokens at each depth (77–854 t/s, out to 169K ctx), because prefix reuse means only the delta gets prefilled. Decode (red): one clean taper — ~30–35 t/s at small ctx → ~21 at 45K → 13–15 at 100–125K → 11.5 t/s at 169K . The dip to 7.7 t/s around ~140K is macOS Low Power Mode; still usable. One caveat on the decode numbers: they are effective throughput with ngram-mod spec decode enabled (draft acceptance ranged 0–81% depending on content), not base-model speed. Practical read: with prefix reuse a turn's prefill is seconds; the 5.5-minute prefill happened exactly once, after an idle gap. Decode stayed interactive out to 169K ctx. Experience: strong for the first ~100K ctx. Past that, on long-tail tasks, it started mixing up user messages with its own prior output (role confusion), worsening with use. Ruled out: KV quant (ran fp16) and rope extrapolation (worst turns well under native 262K). Remaining suspects: the 2-bit quant and/or preview-model long-context quality. submitted by /u/Artistic_Okra7288 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-30T03:56:19Z",
+  "fetched_at": "2026-08-30T18:47:00.180864Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "5aff471c637069f0",
+  "key": "reddit:1w26y0w"
+}

@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w2o21p",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w2o21p/alternative_to_openwork/",
+  "title": "Alternative to OpenWork?",
+  "author": "/u/ConflictNo4814",
+  "body": "Hey! Really love Claude CoWork, but want to run it with my own keys - only issue is that OpenWork seems relatively unstable (when I click connect provider, it says failed to load providers) and always prompts me to pay their subscription price. Also have a 5090 I'm going to run with it as awell to see how recent Qwen models do against some tasks. Thanks guys! submitted by /u/ConflictNo4814 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-08-30T17:42:36Z",
+  "fetched_at": "2026-08-30T18:47:00.180864Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "d887c254eef3eb39",
+  "key": "reddit:1w2o21p"
+}
