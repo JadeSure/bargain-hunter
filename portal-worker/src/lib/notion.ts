@@ -188,6 +188,13 @@ export async function createInactiveSubscriber(
         [P.NAME]: { title: [{ text: { content: email } }] },
         [P.EMAIL]: { email },
         [P.ACTIVE]: { checkbox: false },
+        // Onboarding defaults so an approved applicant starts configured like the
+        // rest of the DB: Email channel, hot deals on, 10 alerts/day, top tier.
+        // Active stays false — access still requires owner approval.
+        [P.CHANNELS]: { multi_select: [{ name: "Email" }] },
+        [P.HOT]: { checkbox: true },
+        [P.MAX_ALERTS]: { number: 10 },
+        [P.HOT_LEVEL]: { select: { name: "top" } },
       },
     }),
   });
