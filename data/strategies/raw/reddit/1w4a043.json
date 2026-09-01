@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w4a043",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w4a043/all_currently_popular_local_models_in_one_table/",
+  "title": "All currently popular local models in one table + Opus 4.8 results",
+  "author": "/u/perelmanych",
+  "body": "If you are thinking what model will fit best your HW specs and tasks you are doing here is one table with all currently popular models that still can be considered as local. LLM Test Scores Feature DeepSeek-V4-Flash-Vision-Exp DeepSeek-V4-Flash-0731 Qwen3.8-Flash-Next GLM-5.3-Flash Qwen3.8-27B Opus-4.8 Total parameters ≈285B 284B 125B 320B 27B not published Active parameters 13B 13B 6B 18B 27B not published Agentic benchmarks Benchmark DeepSeek-V4-Flash-Vision-Exp DeepSeek-V4-Flash-0731 Qwen3.8-Flash-Next GLM-5.3-Flash Qwen3.8-27B Opus-4.8 Terminal Bench 2.1 83.9 82.7 – 82.6 73.0 85.0 NL2Repo 57.7 54.2 48.1 52.1 42.3 69.7 DeepSWE 59.3 54.4 58.7 61.1 42.2 58.0 Toolathlon-Verified 75.9 70.3 73.5 72.1 – 76.2 Agents' Last Exam 27.3 25.2⁷ 24.3 28.1 20.4 25.7 AutomationBench (Public) 25.7 25.1 – 25.3 – 27.2 GDPval-AA v2 – 68.1 – 72.3 – 75.1 Cybergym 75.3 76.7 – – – 78.3 DSBench-Hard 63.6 59.6 – – – 71.7 DSBench-FullStack – 68.7 – – – 71.6 ApexBench (Pass@1) 36.5 26.2⁷ – – – 39.4 HLE with tools (full set) – 16.8 – 22.9 – 25.4 Coding benchmarks Benchmark DeepSeek-V4-Flash-Vision-Exp DeepSeek-V4-Flash-0731 Qwen3.8-Flash-Next GLM-5.3-Flash Qwen3.8-27B Opus-4.8 SWE-bench Pro – 56.0 62.5 – 61.7 69.2 SWE-bench Multilingual – – 81.0 – 73.8 84.4 CoWorkBench – 45.1 73.9 – 70.7 – JobBench – 41.3 55.7 – 33.4 – General benchmarks Benchmark DeepSeek-V4-Flash-Vision-Exp DeepSeek-V4-Flash-0731 Qwen3.8-Flash-Next GLM-5.3-Flash Qwen3.8-27B Opus-4.8 GPQA Diamond – 90.8 91.7 – 89.2 93.6 HLE (without tools) – 33.8 35.9 – 30.8 49.8 LiveCodeBench v6 – 90.6 91.9 – 90.3 – IFBench – 79.2 81.3 – 79.5 – Multimodal benchmarks Benchmark DeepSeek-V4-Flash-Vision-Exp DeepSeek-V4-Flash-0731 Qwen3.8-Flash-Next GLM-5.3-Flash Qwen3.8-27B Opus-4.8 Chartography 64.3 – – – – 65.0 ZeroBench (Pass@5) 35.0 – – – – 34.0 BabyVision – – – 73.0 65.7 / 85.6 34.1 MathVision – – 90.6 / 95.7 – 90.0 / 94.6 – RealWorldQA – – 88.5 – 85.9 – AndroidWorld – – 84.5 – 81.9 – OSWorld 2.0 (partial credit) – – 52.3 – 48.0 – Vision2Web – – 64.0 – 62.9 – ClawEval-MM (Pass@3) – – 64.4 – 57.4 – RecreationBench – – 49.9 – 47.1 – ERQA – – 72.3 – 65.5 – Note: I used GLM-5.3 to compose the table from official HF pages of the models. Note2: Opus-4.8 results are presented only for illustration and are omitted from selecting the best model in a row. Upd: Added SWE-bench Pro, SWE-bench Multilingual, GPQA Diamond and HLE (without tools) scores for Opus 4.8 from its System Card. submitted by /u/perelmanych [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-01T12:04:38Z",
+  "fetched_at": "2026-09-01T18:48:13.496410Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "a22cad60b46dfc21",
+  "key": "reddit:1w4a043"
+}
