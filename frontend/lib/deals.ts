@@ -203,6 +203,20 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     }
   }
 
+  // A deal that has scrolled out of its source feed stops being re-observed, so
+  // its stored age_hours freezes at last sighting. posted_at is fixed, though,
+  // and recoverable as (observation ts − age at that observation) — recompute
+  // against *now* so the card shows how long it's really been up, not a stale
+  // value. For a still-in-feed deal this just adds the minutes since last scan.
+  function liveAgeHours(r: ObsRow): number {
+    const stored = r.age_hours as number | null
+    if (stored == null || Number.isNaN(stored)) return stored as number
+    const tsMs = Date.parse(r.ts as string)
+    if (Number.isNaN(tsMs)) return stored
+    const postedMs = tsMs - stored * 3_600_000
+    return Math.max((now.getTime() - postedMs) / 3_600_000, 0)
+  }
+
   function toEntries(candidates: [string, Agg][]): { deal: LiveDeal }[] {
     return candidates.map(([key, agg]) => {
       const r = agg.latest
@@ -226,7 +240,7 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
           hotScore: (r.hot_score as number) ?? 0,  // current score (reflects actual heat now)
           peakScore: agg.peakScore,                  // highest score ever seen in retention window
           hotLevel: agg.peakLevel,                  // peak level badge (stable, doesn't decay)
-          ageHours: r.age_hours as number,
+          ageHours: liveAgeHours(r),
           ts: r.ts as string,
         },
       }
@@ -280,7 +294,13 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
   for (const entry of byKey) {
     const [key, agg] = entry
     if (!agg.lastHotTs || !agg.peakLevel) continue // never hot within the window
-    if (!isStillInLatestSourceBatch(key, agg)) continue
+    // Once hot, keep an ozbargain deal for the full RETENTION_HOURS as long as
+    // it's still live — leaving the /deals/feed batch (pushed out by newer
+    // posts) is NOT the same as expiring, and the "retain 72h while still
+    // active" rule (commit 8a489be6) meant *active*, not *still in the feed*.
+    // keepLive's isOzbargainInactive() fetch below is the real still-active
+    // check. camelcamelcamel has no such live check, so it keeps the batch gate.
+    if (sourceFromKey(key) !== 'ozbargain' && !isStillInLatestSourceBatch(key, agg)) continue
     if (agg.peakLevel === 'top') topCandidates.push(entry)
     else if (agg.peakLevel === 'great') greatCandidates.push(entry)
   }
