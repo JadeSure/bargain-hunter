@@ -26,7 +26,10 @@ export interface LiveDeal {
 
 // Checked on the small number of currently-displayed deals to catch status
 // changes the observation log cannot see until the next successful scan.
-const OZB_INACTIVE_STATUSES = new Set([404, 410])
+// Every real OzBargain deal page carries this class on its node wrapper. Its
+// absence means we did not get a deal page at all — a bot challenge, an error
+// page, a redirect — and therefore that the deal is *unverified*, not live.
+const OZB_DEAL_PAGE_MARKER = /\bnode-ozbdeal\b/i
 const OZB_INACTIVE_MARKERS = [
   /\bnodeexpiry\b[^"]*\bexpired\b/i,
   /\bnode-ozbdeal\b[^"]*\bexpired\b/i,
@@ -38,18 +41,37 @@ const OZB_INACTIVE_MARKERS = [
 const OZB_USER_AGENT =
   'bargain-hunter/0.1 (personal deal alerter; +https://github.com/versent-shawn/bargain-hunter)'
 
-async function isOzbargainInactive(url: string): Promise<boolean> {
+// Positive liveness check: the deal is live only if the fetch returns a
+// recognisable OzBargain deal page carrying no expiry/out-of-stock/unpublished
+// marker. Everything else — a non-200, a bot challenge served with 200, a
+// timeout — is unverified, and unverified means dropped.
+//
+// This used to fail open. Observed 2026-09-04: three of the six AU cards had
+// expired 1-2 days earlier (nodes 973498, 973526, 973731 — all three serve the
+// expiry markers below), because the ozbargain gate for this source is *only*
+// this check (see the batch-gate exemption in getLiveDeals) and it silently
+// returned "not inactive" for every deal in the Pages build. Fail open here
+// parks expired deals on the board for the full RETENTION_HOURS window; the
+// failures are logged so a build that starts dropping everything says why.
+async function isOzbargainLive(url: string): Promise<boolean> {
   try {
     const res = await fetch(url, {
       signal: AbortSignal.timeout(6000),
       headers: { 'User-Agent': OZB_USER_AGENT },
     })
-    if (OZB_INACTIVE_STATUSES.has(res.status)) return true
-    if (!res.ok) return false // fail open — a transient fetch error shouldn't hide a live deal
+    if (!res.ok) {
+      console.error(`deals: liveness check ${url} -> HTTP ${res.status}`)
+      return false
+    }
     const html = await res.text()
-    return OZB_INACTIVE_MARKERS.some((marker) => marker.test(html))
-  } catch {
-    return false // fail open — network hiccups shouldn't hide a live deal
+    if (!OZB_DEAL_PAGE_MARKER.test(html)) {
+      console.error(`deals: liveness check ${url} -> not a deal page (${html.length} bytes)`)
+      return false
+    }
+    return !OZB_INACTIVE_MARKERS.some((marker) => marker.test(html))
+  } catch (err) {
+    console.error(`deals: liveness check ${url} failed`, err)
+    return false
   }
 }
 
@@ -251,15 +273,24 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     return (agg.latest.ts as string) === latestTsBySource.get(sourceFromKey(key))
   }
 
-  // Drop deals OzBargain itself now shows as expired/unpublished, even within
-  // the retention window — only a handful of deals are ever checked here.
-  async function keepLive(entries: { deal: LiveDeal }[]): Promise<{ deal: LiveDeal }[]> {
-    const inactive = await Promise.all(
-      entries.map((e) => (
-        e.deal.source === 'ozbargain' ? isOzbargainInactive(e.deal.url) : false
-      )),
+  // Drop deals OzBargain itself no longer shows as live, even within the
+  // retention window — only a handful of deals are ever checked here.
+  // A deal still in its source's latest scan batch was seen alive by the
+  // pipeline minutes ago (main.py filters expired deals before they are ever
+  // observed), so it needs no HTTP check. One that has scrolled out of the feed
+  // — which holds only ~4.5h of deals, while RETENTION_HOURS is 72 — can only
+  // be confirmed by fetching its node page, and a deal we cannot confirm is
+  // live has no place on a board headed "Live deals".
+  async function keepLive(candidates: [string, Agg][]): Promise<{ deal: LiveDeal }[]> {
+    const entries = toEntries(candidates)
+    const alive = await Promise.all(
+      candidates.map(([key, agg], i) => {
+        if (entries[i].deal.source !== 'ozbargain') return true
+        if (isStillInLatestSourceBatch(key, agg)) return true
+        return isOzbargainLive(entries[i].deal.url)
+      }),
     )
-    return entries.filter((_, i) => !inactive[i])
+    return entries.filter((_, i) => alive[i])
   }
 
   // Top-tier deals are the main event, but top-tier supply is bursty (it
@@ -298,19 +329,18 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     // it's still live — leaving the /deals/feed batch (pushed out by newer
     // posts) is NOT the same as expiring, and the "retain 72h while still
     // active" rule (commit 8a489be6) meant *active*, not *still in the feed*.
-    // keepLive's isOzbargainInactive() fetch below is the real still-active
+    // keepLive's isOzbargainLive() fetch below is the real still-active
     // check. camelcamelcamel has no such live check, so it keeps the batch gate.
     if (sourceFromKey(key) !== 'ozbargain' && !isStillInLatestSourceBatch(key, agg)) continue
     if (agg.peakLevel === 'top') topCandidates.push(entry)
     else if (agg.peakLevel === 'great') greatCandidates.push(entry)
   }
 
-  let live = await keepLive(toEntries(topCandidates))
+  let live = await keepLive(topCandidates)
   if (live.length < MIN_DISPLAY_COUNT) {
-    const greatEntries = toEntries(
+    const greatLive = await keepLive(
       greatCandidates.sort((a, b) => b[1].peakScore - a[1].peakScore).slice(0, FALLBACK_GREAT_LIMIT),
     )
-    const greatLive = await keepLive(greatEntries)
     live = [...live, ...greatLive]
   }
 
@@ -423,7 +453,7 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
       }
     }
   }
-  const recencyLive = await keepLive(toEntries(recencyCandidates))
+  const recencyLive = await keepLive(recencyCandidates)
 
   return [...live, ...recencyLive].map((e) => e.deal)
 }
