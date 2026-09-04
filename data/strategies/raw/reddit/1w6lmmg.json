@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w6lmmg",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w6lmmg/i_released_sanotts_smallest_complete_tts_stack_in/",
+  "title": "I released sanoTTS: smallest complete TTS stack in 294k params (337 KB) that runs on $3 microcontroller and a 1.46m one that beats models 3x and 10x it's size",
+  "author": "/u/Affectionate_Hat_585",
+  "body": "I have been trying to squeeze TTS stack down far enough to run in a $3 chip which has 512kb of SRAM without NPU. While trying to get to that milestone i built sanoTTS which has - 11 voices, 6 languages - params size ranging from 294k - 2.2m. For comparison we are 244x smaller than kokoro, 9000x smaller than voxtral TTS - 1.5m model has a SCOREQ of 4.13 and UTMOS of 4.10 - 337kb for 294k model when quantized into int8 - can be run in website with web assembly npm install sanotts-web - there is a recipe to follow so that you can extend to more languages, voice I can tell you with confidence that this family release contains the smallest neural TTS model ever with around 2% WER on whisper. Please check it out on : https://github.com/ampixa/sanoTTS for live demo: https://tts.ampixa.com/sanoTTS HF: https://huggingface.co/ampixa/sanoTTS on SCOREQ sanoTTS-Amy(1.51m) is better than Inflect Nano(4.63m) and KittenTTS(15m) i.e 4.13 vs 3.81 vs 3.02 on esp32 microcontroller we are getting RTF of 0.225 which in plain terms means 4sec of audio is generated in 1sec Happy to answer your queries. submitted by /u/Affectionate_Hat_585 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-03T22:01:27Z",
+  "fetched_at": "2026-09-04T18:37:17.189489Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "989516c6301b9876",
+  "key": "reddit:1w6lmmg"
+}
