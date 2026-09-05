@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w85blf",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w85blf/otaku_an_llm_frontend/",
+  "title": "Otaku — an LLM frontend",
+  "author": "/u/Fickle_Tradition4491",
+  "body": "Otaku is an LLM frontend, primarily designed for roleplay, an alternative to SillyTavern and the like. However, It also works for general-purpose chat with local backends (including Ollama) or cloud models, the way Open WebUI is used, once lore extraction is switched off in the settings. Otaku offers two interfaces: a web UI (customizable): interactive demo at https://otaku.sh/demo-web/ a terminal UI: its own interactive demo at https://otaku.sh/demo-terminal/ Both share the same functions; the difference is that in the terminal you execute them with slash commands (the reference is available with /help), while in the web UI the operations are available from the menu. Install Otaku is free and open source (MIT); it works on macOS, Linux and Windows. Install it with uv (uv tool install otaku) or see the GitHub README for other options: https://github.com/enclavum/otaku Get started Launch either otaku for the terminal or otaku web for the web UI; the web UI's default URL is http://localhost:9600. Two sample stories are imported on first start to give you an idea of the features and what play looks like, and you land right in the middle of one of them. On first start, you choose a provider and a model: Otaku automatically detects local installations of Ollama, oMLX, LM Studio, llama.cpp and KoboldCpp, and lets you pick from their models. Cloud providers (OpenRouter, NanoGPT) are also there: enter an API key and their catalogs appear. After exploring the provided stories, you can start your own with the /new command. Asking for feedback Otaku is a personal side project, and I'd like to get feedback from the community on the product and on what to add. submitted by /u/Fickle_Tradition4491 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-05T16:29:27Z",
+  "fetched_at": "2026-09-05T17:32:25.263756Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "7d276b8e371a1c2b",
+  "key": "reddit:1w85blf"
+}

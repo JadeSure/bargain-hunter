@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w7zz1o",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w7zz1o/qwen38flashnext_udq4_k_xl_on_a_single_rtx_3090/",
+  "title": "Qwen3.8-Flash-Next (UD-Q4_K_XL) on a single RTX 3090 24GB + 128GB DDR4, is this config optimal?",
+  "author": "/u/cezarducatti",
+  "body": "Qwen3.8-Flash-Next (UD-Q4_K_XL) on a single RTX 3090 24GB + 128GB DDR4 — is this config optimal? Hardware CPU: Intel Core i5-12600K RAM: 128 GB DDR4 @ 3600 MHz GPU: NVIDIA RTX 3090, 24 GB VRAM OS: Windows 11 llama.cpp: freshly compiled from today's master (build b10794, Sep 4 2026) Model Qwen3.8-Flash-Next, UD-Q4_K_XL Launch command C:\\llama\\llama-server.exe -m \"D:\\Modelos\\Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf\" ^ -ngl 99 -ncmoe 42 -fit off -c 204800 -fa on -ctk f16 -ctv f16 ^ -b 2048 -ub 1024 -t -1 --jinja --port 8083 --tools all ^ --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.00 --repeat-penalty 1.0 ^ --reasoning on --reasoning-effort xhigh --reasoning-budget -1 --reasoning-preserve ^ --parallel 1 --metrics --host 0.0.0.0 --load-mode none Key points of the config: -ngl 99 → offload all layers to GPU where possible -ncmoe 42 → force 42 MoE (expert) layers to stay on CPU/RAM -c 204800 → 200k context window -fa on with f16 K/V cache -b 2048 / -ub 1024 → batch / micro-batch sizes --reasoning-effort xhigh, --reasoning-budget -1, --reasoning-preserve → full reasoning mode, no truncation State right after loading Free system RAM: 52 GB Free VRAM: 0.6 GB So the GPU is essentially maxed out (good VRAM utilization), and there's still a healthy ~52 GB of RAM headroom for the CPU-offloaded experts and context. Real-world performance (from server logs) Prompt processing (long context, ~12k tokens): Tokens processed Time (s) Speed (tok/s) 4,096 22.31 183.6 6,144 33.10 185.6 8,192 42.79 191.5 10,240 53.55 191.2 11,895 (100%) 62.80 189.4 Text generation (sustained, up to ~480 tokens generated): Tokens generated Speed (tok/s, rolling 3s) 100 16.0 148 15.8 192 14.6 238 15.3 289 16.8 336 15.6 386 16.5 434 15.8 481 15.4 Generation speed stays remarkably stable around ~15.5-16 t/s even as context grows past 12k tokens, and prompt processing holds steady around ~185-190 t/s. My question to the community Given this is a large MoE (~180B total / ~5B active params) split across a single 24GB GPU + 128GB DDR4 RAM: Is -ncmoe 42 a good number here, or should I push more/fewer expert layers to the GPU given I still have some VRAM headroom before hitting OOM? Any tips on squeezing more t/s out of prompt processing (-b/-ub tuning) or generation given the CPU-offloaded experts are likely the bottleneck? MTP speculative decoding doesn't seem to work reliably for this model yet on mainline — has anyone gotten it stable, or is everyone just running without it for now? Does anyone recommend other configs/parameters for this exact model + hardware combo? Open to any suggestions — happy to share more logs if useful! submitted by /u/cezarducatti [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-05T12:52:58Z",
+  "fetched_at": "2026-09-05T17:32:25.263756Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "073e382161502d3e",
+  "key": "reddit:1w7zz1o"
+}

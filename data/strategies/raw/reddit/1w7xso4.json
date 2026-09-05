@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w7xso4",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w7xso4/local_vibecoding_with_qwen_38_27b_and_godot/",
+  "title": "local vibecoding with Qwen 3.8 27B and Godot",
+  "author": "/u/jacek2023",
+  "body": "OK, you guys want to start with local vibecoding but don't know how. In the discussions, you recommended that I use Godot. I downloaded it without knowing what it was. I was expecting a library, but it was an .exe file. So I started pi with Qwen 3.8 27B and told it to explore this topic without my help. I needed to use four prompts. You can see all of them in the screenshots, so you can reproduce my steps. The whole session used 25% of my context, so you can use just 1/4, which is about 64k. The game works: you can walk around the dungeons, the llamas are dancing, and there are dynamic lights. My full command is: llama-server -m /mnt/models2/Qwen/3.8/27B/Qwen3.8-27B-UD-Q8_K_XL.gguf -mm /mnt/models2/Qwen/3.8/27B/Qwen3.8-27B-mmproj-BF16.gguf --host 0.0.0.0 --jinja -fa on --keep 4096 -b 8192 --parallel 1 --ctx-checkpoints 12 --cache-ram 65536 --temp 0.6 --top-p 0.95 --top-k 20 --min-p 0 --presence-penalty 0 --repeat-penalty 1.0 --spec-type ngram-mod --spec-type draft-mtp --spec-draft-n-max 3 --chat-template-kwargs {\"preserve_thinking\":true} You need vision for debugging, see the prompts, the screen was black! You probably don't need Q8, try a lower quant. As I said, you don't need the full context length. You need pi or something similar. This way, you can use just a few prompts and let the computer work without your input. submitted by /u/jacek2023 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-05T11:07:16Z",
+  "fetched_at": "2026-09-05T17:32:25.263756Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "b779ec7c5f548ec2",
+  "key": "reddit:1w7xso4"
+}
