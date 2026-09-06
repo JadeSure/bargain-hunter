@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w92am7",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w92am7/planning_to_get_a_cheapish_gpu_would_appreciate/",
+  "title": "Planning to get a cheap-ish GPU. Would appreciate some advice.",
+  "author": "/u/Current-Set1963",
+  "body": "Hi, I've been wanting to run my own local LLM for some time and I finally saved enough to get a budget GPU. I can spend 700$ at most, and I'm looking for a GPU that can run quantized 30B~ parameter models with decent speed. Being able to run Qwen 3.8 27 B Q4_K_M and similar models at +20 T/s is good enough for me. I mostly looked at Chinese shopping platforms such as Taobao and Alibaba since I've read here that they had cheaper listings and I found these prices: Modified RTX 3080 20 GB for 570$ AMD Mi 50 32GB for 390$ Modified 2080 Ti 22 GB for 330$ These are all from sellers with 10+ sales, so they're probably trustworthy. Any cheaper selling prices I found are from accounts with 0 trading history and look like scams. I'm planning to buy a modified 2080 Ti 22 GB, which, with customs, shipping, and other expenses, adds up to around 530$. Do you think this is a bad deal overall? Should I instead go for an AMD Mi50 with 32 GB? Because the model will have a really small context window with only 22 GB. Should I just go for two Mi50 16 GB for 240$ total? I even found a seller with a high number of sales who sold Mi50 32 GBs for 230$ but they were selling in bulk, so I needed to buy at least 5 of them, which is unfeasible for me. Sorry for the long post. I didn't expect it to be so hard to find a good deal, and I don't live in the US or the EU, so I can't look for local or Facebook Marketplace deals. I would really appreciate some advice. submitted by /u/Current-Set1963 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-06T17:25:45Z",
+  "fetched_at": "2026-09-06T17:45:08.172465Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "933cbcb7d9cd56aa",
+  "key": "reddit:1w92am7"
+}

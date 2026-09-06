@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w8jflp",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w8jflp/block_kv_cache_streaming_bound_vram_at_long/",
+  "title": "Block KV cache streaming: bound VRAM at long context via a shared CUDA phase arena by giveen · Pull Request #357 · TheTom/llama-cpp-turboquant",
+  "author": "/u/giveen",
+  "body": "So after all my work, yeah, Raymond did it better, so I ported his work over, extended it turboX, extended it multiple other models (he had only Qwen models), and benchmarked the crap out of it to make sure it was worth it still. So really the credit goes to Raymond ( https://github.com/RaymondHuang210129/llama.cpp-adaptive-kv-streaming ) submitted by /u/giveen [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-06T02:15:32Z",
+  "fetched_at": "2026-09-06T17:45:08.172465Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "02ad3cd0f663b7f2",
+  "key": "reddit:1w8jflp"
+}

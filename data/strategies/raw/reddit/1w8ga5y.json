@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w8ga5y",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w8ga5y/my_only_real_use_case_for_a_local_ai_use_is/",
+  "title": "My only real use case for a local AI use is document management, how much VRAM do I realistically need for a good experience?",
+  "author": "/u/pjdonovan",
+  "body": "I just want to use paperless-ai and be able to ask questions relative to it. Bonus points if I could use it with home assistant but that's not the focus. I just can't see needing a 32 GB VRAM GPU for just that, but I don't want to buy a GPU only to find out that \"yeah, it's technically feasible but not a good user experience\" The GPU's I tend to find at good prices are in the 8-12 GB range, would my use case be a good one to just get a 12 GB and run a 6-10 gb model? submitted by /u/pjdonovan [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-05T23:44:56Z",
+  "fetched_at": "2026-09-06T17:45:08.172465Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "71e3f6b4b9bf1385",
+  "key": "reddit:1w8ga5y"
+}

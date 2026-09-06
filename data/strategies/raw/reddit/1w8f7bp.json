@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w8f7bp",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w8f7bp/which_agent_harness_do_you_use_and_why/",
+  "title": "Which agent harness do you use and why?",
+  "author": "/u/Background-Job-862",
+  "body": "I see a new one being launched every few days... How do these new harnesses compare to claude code, pi etc. has anyone switched from these? which harness to prefer and why edit:Ive tried several different ones claude code, deepagents(langgraph), opencode, pi, and trueforge my thoughts- claude code - strongest on maturity and the managed experience but cost and token burn is high deepagents - interesting middle ground if you want a more structured agent framework and the flexibility of an open-source stack. im interested in testing it more extensively on longer-running workloads fs trueforge - this is a recent one, this was interesting to me because of its runtime-efficiency, also it allows separate the model from the runtime, which makes experimenting with different models much easier https://github.com/truefoundry/trueforge why?? - i also ran a benchmark on a real agent workload same model, same prompt, same tasks to compare these adding the results of benchmarking i ran to compare this so I tried to do this by running 14 cross-system tasks, three mcp servers behind them - a crm, an issue tracker, and a doc store through claude's managed agents, langchain's deepagents and trueforge, both open-source agent harnesses the result that was most surprising: Claude Managed Agents + Opus 4.8: 11/14 tasks solved | $11.8/run | 10.0M tokens/run TrueForge + Opus 4.8: 11/14 tasks solved | $8.6/run | 3.7M tokens/run Same model. Same benchmark. Same average solve rate, to my surprise trueforge used about 63% fewer tokens and cost about 30% less per run. similar difference in tool usage: trueforge averaged 19 tool calls per task vs 32 for Claude Managed Agents. Then I tried changing the model. trueforge + GLM-5.2: 11.7/14 solved | $3.0/run | 3.8M tokens/run On this benchmark, that was a slightly higher average solve rate than Claude Managed Agents + Opus at roughly 75% lower cost. The token savings alone make this sooo interesting especially because the solve rate stays comparable so this one was worth checking out ig but this is still v early and the OSS runtime does not yet have first-class tracing/eval tooling. They don't ship their own code-execution sandbox, so you need to plug one in and context compaction is intentionally lossy. So it is definitely not a replacement for a mature managed agent platform or other harnesses in the comparison, feature-for-feature today btu what I do find interesting is that the core runtime can already be competitive on these tasks while staying open, model-neutral, and deployable on my own infrastructure this was their benchmark kit i used https://github.com/truefoundry/trueforge/tree/main/benchmark submitted by /u/Background-Job-862 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-05T22:57:24Z",
+  "fetched_at": "2026-09-06T17:45:08.172465Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "d6ee61f560d083a1",
+  "key": "reddit:1w8f7bp"
+}
