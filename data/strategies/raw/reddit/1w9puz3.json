@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1w9puz3",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1w9puz3/easy_local_copilot_with_vs_code_and_lemonade/",
+  "title": "Easy local Copilot with VS Code and Lemonade",
+  "author": "/u/admcpr",
+  "body": "Not so long ago I wrote a guide on how to get GitHub Copilot running with a local model in Visual Studio Code. Since then Copilot subscriptions have got much more expensive, local models have got much more powerful and getting local Copilot up and running has got much easier. So here's an updated guide. submitted by /u/admcpr [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-07T11:43:41Z",
+  "fetched_at": "2026-09-07T19:26:56.578154Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "a5e39abfbbdc01da",
+  "key": "reddit:1w9puz3"
+}
