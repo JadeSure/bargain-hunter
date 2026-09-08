@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wauxg9",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wauxg9/qwenqwendrive104b_hugging_face/",
+  "title": "Qwen/Qwen-Drive-1.0-4B · Hugging Face",
+  "author": "/u/FullstackSensei",
+  "body": "I don't think anyone posted about this here, but Qwen released a finetuned version of 3.5 4 for driving. The full Bf16 checkpoint is 9B. This is a very interesting development of Chinese AI labs tackle self driving next with open weight models. Edit: the HF repo links to the github repo, which in the citation links to a 40 page technical report . Here's the abstract: We present Qwen-Drive-1.0, an initial step towards a vision-language foundation model for autonomous driving. Qwen-Drive-1.0 retains the architecture of the pretrained vision-language model (VLM) and integrates 3D perception, visual question answering, and motion planning within a unified framework. An external bird’s-eye-view (BEV) perception head jointly performs 3D object detection, semantic occupancy prediction, and BEV map segmentation. It serves as a probe of the 3D information accessible from the shared representations and provides an explicit, inspectable interface to 3D scene structure. A Planning Expert conditions on shared VLM representations to generate future ego trajectories. A staged training recipe combines driving supervision with general-purpose vision-language data to acquire driving-specific competence while helping preserve broad visual understanding and instruction-following capabilities. Experiments demonstrate strong 3D perception and driving scene understanding while largely preserving general vision-language capability. Comprehensive evaluations across open-loop, pseudo-closed-loop, and closed-loop settings further show highly competitive motion-planning performance. submitted by /u/FullstackSensei [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-08T17:27:16Z",
+  "fetched_at": "2026-09-08T19:00:11.154244Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "ade7edc8ee6188e7",
+  "key": "reddit:1wauxg9"
+}

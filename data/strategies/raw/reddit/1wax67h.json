@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wax67h",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wax67h/for_the_brave_ninfer_mtp_vision_400k_context/",
+  "title": "For the brave: Ninfer + MTP + Vision + 400k context (nvfp4 quant and kv)",
+  "author": "/u/DavidOelfke",
+  "body": "I pulled out the YaRN support from another Redditor's work ( https://www.reddit.com/r/LocalLLaMA/comments/1w8f8fa ). Ninfer recently added some more features and fixes (such as nvfp4 kv cache and dflash2 support). I wanted to see how Ninfer would perform with just the addition of YaRN and their Qwen tool calling fixes. I have run a few needle in haystack tests as a rough check. I've also done a few coding sessions to ensure it's working correctly. Not scientific, but I'll test it for a bit and see how I like it. I have also tested it with a K8V4 KV cache, which should be more accurate, with vision and got about 300k for a context size. If you'd like to try it, you can find it here: https://github.com/Doelfke/ninfer-yarn Credit to ninfer and u/Lumpy-Comedian-1027 of course. submitted by /u/DavidOelfke [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-08T18:45:08Z",
+  "fetched_at": "2026-09-08T19:00:11.154244Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "0f99af4d1dfd0d35",
+  "key": "reddit:1wax67h"
+}

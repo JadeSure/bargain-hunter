@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wa84sa",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wa84sa/i_made_warrior_quest_a_local_llmpowered/",
+  "title": "I made Warrior Quest, a local LLM-powered dark-fantasy RPG where the model only plays NPCs and the actual game state stays deterministic",
+  "author": "/u/Rikkendo",
+  "body": "The LLM is limited to NPC emulation. Game state, world logic, quests, and the authored story are handled by deterministic game systems rather than the LLM. I built it this way because I wanted the freedom of talking to NPCs like you would at a tabletop game, without handing the actual game state or canon over to an LLM. This started as a personal project. As it became more and more fun to actually play, I decided I wanted to release it. I've been a DM and a software engineer for over a decade, so Warrior Quest is basically where those two parts of my life finally get to meet. All art, authored story, music, SFX, and source voice acting were created by me. NPC dialogue uses TTS based on my own recorded voice acting. The Warrior Quest demo is out on Steam and has about 60–90 minutes of content . Minimum requirement: a GPU with 8 GB of VRAM . Everything runs locally; no API key or cloud LLM is required. I'm the developer, so this is self-promotion, but I thought the approach of using a local LLM specifically for NPCs while keeping the underlying RPG deterministic might be interesting to people here. submitted by /u/Rikkendo [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-07T23:37:20Z",
+  "fetched_at": "2026-09-08T19:00:11.154244Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "72860225830565bb",
+  "key": "reddit:1wa84sa"
+}
