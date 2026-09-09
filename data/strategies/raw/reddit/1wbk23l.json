@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wbk23l",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wbk23l/qwen_is_working_better_for_me_than_chatgpt_whats/",
+  "title": "Qwen is working better for me than ChatGPT – what’s the best way to use it with ZIP/code projects?",
+  "author": "/u/yeah280",
+  "body": "I’ve been using Qwen a lot recently and I’m honestly very impressed with it. For some of my tasks, Qwen seems to understand what I’m actually trying to achieve better than ChatGPT/GPT-5.6. I currently pay for ChatGPT, but I’m increasingly feeling like I’m wasting that money because I end up going back to Qwen anyway. I’m therefore considering cancelling ChatGPT and using Qwen as my main AI for now. I might also get Claude eventually, but Qwen would probably be my primary model. There’s one thing I’m missing, though: What’s the best setup for working with entire ZIP/code projects using Qwen? With ChatGPT I can upload a ZIP containing an entire project, ask it to inspect the files, modify the project and give me the updated files back. I’d like something similar with Qwen. Ideally I want: * Upload an entire ZIP/project * Let Qwen inspect all relevant files and understand the project structure * Ask it to modify multiple files * Work iteratively on the same project * Get the modified project/files back * A proper UI instead of manually making API requests * Preferably something that works well for fairly large projects I already have OpenRouter, so getting API access isn’t really the problem. What I’m missing is the interface/workspace around the API. Is there a good desktop app, web UI, IDE integration, open-source project or coding agent where I can simply add my OpenRouter key, select the newest/best Qwen model and work with projects this way? Or is Alibaba/Qwen offering something paid that does this better than the free Qwen website? I’m also confused about Qwen’s paid options. If I’m already happy with Qwen on the free website, is there actually any benefit to paying for Qwen for this use case? Does paying give me a better model, larger limits or better coding/project functionality, or would I essentially just be paying for API usage? I’m trying to find the most cost-effective setup. I’m completely fine paying if it actually improves the workflow — I just don’t want to pay for API access and then discover that I still need to build the entire interface around it myself. What setup are you guys using for Qwen + large codebases/ZIP projects? submitted by /u/yeah280 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-09T12:22:06Z",
+  "fetched_at": "2026-09-09T18:58:16.547376Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "8e72bf57a48763f1",
+  "key": "reddit:1wbk23l"
+}

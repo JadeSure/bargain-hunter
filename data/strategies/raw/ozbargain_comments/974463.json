@@ -1,0 +1,17 @@
+{
+  "source": "ozbargain_comments",
+  "post_id": "974463",
+  "url": "https://www.ozbargain.com.au/node/974463",
+  "title": "Opticomm FTTP 500/50 $74/Month, 750/50 $79/Month for 12 Months (New Customers) @ Vodafone",
+  "author": null,
+  "body": "Deal: Opticomm FTTP 500/50 $74/Month, 750/50 $79/Month for 12 Months (New Customers) @ Vodafone\n\n[im1letter2shor] It's not a bad 12 month deal, I'm about to head to purpleconnect for 6months they have a great deal the I might join this afterwards\n[bunnybash] Yeah it matters for my plex server. Sigh.\n[ratmanuwu] could route it through cloudflare tunnel?\nI'm with stuck with swoop atm and they don't allow port 80 or 443 even though I have static so I send my jellyfin through cloudflare. 2tb a month no issue.\n[Jimbuscus] DDNS would be more appropriate, Cloudflare terms disallow things like Plex.\n[bboT] @Jimbuscus: I use tailscale, seems to work well. At least for my personal use, on the rare occasion I've used it ..\n[nedakhan82] 1st energy is offering $52 a month for the first 6 months, 500/50\nhttps://internet.1stenergy.com.au\n[Jimbuscus] Where CG-NAT is available, your IP address will default to CG-NAT.\nDynamic public IPv4 & Static IPv4 addresses are not available on this service.\n[Mork] For anyone curious I churned to the 100 opticomm Vodafone plan the other day. I made the order at 1:30pm Wednesday and the service was activated at 7am the next day. PPPoE configuration BYO router.\n[Repstar] My area is limited to 100/20 with Opticomm. So annoying. Anyone know why?\n[Jimbuscus] I thought that wasn't allowed under the governments contract to allow Opticomm.\n[Mork] Mine too despite being FTTP. The only answer I’ve ever gotten is “backhaul limitations”. In other cases it can be due to needing an ONT (opticomm box) upgrade.",
+  "board": "OzBargain Deals (comments)",
+  "created_at": null,
+  "fetched_at": "2026-09-09T19:03:54.050123Z",
+  "score": null,
+  "num_comments": 12,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "b7e2c36c9d96ba60",
+  "key": "ozbargain_comments:974463"
+}
