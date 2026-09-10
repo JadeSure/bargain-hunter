@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wceiz6",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wceiz6/what_tts_models_do_you_recommend_as_today/",
+  "title": "What TTS models do you recommend as today?",
+  "author": "/u/JLeonsarmiento",
+  "body": "Trying to get Hermes a local, efficient, tts voice. submitted by /u/JLeonsarmiento [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-10T09:46:36Z",
+  "fetched_at": "2026-09-10T18:45:23.944871Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "b58ad13d670dd648",
+  "key": "reddit:1wceiz6"
+}

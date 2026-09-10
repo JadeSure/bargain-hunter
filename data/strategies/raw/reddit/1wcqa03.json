@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wcqa03",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wcqa03/oui1_a_model_that_generates_bespoke_ui_elements/",
+  "title": "OUI-1: a model that generates bespoke UI elements",
+  "author": "/u/Mr_BETADINE",
+  "body": "so i saw that openui.com released OUI-1, a model fine-tuned on DiffusionGemma. the training dataset uses OpenUI-Lang, a custom DSL (domain-specific language), instead of plain HTML, Markdown, or React code. what makes it interesting is that you can already get a regular LLM to use OpenUI-Lang through a system prompt, but that eats up a lot of the context window. my thinking is that fine-tuning a model on the DSL could reduce that overhead and leave more room for the actual conversation, without needing a huge prompt explaining the format and how to use it alongside other tasks, like tool calls. at the same time, wouldn't fine-tuning a model on a specific DSL make it more likely to default to that format even when you need something else? i'm curious how well it handles regular Markdown, or switching between Markdown and OpenUI-Lang. i haven't seen much discussion about this, so i was wondering what everyone thinks about generative UI and running a dedicated model for it locally on a consumer-grade GPU, like an RTX 5090. what would be the best way to set that up? from what i've seen, DiffusionGemma isn't supported by llama.cpp yet, so running it through Ollama doesn't seem to be an option. they've uploaded the weights to Hugging Face , but i'm not really sure how to get it up and running. any suggestions? submitted by /u/Mr_BETADINE [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-10T17:46:43Z",
+  "fetched_at": "2026-09-10T18:45:23.944871Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 2,
+  "content_hash": "f88edb5a27287a74",
+  "key": "reddit:1wcqa03"
+}
