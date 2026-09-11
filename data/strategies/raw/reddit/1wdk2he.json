@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wdk2he",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wdk2he/orukeet_new_asr_model_based_on_parakeet/",
+  "title": "Orukeet, new ASR model based on Parakeet",
+  "author": "/u/arturdent",
+  "body": "I haven't seen this mentioned yet, so I thought it deserves a post. I was trying out OpenWhispr when this model came up as the recommendation. So I don't have personal experience yet, but it's supposed to be a better version of Parakeet, especially on Macs. Their official tidbit: \"Orukeet is a 25-language speech recognizer built from NVIDIA Parakeet TDT 0.6B v3. It replaces half of the encoder's temporal depthwise filters with 12,288 fitted, frozen Gabor kernels and trains the remaining parameters on multilingual and multi-accent data. Orukeet outperforms Parakeet on 61 of 74 tested splits , including LibriSpeech test-clean ( 1.46% vs. 1.53% WER ), test-other ( 2.86% vs. 3.14% ), and FLEURS English ( 3.82% vs. 4.28% ). Across all 25 FLEURS languages, pooled WER is 9.85% vs. 11.01% , a 10.6% relative reduction . Final adaptation and checkpoint selection use LibriSpeech test-other.\" https://huggingface.co/oruk/orukeet submitted by /u/arturdent [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-11T15:50:53Z",
+  "fetched_at": "2026-09-11T18:51:17.798651Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "450d7f26b59b80d1",
+  "key": "reddit:1wdk2he"
+}

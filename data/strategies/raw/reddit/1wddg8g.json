@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wddg8g",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wddg8g/gpt_live_clone_on_an_rtx_3060/",
+  "title": "GPT Live clone on an RTX 3060",
+  "author": "/u/liampetti",
+  "body": "I wanted to see how my fully local home voice assistant compared to the latest GPT Live, so I tested it using the same conversation used in their \"Improved Intelligence\" demo . In this video they ask the AI to see if a flight route is feasible and while it is figuring that out they continue to ask it questions about what they can eat at each destination. The models I ran are (all squeezed into 12 GB VRAM): Speech recognition: Qwen3 1.7B ASR PyTorch LLM: Qwen3.5-9B-UD-Q4_K_XL GGUF with 12K context Voice: Pocket TTS PyTorch So I copied the exact query and threw it at my Fulloch project. This blog post has the video of the interaction and breaks down how it did. The final report and searches it did are also linked in that blog post. The video has sped up two sections where I had to wait for the 9B model to finish thinking through the task, but it did the whole thing in under six and a half minutes. In the end it couldn't find a suitable flight route but it gave good food and restaurant recommendations and did it all pretty quickly. I am still impressed with how well the Qwen3.5 9B model does with these sorts of tasks with such a small footprint. If you want to try it out yourself the source code and pre-compiled docker images can be found at https://github.com/liampetti/fulloch . submitted by /u/liampetti [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-11T11:22:17Z",
+  "fetched_at": "2026-09-11T18:51:17.798651Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "cccd21dcba6cbe03",
+  "key": "reddit:1wddg8g"
+}

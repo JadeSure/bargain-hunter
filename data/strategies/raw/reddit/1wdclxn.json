@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wdclxn",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wdclxn/7900_xtx_3264gb_ram_for_qwen_38_flash_next/",
+  "title": "7900 XTX + 32/64GB RAM for Qwen 3.8 Flash Next?",
+  "author": "/u/thenomadexplorerlife",
+  "body": "Planning to build a PC mainly for local LLMs/coding agents. I keep seeing 3090 + Qwen 3.8 Flash Next benchmarks, but could not find enough info for the 7900 XTX 24GB . 3090s are hard to find where I live, while newer Nvidia GPUs are too expensive, so I am considering a 7900 XTX as the GPU choice. Anyone running Qwen 3.8 Flash Next on a 7900 XTX? What tok/s are you getting in decode and prefill, and how is AMD/ROCm support? Also, if SSD streaming/offloading is needed anyway to run Q4, is 32GB system RAM enough, or is 64GB worth it? submitted by /u/thenomadexplorerlife [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-11T10:40:25Z",
+  "fetched_at": "2026-09-11T18:51:17.798651Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "c850f52164e6d605",
+  "key": "reddit:1wdclxn"
+}
