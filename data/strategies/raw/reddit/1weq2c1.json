@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1weq2c1",
+  "url": "https://www.reddit.com/r/AusFinance/comments/1weq2c1/revolut_confirms_customer_data_breach_after_fake/",
+  "title": "Revolut confirms customer data breach after fake government requests - interesting timing after my KYC experience",
+  "author": "/u/ymhtp-dev",
+  "body": "Saw this Reuters story today about Revolut handing over sensitive customer data after responding to fake government requests: https://www.reuters.com/legal/litigation/revolut-confirms-sensitive-customer-data-breach-falling-fake-government-requests-2026-09-12/ What stood out to me is that this doesn’t seem to have been some sophisticated hack. From what’s been reported, the weak point was the process for verifying who was actually requesting the data. Pretty awkward given the kind of information banks hold on people. The timing was also kind of funny in my case. I recently applied for a Revolut account, spent a few days in manual KYC review, support told me they didn’t need anything else from me, and then the application was declined without any explanation. My reaction: https://imgur.com/a/9pilqtY Anyway, curious what people here make of the actual breach. Just an embarrassing one-off process failure, or something that would genuinely make you think twice about using Revolut? submitted by /u/ymhtp-dev [link] [comments]",
+  "board": "r/AusFinance",
+  "created_at": "2026-09-12T22:20:44Z",
+  "fetched_at": "2026-09-13T18:24:52.501024Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "5d03dfbc192567be",
+  "key": "reddit:1weq2c1"
+}

@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wf69ug",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wf69ug/what_are_the_top_ai_models_that_are_still/",
+  "title": "What are the top AI Models that are still relevant today from 2024 and 2025?",
+  "author": "/u/UltraFOV",
+  "body": "We are in 2026 and it has been a crazy year. The evolution of the technology has been staggering to say the least. Pretty much we are on the MoE period and dense models are almost in the way of the dodo except for a few. I was just thinking, are there any models of the last 2 years that you would fire up and still feel useful? Example Deep Seek R1. If you have recommendations write them down. I have 28TB of storage and I am backing up relevant models that can still be useful, from current to older ones. But clearly not all are worth keeping. Noted: I can hold large parameter models therefore not limited to small ones. No Kimi k3 at large quant thats out of the question lol submitted by /u/UltraFOV [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-13T12:23:42Z",
+  "fetched_at": "2026-09-13T18:24:52.501024Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "9e6c55dc69d366e2",
+  "key": "reddit:1wf69ug"
+}
