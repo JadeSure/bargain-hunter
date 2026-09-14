@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wg4a0u",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wg4a0u/k2_horizon_lineup_is_out_on_aa_and_once_again_aa/",
+  "title": "K2 Horizon lineup is out on AA, and once again AA plots are misleading.",
+  "author": "/u/crusaderky",
+  "body": "The full K2 Horizon lineup is out on Artificial Analysis. The AA intelligence vs. parameters plots show that - 0.9B and 375B are bad - 3.7B and 7B are SOTA - 36B A4B is SOTA for hardware with poor memory bandwidth (spilled experts, Strix Halo, DGX Spark). I'm going to take the AA Intelligence Index at face value here. This post is not about it. The problem is that these models have a god-awful KV cache design. This means that you really can't use the number of parameters for \"best in class\" considerations, because these models heavily shift to the right on the plot if you replace parameter count on the X axis with RAM requirements. For Q4_K_M weights, no drafter, no vision, 128k kvarn4 KV cache: K2 Horizon 36B-A4B uses 2 GiB for dense weights, 19 GiB for experts, and 6.7 GiB for context K2 Horizon 7B uses 5.2 GiB for weights and 5 GiB for context K2 Horizon 3.7B uses 2.9 GiB for weights and 5 GiB for context (not a copy-paste error!) Compare them to (finetunes of) Qwen3.6-35B-A3B use 2.4 GiB for dense weights, 18.2 GiB for experts, and 0.7 GiB for context MiniCPM5-2B uses 1.5 GiB for weights and 1.5 GiB for context Notes: I don't advise compressing 2~4B models to Q4 and I haven't tested these models' tolerance to weights and kv cache quantization yet. The above choices are just to keep the comparison fair. This awful context design means that K2 Horizon 36B A4B is interesting on hosts with exactly 16GB VRAM and at least 32GB host RAM. On 24GB VRAM, Qwen3.8-27B is faster, smarter, and allows for 256k context. If you want to get 256k context and you're VRAM-poor, Ornith-1.5 or Nex-N2.5-mini are probably better choices. The model may also be interesting on 64GB Strix Halos as a dumber and faster alternative to Qwen3.8-27B; those with a 128GB Strix Halo are much better off with Qwen3.8-Flash-Next K2 Horizon 7B is interesting for hosts with exactly 16GB VRAM, Strix Halos with 32GB RAM, and for 16/32 GB Strix Point; K2 Horizon 3.7B may be interesting for 12GB phones but I expect you'll have a much nicer UX with MiniCPM5-2B. submitted by /u/crusaderky [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-14T14:01:13Z",
+  "fetched_at": "2026-09-14T20:05:30.723721Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "21e8b71142a1cdc1",
+  "key": "reddit:1wg4a0u"
+}

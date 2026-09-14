@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wgcpww",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wgcpww/biweekly_megathread_project_showcase/",
+  "title": "[Bi-Weekly Megathread] Project Showcase",
+  "author": "/u/rm-rf-rm",
+  "body": "Do you have something you'd like to share with the r/LocalLLaMA community. This is the place for it! Recommendation on presentation: Please share plain english description of what your project does and why people should care about it How does it compare to existing options and why should people switch to your option? How have you tested and validated it? (i.e. can you show evidence that it wasn't vibecoded in a few hours by <insert current trending AI model> NOTE: This community is geared towards open weight, open source, locally hostable software. Thus any closed source commercial service or other such projects will be removed. submitted by /u/rm-rf-rm [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-14T19:03:23Z",
+  "fetched_at": "2026-09-14T20:05:30.723721Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "f4e4133d1f08e0d7",
+  "key": "reddit:1wgcpww"
+}
