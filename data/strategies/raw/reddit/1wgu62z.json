@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wgu62z",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wgu62z/jinfer_an_opensource_ai_inference_engine_for_the/",
+  "title": "jinfer: An open-source AI inference engine for the JVM. Finally, AI in jar.",
+  "author": "/u/mukel90",
+  "body": "For years, the JVM has watched the AI revolution from the bench. Every model, AI framework, every breakthrough, built with/for Python. jinfer is an inference engine built for the JVM from first principles: chat, vision, audio transcription, embeddings, reranking, and TTS. No Python runtime, no ONNX, no sidecar process, no wrappers; the whole stack is built for the JVM: jinfer Inference engine for the JVM, supports a wide range of popular models and modalities. Tok'n'Roll (toknroll) Fast tokenizers for LLMs, pure Java, zero dependencies gguf / safetensors native read/write for both major model formats jam Quantized matrix multiplication routines (Vector API + optional native backend), competitive with llama.cpp on CPUs jota Tensor API targeting Java, C, CUDA, HIP, Metal, OpenCL, and Mojo It integrates with Spring AI and LangChain4j, and has first-class support for GraalVM Native Image. Where things stand: this is an early release. CPU is the main target today, and is already competitive with llama.cpp. GPU support via jota is in progress. Runnable examples + benchmarks: https://qxotic.ai Jinfer (Apache 2.0): https://github.com/qxoticai/qxotic/tree/main/jinfer PS: I'm behind it and also the author of llama3.java (2024) and gemma4.java submitted by /u/mukel90 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-15T08:09:43Z",
+  "fetched_at": "2026-09-15T19:26:08.059903Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "42ec9d086f557317",
+  "key": "reddit:1wgu62z"
+}

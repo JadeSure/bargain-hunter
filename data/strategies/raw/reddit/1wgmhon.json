@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wgmhon",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wgmhon/if_you_have_a_3090_or_other_30xx_for_local_llms_i/",
+  "title": "If you have a 3090, or other 30xx for local LLMs, I have something for you",
+  "author": "/u/Brief-Tap-6616",
+  "body": "I have a custom fork of llama.cpp designed around the ampere architecture specifically (though many of the upgrades also translate to faster performance of blackwell + lovelace). The recommended config supports 90+ TPS (for agentic/coding, at temp 1; greedy will of course be faster) through 100K tokens, with context of up to 240K. If you want the repo, it is here: https://github.com/JakeATX/llamAmpere I recommend running with this quant, which is ~ 4 K M quality but considerably faster (technically, a 3 K XL upgrade) https://huggingface.co/jakeatx/Qwen3.8-27B-ATX-IQ4_XS-M-GGUF If you want the deep dive on how it is so much faster (80% vs the near comp at 200K!), at more context, there is a long form article here. https://x.com/JakeKAllDay/status/2095646450138874095?s=20 Running faster than API speeds on my 3090 (for 27b at least) has genuinely been a step change in the utility of the model + card for me. I hope you enjoy it! submitted by /u/Brief-Tap-6616 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-15T01:32:57Z",
+  "fetched_at": "2026-09-15T19:26:08.059903Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "e2bd6786e40cdfc4",
+  "key": "reddit:1wgmhon"
+}
