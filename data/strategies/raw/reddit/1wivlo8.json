@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wivlo8",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wivlo8/does_anyone_use_uncensored_models_purely_for/",
+  "title": "Does anyone use uncensored models purely for coding?",
+  "author": "/u/Jorlen",
+  "body": "It sounds like a stupid question, and I do apologize if it is... but I've seen several people mention that coding models are better uncensored due to the fact that they don't have to constantly run prompts through the \"is this okay\" sort of checks. Is this hogwash? Is it true? And more importantly, does anyone have any sources to confirm it? Anecdotal evidence is fine too if you've tried and compared them. Personally, I have never bothered because I'm too worried the de-censoring would damage the weights. The juice never felt like it was worth the squeeze... but maybe I was wrong? Edit: Either I'm unclear or people are misinterpreting my request: Specifically, I mean for every day coding (not for hacking, not for reverse-engineering) but just for regular coding of new apps, etc. The question is: will the uncensored model produce better code faster (without reasoning so much) because it no longer has to worry about \"is this alright\" when it questions everything... submitted by /u/Jorlen [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-17T14:29:53Z",
+  "fetched_at": "2026-09-17T19:22:23.660481Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "1bfd6939ffb1dad1",
+  "key": "reddit:1wivlo8"
+}
