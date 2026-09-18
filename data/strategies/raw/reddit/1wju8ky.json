@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wju8ky",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wju8ky/prismml_bonsai_2_joins_our_qwen38_quantization/",
+  "title": "Prism-ML Bonsai 2 Joins Our Qwen3.8 Quantization Comparison",
+  "author": "/u/ali_byteshape",
+  "body": "Hey r/LocalLLaMA , Prism-LM recently released its Bonsai 2 QAT models based on Qwen3.8, and they quickly gained traction. In our evaluation, the models strike a strong balance between throughput and quality, reaching roughly 91.5% on our composite benchmark . We wanted to see how they compare under the same methodology we use for the rest of our Qwen3.8 evaluations, so we ran Bonsai 2 through our own benchmark suite. One important clarification: these are our evaluation results, not Prism’s reported benchmark numbers. We used Prism’s fork/runtime to run their models, while keeping the workloads, benchmark suite, and evaluation methodology consistent with the rest of our comparison. Our evaluation includes separate Instruct and Thinking benchmarks. For Thinking, we use medium thinking effort with the recommended sampling parameters. We added Bonsai 2 because the models have become a relevant part of the Qwen3.8 landscape, and we wanted to provide a common reference point for people comparing the available options. Different providers often report results using different benchmark suites, runtimes, reasoning settings, sampling parameters, and evaluation methodologies, so those numbers are not always directly comparable. Running the models through the same evaluation gives another reference point for understanding the trade-offs between quality, model size, and throughput . Updated comparison and results: https://byteshape.com/blogs/Qwen3.8-27B/ submitted by /u/ali_byteshape [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-18T16:01:27Z",
+  "fetched_at": "2026-09-18T18:49:28.724563Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "10eaf53d2151e3a9",
+  "key": "reddit:1wju8ky"
+}

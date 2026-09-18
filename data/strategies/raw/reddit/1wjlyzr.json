@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wjlyzr",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wjlyzr/still_on_the_jev_waitlist_i_hosted_openjev_its/",
+  "title": "Still on the Jev waitlist? I hosted OpenJev. It's free, go play with it",
+  "author": "/u/Every-Comment5473",
+  "body": "TypeSafe announced Jev on Tuesday: you give it data plus typed questions (yes/no, pick-one, 0–N scale) and it returns a probability for every option, crazy fast. I signed up and then refreshed my inbox. A lot. Meanwhile Matt Mastracci opened vLLM PR #57250 , which does the same trick on DiffusionGemma with a single denoising step. The model basically fills in a multiple-choice bubble sheet. My \"quick look\" turned into three straight days, and now there's OpenJev : an open-source server with Jev's API, so TypeSafe's SDKs work with just a base URL change. If you're still waiting on Jev access, you can start playing today. Code (Apache-2.0): https://github.com/razorback16/openjev Docker: razorback16/openjev (vLLM + API in one container) Free hosted API: https://codiv.ai (100M tokens per account, no card) Your prompts and answers are not stored , only token counts for your quota. It runs on my RTX PRO 6000, which just got promoted to \"production infrastructure\" overnight! Is it any good? Matt ran live evals of Jev vs DiffusionGemma-as-Jev : accuracy roughly tied (198/201 vs Jev's 191/201 across his 8 eval sets), and DiffusionGemma was faster, on a DGX Spark. An RTX PRO 6000 is a different animal: Model Latency Frontier LLMs (TypeSafe's numbers) 3–329 s (coffee time) Jev (published) 70–500 ms end to end OpenJev via api.codiv.ai ~170 ms p50 end to end (~73 ms on the GPU) It's v0.1 on an unmerged vLLM PR. If Reddit hugs it to death you'll see 529s, which is my GPU asking for a minute. Credits: Matt Mastracci (the core idea and vLLM work are his), TypeSafe (the System One idea and API), NVIDIA and Google (DiffusionGemma), and the vLLM team . Just a fan of TypeSafe's idea, not affiliated. Feedback, bugs, use-case ideas, or your weirdest yes/no question, all welcome! submitted by /u/Every-Comment5473 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-18T09:59:37Z",
+  "fetched_at": "2026-09-18T18:49:28.724563Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "7964925d04232bc9",
+  "key": "reddit:1wjlyzr"
+}

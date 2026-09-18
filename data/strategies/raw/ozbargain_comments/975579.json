@@ -1,0 +1,17 @@
+{
+  "source": "ozbargain_comments",
+  "post_id": "975579",
+  "url": "https://www.ozbargain.com.au/node/975579",
+  "title": "[NSW] 25kWh Sofar Home Battery + 5kW Inverter from $3,999 Installed — Sydney & Central Coast @ QH Tech",
+  "author": null,
+  "body": "Deal: [NSW] 25kWh Sofar Home Battery + 5kW Inverter from $3,999 Installed — Sydney & Central Coast @ QH Tech\n\n[nanite] Came here for the Sofar so good comment.\n[goalbf] Do you guy do solar panels as well? Looking for a solar + battery package.\n[Alx75] That battery will never fully charge from solar alone during late autumn and winter. Using an inverter that’s five times smaller than the battery’s actual capacity is simply ridiculous.\n[onlinepred] Isn't there 3 hour free electricity plans?\n[Alx75] There are plans like that, but 3 hours × 5 kW of charging capacity gives you only 15 kWh of energy, not a full charge.\nAnother important consideration is that a 5 kW inverter also limits how much power your battery can deliver. Turn on the AC and oven, or any other high load appliance, along with the lights and other smaller constant loads, and you can easily max out the inverter. At that point, you’ll start drawing power from the grid even though there’s still plenty of charge left in the battery. The worst part is that this is likely to happen during peak rate hours.\nSo, with such a high capacity battery but such low inverter throughput, you’ll struggle to fill it up (except in summer), and you’ll also struggle to fully use the energy stored in it. 10kW is the way to go.\n[QH Technology] Insufficient sunlight during late autumn or winter may affect the power output of the solar panels. Of course, this also depends on the inverter's power rating; you could choose a 10-kilowatt inverter.\n[FLICKIT] Is there a local company that backs up the 10-year warranty or would people have to deal with the company back in Guangdong Province, China? (Chinese warranties are usually fairly useless)\n[QH Technology] The product warranty is provided by Sofar, a publicly listed company with approximately 10 years of operational history. We have local installers who hold SAA certification in Sydney, and we also provide a workmanship warranty, so you can have peace of mind.\n[FLICKIT] Ahhh ok, the Chinese address on your website confused me…\n[QH Technology] SOFAR has offices and warehouses in Australia. The Chinese address is our factory address\n[Churna] in theory you could charge this during the free power/cheap power time of the day and use the power at night. meaning no solar needed?",
+  "board": "OzBargain Deals (comments)",
+  "created_at": null,
+  "fetched_at": "2026-09-18T18:54:25.841287Z",
+  "score": null,
+  "num_comments": 20,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "29a29ad17bb81535",
+  "key": "ozbargain_comments:975579"
+}
