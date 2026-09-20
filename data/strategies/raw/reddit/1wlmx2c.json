@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wlmx2c",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wlmx2c/does_our_gpu_ever_feel_good_enough_for_now/",
+  "title": "Does our GPU ever feel \"good enough, for now\"?",
+  "author": "/u/RickyRickC137",
+  "body": "I just bought a 5060Ti 16Gb and planning to sell my RTX 3080 10Gb (because my PSU is only 850W). I love the VRAM upgrade but it still don't feel enough. I am aching to buy another 5060Ti 16Gb. I do LLM and ComfyUI stuff (Hobby). And I have 128Gb DDR5 RAM. Is buying another 5060Ti 16Gb really worth it? Or should I combine 5060Ti and 3080 together? I don't have any idea how GPU combos work together, so please help me out. Does the setup ever feel \"good enough, for now\"? submitted by /u/RickyRickC137 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-20T17:19:22Z",
+  "fetched_at": "2026-09-20T18:32:57.528296Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "6781181547a6c027",
+  "key": "reddit:1wlmx2c"
+}
