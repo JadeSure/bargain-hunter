@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wnhq8d",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wnhq8d/qwen_image_21_fast_fp8_generates_premium_quality/",
+  "title": "Qwen image 2.1 (Fast FP8) generates premium quality images",
+  "author": "/u/108er",
+  "body": "Don't know how they did it, but for under 10GB model, the results are astonishing. I am running it on Unsloth Studio. They just released the update, so if you are not seeing the option, I recommend updating your Unsloth Studio. Cheers! submitted by /u/108er [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-22T18:31:36Z",
+  "fetched_at": "2026-09-22T19:13:16.323201Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "49908868727a70d0",
+  "key": "reddit:1wnhq8d"
+}

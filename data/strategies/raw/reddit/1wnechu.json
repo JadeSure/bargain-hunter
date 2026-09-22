@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wnechu",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wnechu/qwen_38_27b_at_3_bpw_on_an_rtx_3060_gsq_vs/",
+  "title": "Qwen 3.8 27B at ~3 BPW on an RTX 3060: GSQ vs ByteShape IQ3-XXS 2.88BPW",
+  "author": "/u/zyxciss",
+  "body": "Someone recommended that I try the ByteShape Qwen 3.8 27B IQ3-XXS GGUF after seeing my previous testing of the GSQ quant. So I did. And the result was… surprisingly bad. For context, I'm running: RTX 3060 12GB 16GB DDR4 RAM, single channel CachyOS / Arch Linux llama.cpp Qwen 3.8 27B MTP/speculative decoding where applicable The two low-bit quants I compared were: ISTA-DASLab / GSQ-RCO-IQ3-XXS ~10.4GB roughly 2.5 BPW territory MTP enabled ~29 tok/s around full context ~34–40 tok/s at lower context This was the quant I had already been using in my previous web-development test. ByteShape IQ3-XXS roughly 500MB smaller also around the same ultra-low-bit range advertised as having extremely high similarity to the BF16 model based on KL-divergence measurements On paper, the ByteShape quant looked very interesting. It was smaller, while apparently retaining extremely high similarity to the original BF16 model. It was also being compared in size to significantly higher-BPW quants. So naturally I expected it to at least be competitive with the GSQ version. It wasn't. The actual result is shown Above ISTA-DASLab/Qwen3.8-27B-GSQ-RCO-GGUF was able to generate a 3D voxel diorama in one shot under 55k tokens, and Byteshape's 3.8 27B model, took roughly three shots and still hasn't completed with over 98K tokens spent already. Same with web development not impressive as advertised in Here Any New Model Suggestions for RTX 3060? submitted by /u/zyxciss [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-22T16:31:03Z",
+  "fetched_at": "2026-09-22T19:13:16.323201Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "60a91077a46a6daf",
+  "key": "reddit:1wnechu"
+}

@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wmzj4f",
+  "url": "https://www.reddit.com/r/AusFinance/comments/1wmzj4f/stake_drive_wealth_hack/",
+  "title": "stake / drive wealth hack.",
+  "author": "/u/Street-Air-546",
+  "body": "So now on the dark web is a handy dandy sorted by fish value list of 750,000 stake users [or maybe just those who opened a wall st trading account, or maybe a portion of those who opened a wall st trading account, numbers are not provided] (mostly Australians): name, where they live, their main email address, their mobile number, their tax residency status, and an \"aggregate value snapshot of their portfolio\" and \"buying power\" -- whatever these vague explanations actually mean (I assume that means the worst, as in, their total stake footprint and not just the wall st part). --- What was impacted DriveWealth’s investigation has identified the following information of yours was affected by the incident: Your name, email address, phone number and postal address Your W-8/W-9 tax status and country of taxation, but importantly not your tax file or identification number Your DriveWealth account number, which is your Stake Wall St account number An aggregate value snapshot of your portfolio, not the detail of your individual holdings Your cash balance and buying power snapshot ---- the information \"was affected\"! not \"was lost\", \"was exfiltrated\", \"was hacked\", \"was leaked\", \"was copied out\", \"was taken\". Just \"was affected\". ---- the hack occurred on September 4th. For those following along, 18 days ago. https://businessdesk.co.nz/article/markets/hack-hits-hatch-and-stakes-us-broker submitted by /u/Street-Air-546 [link] [comments]",
+  "board": "r/AusFinance",
+  "created_at": "2026-09-22T04:29:09Z",
+  "fetched_at": "2026-09-22T19:13:16.323201Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "9ef1aee01b71aa2f",
+  "key": "reddit:1wmzj4f"
+}
