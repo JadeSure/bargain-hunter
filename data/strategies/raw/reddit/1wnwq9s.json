@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wnwq9s",
+  "url": "https://www.reddit.com/r/AusFinance/comments/1wnwq9s/stake_got_hacked/",
+  "title": "Stake got hacked.",
+  "author": "/u/FIFO_Landlord",
+  "body": "We're writing to let you know about a recent data security incident at DriveWealth, the partner that supports U.S. trading and wallet functionality for several investing platforms, including Stake. DriveWealth has told us the incident is contained, and that no unauthorised trading, transfers or withdrawals occurred on any account. Stake systems were not accessed and your trading account and portfolio were not impacted, however some of your personal information has been. What was impacted DriveWealth’s investigation has identified the following information of yours was affected by the incident: Your name, email address, phone number and postal address Your W-8/W-9 tax status and country of taxation, but importantly not your tax file or identification number Your DriveWealth account number, which is your Stake Wall St account number An aggregate value snapshot of your portfolio, not the detail of your individual holdings DriveWealth's investigation has determined the following customer data has not been accessed: Tax file numbers / government identification number Bank accounts Identity-document images (passport details or images, driver licence detail or images) Individual security positions or trading history Stake login credentials or password (Stake does not share these with DriveWealth) We are sincerely sorry for any concern this news has caused and apologise for any inconvenience caused as a result of the incident. Stake takes the security of personal information seriously and has been working closely with DriveWealth to understand the impact of the incident. DriveWealth may also contact you directly as part of their response to this incident. submitted by /u/FIFO_Landlord [link] [comments]",
+  "board": "r/AusFinance",
+  "created_at": "2026-09-23T05:09:05Z",
+  "fetched_at": "2026-09-23T19:26:57.648933Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "70f07a54aac7a003",
+  "key": "reddit:1wnwq9s"
+}

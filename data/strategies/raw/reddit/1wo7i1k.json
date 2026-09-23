@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wo7i1k",
+  "url": "https://www.reddit.com/r/churning/comments/1wo7i1k/introducing_the_allnew_interactive_reactive/",
+  "title": "Introducing the All-New Interactive, Reactive, Flowchart",
+  "author": "/u/duffcalifornia",
+  "body": "During the purge, somebody mentioned that the flowchart hasn't been updated in over a year. I forget who, so I'm sorry, but I saw that comment and agreed with them and thought that I would work to get it updated. As I started working on the research and the logic to figure out which had changed, I also thought about the claim we make in the WCW thread that the flowchart can answer 95% of WCW questions. What if it could be 99%? 100%? Introducing Which Card Should I Get? This new tool I built combines all of the foundational logic that the OG flowchart was built on with basically all the questions of the WCW thread and puts them all in one place. If you just want the raw flowchart, it's there in all its glory. But if you aren't quite sure what card to get, then the site can answer it for you to. CARDS REMOVED Spark Miles Citi Custom Cash USBAR CARDS ADDED Sapphire Biz All Atmos Cards Amex Graphite The site finds the public offers for all of the cards, determines the value of points cards by using Frequent Miler's RRVs, and then ranks the cards by value. For the most part, the value-based ranking matches up very well against the old flowchart. The one area where it lacks is where it ranks the Southwest cards. The OG flowchart pushed them higher due to the value of the Companion Pass, where this version has no idea how to value that, so it ignores it. But if you want to know what cards are best for you to apply for right now, you can enter your card history and ask a few basic questions and it will apply the approval-blocking rules and let you know the best cards for you. I was even able to add in the new Strata Lifetime rules. You can tell it that you want to ignore some points programs or that you've been banned by an issuer to hide cards that don't mean anything to you. You can tell it programs you're focusing on and it'll push those cards to the top of the list. It'll even tell you if you'll need an NLL offer to get a card and adds a backup recommendation. It'll give backup recommendations for Amex \"as high as\" offers too. There's even a Suggestions tabs where you can let me know if something doesn't seemed like it's being ranked correctly, if a new rule like the Strata LL comes out, or if a new card gets introduced. All of this is born of the idea that it should be updated pretty regularly. I'm not a web designer, but I did my best to remove the most egregious \"vibe coded\" aspects. I know the UI could be better and I'll look at tweaking it over time. Please let me know if something is legitimately unusable. Let me know what you think, and for whoever complained about the flowchart, thanks for nudging me. I had fun building this. edit: There's also a public changelog so people can understand why rankings might have changed, what cards have been added or removed, or things like applying new rules. submitted by /u/duffcalifornia [link] [comments]",
+  "board": "r/churning",
+  "created_at": "2026-09-23T14:26:15Z",
+  "fetched_at": "2026-09-23T19:26:57.648933Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 2,
+  "content_hash": "d587a33639281eef",
+  "key": "reddit:1wo7i1k"
+}

@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wod07t",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wod07t/deepseekv4flash0731_at_4050_toks_on_2_radeon_ai/",
+  "title": "DeepSeek-V4-Flash-0731 at ~40–50 tok/s on 2× Radeon AI PRO R9700 with the affinity engine (prebuilt quant + fixes)",
+  "author": "/u/neuromacmd",
+  "body": "I've been running DeepSeek-V4-Flash-0731 (custom quant 2.875bpw) on two Radeon AI PRO R9700s (32 GB each, 192 GB system RAM) using affinity( https://codeberg.org/StillDeadcode/affinity ), an inference engine written by **Yoshi Exeler (StillDeadcode)** specifically for DeepSeek-V4-Flash on one or two RDNA4 cards. All the credit for the engine goes to them. It keeps the hot experts on the GPUs, streams the rest from host RAM, and runs a DeepSeek-native speculative draft. If you have R9700s, go look at it. What I added: - A prebuilt 0731 quant, so you can skip the 149 GB download and the ~2.5 h quantize: [neuromaniacmd/DeepSeek-V4-Flash-0731-affinity-2.875bpw]( https://huggingface.co/neuromaniacmd/DeepSeek-V4-Flash-0731-affinity-2.875bpw ). It was made with affinity's own quantizer: routed experts at 2.875 bpw, the teamblobfish imatrix, dense weights in FP8, plus 0731's bundled draft. It loads only in affinity, not llama.cpp or vLLM. - A fork with a few stability fixes ([github.com/neuromaniacMD/affinity]( https://github.com/neuromaniacMD/affinity )). The main one: on 2×32 GB cards the server would start producing fluent garbage after the first long prompt and never recover, caused by hugepage collapse under a GPU mapping with too little free VRAM. The fixes are also submitted upstream as PRs. There's a Docker build on TheRock ROCm 7.14, so the host needs no ROCm install. Numbers on my box (2× R9700, 262K context fully allocated at load): - Prefill: ~1,260–1,360 tok/s at 4K–64K context - Decode: ~40–50 tok/s on long structured answers, ~31–35 on free-form prose and reasoning. It depends on how often the draft's guesses are accepted. - Needle-in-a-haystack 3/3 at 4K/16K/64K. A multi-turn agentic task (Excel → DuckDB via shell tools, 15 turns) passed every check, with no malformed tool calls. Caveats: - RDNA4 (gfx1201) only, and two cards max. - Use the model card's sampling (temp 1.0). At temp 0.6 this quant fell into reasoning loops for me. - You need ~64 GB+ of RAM for the experts that don't fit on the cards. - There's also an experimental DeepSeek-V4.1-Flash branch. It's correct now, but only ~14 tok/s on two cards. Happy to answer questions. Engine questions really belong with the upstream project. submitted by /u/neuromacmd [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-23T17:49:14Z",
+  "fetched_at": "2026-09-23T19:26:57.648933Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "723a981e15a31857",
+  "key": "reddit:1wod07t"
+}
