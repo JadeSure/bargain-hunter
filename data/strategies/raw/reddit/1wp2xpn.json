@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wp2xpn",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wp2xpn/i_built_an_openweight_alternative_to_jev_typesafe/",
+  "title": "I built an open-weight alternative to Jev / TypeSafe - introducing OpenJudgement-4B (early preview)",
+  "author": "/u/bakatristan",
+  "body": "I’m releasing OpenJudgement-4B-Preview, an experimental Qwen-based model fine-tuned on custom datasets for classification, scoring and true/false judgments. It scores answer options directly, and Python formats the results into JSON with probabilities. It still uses an LLM backbone, but doesn’t generate the response token by token. It’s unfinished and isn’t at Jev’s level yet. I’d love feedback, especially examples where it gets things wrong. Use it via api at: https://kitani.ai/models/kitani/OpenJudgement-4B-Preview (paid) Model and inference code: https://huggingface.co/kitaniai/OpenJudgement-4B-Preview submitted by /u/bakatristan [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-24T14:19:34Z",
+  "fetched_at": "2026-09-24T19:45:25.446089Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "4ab4891c11dff124",
+  "key": "reddit:1wp2xpn"
+}
