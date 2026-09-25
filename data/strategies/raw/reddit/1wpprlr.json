@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wpprlr",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wpprlr/former_intel_ceo_hbm_is_lousy_high_bandwidth/",
+  "title": "Former Intel CEO: \"HBM is lousy\". High Bandwidth Flash Is Coming",
+  "author": "/u/Glittering_Depth_722",
+  "body": "Irrational Analysis:\"HBM is a mistake\" Former Intel CEO: \"HBM is lousy\" SK Hynix VP:\"HBM is not the final answer to the memory wall problem\" \"If the stacks get high enough...each core die operates slower than plain old commodity memory\" Hot chips 2026 Q&A, Irrational Analysis asks: \"You talk about going to 20 levels thick at HBM4 so maybe you are at 4 terabytes per square cm in a stack of 20, so you are talking about having 20% of the bandwidth of one chip [for each] layer of 20. You've diluted the throughput enormously. Why is that the correct way to go? Why are you so focused on going taller rather than going faster?\" Hold the line. Soon we will all look back and wonder why people paid so much for something so inefficient. submitted by /u/Glittering_Depth_722 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-25T07:15:37Z",
+  "fetched_at": "2026-09-25T19:43:40.764465Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "6014a7a9c6513e8e",
+  "key": "reddit:1wpprlr"
+}

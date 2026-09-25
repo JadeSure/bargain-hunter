@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wq1m8z",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wq1m8z/second_3060_12gb_worth_it/",
+  "title": "Second 3060 12gb worth it?",
+  "author": "/u/ErroneousBosch",
+  "body": "My server is modest (Core 12400, 64GB DDR4, 3060 12G) and the case has size limitations on cards (9.5\" long max). Combined with relatively little toy budget, I was wondering if a second 3060 12G is worth it. OS is using NVidia Open Source Kernel drivers, so anything too old won't work. My Mobo does have two x16 PCIe 4.0 slots, so that shouldn't bottleneck. The third x16 slot is PCIe 3.0, so probably wouldn't bother with a third 3060 unless people have had good experiences with that. I am not looking to run huge models, more workhorse stuff, but having some more space for context etc. could be useful, and small 3060 12G cards can still be had economically, so I was wondering what people's experience was. I may upgrade the CPU sometime in the next few months as well, really wish Intel had an LGA1700 option with an NPU but such is life. This is probably the most economical upgrade path I can think of, but I am open to input. submitted by /u/ErroneousBosch [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-25T16:56:50Z",
+  "fetched_at": "2026-09-25T19:43:40.764465Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "5b00699ea8c7cd1b",
+  "key": "reddit:1wq1m8z"
+}

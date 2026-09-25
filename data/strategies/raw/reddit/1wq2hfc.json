@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wq2hfc",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wq2hfc/jev_vs_kev_opensource_jev_alternative_tested_side/",
+  "title": "Jev vs. Kev: open-source Jev alternative tested side by side",
+  "author": "/u/facethef",
+  "body": "We hosted Kev 4B (Jared Palmer's Apache-2.0 fine-tune of Qwen3.5-4B) and ran it side by side with Jev on the same endpoint to see how it compares. We built a fresh set of 362 items published after both models shipped (new arXiv papers, Stack Exchange questions, GitHub issues), with answers taken from the source. A few findings: - Accuracy lands within 2 points on every task, inside the noise at this sample size - Jev is better calibrated and pulls ahead on paraphrase detection (PAWS 87.0% vs 74.5%) - Same list price, but Jev counts a fixed ~257 extra input tokens per request (same count calling TypeSafe directly), so short requests cost up to 12x more Benchmark code, test items and results are on GitHub if you want to run your own. Both models routed via my startup Opper. Happy to dig into specifics. submitted by /u/facethef [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-25T17:30:26Z",
+  "fetched_at": "2026-09-25T19:43:40.764465Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "b5087e0f939c1b75",
+  "key": "reddit:1wq2hfc"
+}
