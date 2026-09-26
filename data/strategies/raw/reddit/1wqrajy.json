@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wqrajy",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wqrajy/for_the_longest_time_ive_felt_this_sub_should/",
+  "title": "For the longest time I’ve felt this sub should have a pinned section where a detailed post about each model should get featured.",
+  "author": "/u/politefella0",
+  "body": "For instance whenever a model comes out, what’s the best engine to run it, the best harness and absolute minimum you need to get same or near same re results that the benchmark of that model claims. And whenever a quant from Unsloth guys comes out the guide can either be updated or new guide could be added for that quant. For example Gemini keeps telling me an 8x v100 server is no good to self host deepseek v4.1 but it’s super difficult to find the right answer to my question from an hallucinating search engine bot. It will make prices up too sometimes. Guides like this could mention absolute minimum you need to host the model for best of it’s capabilities. The recommended system and an over kill system and some trusted and known sources to find that hardware or where to rent the required hardware to host the model as it’s not always about running it fully local but at least run it yourself. Thanks. submitted by /u/politefella0 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-26T14:01:03Z",
+  "fetched_at": "2026-09-26T18:59:38.116509Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "58da322f2cd353b6",
+  "key": "reddit:1wqrajy"
+}

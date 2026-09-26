@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wqlyp8",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wqlyp8/introducing_koboldcpp_agent_and_a_plea_for_help/",
+  "title": "Introducing KoboldCpp Agent (and a plea for help)",
+  "author": "/u/HadesThrowaway",
+  "body": "Hello r/localllama once again, it's me your kobold concedo Been a few months since I last posted here, and today I have something new I'd like to share. Specifically, KoboldCpp now ships with a built-in integrated KoboldCpp Agent Harness ! I know it's a little late to the game, but I saw people frustrated with setting up complicated external agentic tools, so I decided to make my own easy replacement for basic tasks. KoboldCpp now ships with a bundled Agentic harness that can be enabled with a single checkbox. This works like an extremely lightweight replacement for tools like Opencode, Codex or Claude Code . Comes with 9 built-in tools, and a tiny system prompt of only 2k tokens including all tools , far smaller than a majority of harnesses. Good for basic code creation or editing, making simple games and projects, or general agent tasks (i.e. sorting files, scheduling tasks, anything you need really) To use it, simply toggle it from the Admin tab in the GUI launcher, or add --agent to your launch flags, it'll launch a new terminal KoboldCpp Agent can also connect to third party backends, or any OpenAI Chat Completions compatible endpoint. Add more tools by loading a mcp.json file, MCP tools will be shared to the agent. Note: MCP tools execute on the KoboldCpp server, while Agent tools execute on the agent client. Comes with 3 approval modes for tool calling confirmation: on/auto/off. Exercise caution when approving tool calls. To function effectively, KoboldCpp Agent requires at least 28k ctx and 8k gen amount, though larger values are recommended. Recommend to have at least 12GB VRAM for a good experience. You can download a .kcppt template to get started with Qwen 3.6 35BA3B here , simply load and launch in the latest KoboldCpp. Supports AGENTS.md, context compaction and many more features Run /help in the Agent to get more information Here's a little showcase video of the agent sorting through some images and then creating a website. Music was also made in KoboldCpp KoboldCpp Agent Showcase And in case you missed it, KoboldCpp also allows for video generation (with reference images) now using Minimax H3 model. That was actually in the previous release but we made a fun little video I thought I would like to share here too. Minimax H3 in KoboldCpp Download KoboldCpp from the official KoboldCpp github releases ------ And now for some grim news : I really need your help fighting against the fake phishing site at kobolcpp(dot)com which is a fake website that uses blackhat SEO to rank highly in Google Search, and mislead people into downloading malware from spammy popups. We have tried to report to google multiple times, we have even reported to their webhost but nothing has worked. If you want to help, please check out this link. That's all for now. Cheers, concedo / LostRuins. submitted by /u/HadesThrowaway [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-26T09:13:29Z",
+  "fetched_at": "2026-09-26T18:59:38.116509Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "3c05bb68b4e64443",
+  "key": "reddit:1wqlyp8"
+}
