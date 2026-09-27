@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wrpajn",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wrpajn/is_switching_from_llama_cpp_to_vllm_worth_it/",
+  "title": "is switching from llama cpp to vllm worth it",
+  "author": "/u/Exciting-Engine882",
+  "body": "I have hp z8 g4 with 512 ram and 1x3090 1x5060 16gb. has anyone made the transition from llama cpp to vllm recently? is it worth it? docker under windows or full linux install? I am mainly interested in the model support, it seems that many new local models are supported day 0 in official vllm, while for llama cpp it takes months sometimes. LE: I want to use it for big'ish moe models, that would have to offload some tensors to system ram. I will use it just for myself. I don' t need it to be faster than llama cpp, if it runs at about the same speed it is fine , as long as it works. submitted by /u/Exciting-Engine882 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-27T16:55:37Z",
+  "fetched_at": "2026-09-27T19:28:21.348375Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "9c78706ef7e6f70b",
+  "key": "reddit:1wrpajn"
+}

@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wrrgex",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wrrgex/dont_trust_frontier_models_when_asking_about/",
+  "title": "Don't trust frontier models when asking about budget hardware!",
+  "author": "/u/Mrinohk",
+  "body": "Early this year when I was first looking at building up my inference capability you could get the 16GB Tesla P100s for between $60 and $80. Asked claude about it, told me absolutely not worth it. No tensor cores, bad int4/int8, no BF16, not worth it. Needs special power accommodations, Above 4G decoding option in the bios (it made it out like it was some rare option), and a semi-exotic cooling solution. Optimized the shit out of my RX6600XT in llama.cpp as a result. Got pretty far. Decided to say fuck it, bought a single P100 last week, finally showed up day before yesterday. Got a newer power supply with the appropriate connections (not hard, not that expensive, seen options as cheap as $60 from good brands, I spent $100 on one with some headroom), multiple llama.cpp forks and patches that carry some wild optimizations to handle the capability gap, and a 3D printed housing for a 94mm fan from noctua. Doesn't generate enough static pressure to keep it cool during prefill, but more than strong enough for the generation step. The numbers I was getting before, with my RX6600 XT with Qwen3.6 35B A3B UD_Q4_K_XL with MTP and --cpu-moe: PP ~800 at 0 ctx, drops to ~700 by 10k TG ~30-35 prose, 45-50 code. This setup could do 64k context (and possibly higher) at 16bit kv. cpu-moe helps a ton in that respect. With just a little bit of tuning, and using specifically the patches from shinbunbun for llama.cpp, same model with the same MTP settings, --n-cpu-moe 22: PP ~600 at 0 ctx, 440-500 by 10k TG ~54-60 prose, 66-72 code. Running only 32k context right now to make it work. Could fit more with a higher n-cpu-moe, but my harness doesn't need that much (rarely see it over 30k, persistent memory leads to chats that simply aren't meant to last). I know the capability gap between 3.6 35B and the basically any of the qwen 3.X 27B models is pretty big, but this is huge for the price. They've gone up since I bought mine, about ~$15 across the board. Still something you can get for under $100 and makes for inference that is simply impossible to get at that price otherwise. I've got another one coming so I can go full offload on the model, and maybe even start playing with 3.8 27b. Right now IQ3_K_XL I get around 9 tokens per second with MTP, and basically no real context. Don't actually know if splitting a model that fits in one card across multiple helps speed, that's completely new territory for me, but I'm having fun regardless. Card is seriously underrated. It's a great, (relatively) inexpensive way to get capable compute to finally start doing local AI stuff. I went from having to just leave my computer alone while the model was running and do everything from my macbook (good bye gaming) to being able to let the model live and work in the background while I'm doing basically anything on my PC. When the second arrives, I'll be planning my dedicated inference box they'll both live in. Feeling inspired by that guy cooling his PC with a VW radiator. submitted by /u/Mrinohk [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-27T18:21:08Z",
+  "fetched_at": "2026-09-27T19:28:21.348375Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 2,
+  "content_hash": "43f0a438452c3f5e",
+  "key": "reddit:1wrrgex"
+}
