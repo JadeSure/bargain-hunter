@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wsn59w",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wsn59w/i_am_concerned_about_all_these_disparate_hard/",
+  "title": "I am concerned about all these disparate hard forks that target specific architectures instead of opening a PR against upstream",
+  "author": "/u/wombweed",
+  "body": "Other than the obvious self promotion, is there a practical reason people do this that I am missing? There's dozens of llamacpp forks with silly names that are supposedly \"optimized\" for this or that specific GPU and seem to have zero intention to merge into upstream. Am I missing the real reasons why this happens so often? Why do people think it's OK to do this? In my experience in the open source community this is generally frowned upon. I don't know if it's just a me problem that this kind of thing puts me off so much. I am usually quite grateful for PR feedback and conscientious about the code I put out there; I take pride in submitting high quality code that meets or exceeds the standards of a given project. Of course there is nothing ethically wrong with hard forks or taking shortcuts if you find the collaborative process cumbersome, but personally I wouldn't promote my fork in such cases, let alone go out of my way to add custom branding with a Reddit announcement post etc. since the effort required to do so seems roughly equivalent to the effort required to meet the contributor standards. In contrast, many of the authors of these forks seem very eager to have others adopt their rebranded fork for production use cases. There just seems to be a big disconnect, idk. Edit: some great discussion in this thread, thanks to all who responded. Consensus seems to be that (excluding the obvious low-effort engagement bait forks) the base project has to meet many compatibility requirements while a downstream project can be more focused, which is a great point. submitted by /u/wombweed [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-28T18:47:59Z",
+  "fetched_at": "2026-09-28T21:33:42.292867Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "96ff5ece4c1077e6",
+  "key": "reddit:1wsn59w"
+}

@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wsfo1j",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wsfo1j/need_small_model_that_can_work_for_tool_caling/",
+  "title": "Need small model that can work for tool caling and agent",
+  "author": "/u/Merchant_Lawrence",
+  "body": "Hi. So....... after toturing my 750 ti 4 gb and 16 gb ram with image gen model .i want continue experiment with agent mode like hermes or opencode, using local model but before go i want ask few question. are big model = good perfomance or small model can do same stuff. what small model recommend for agent my spec what caveat of doing this ? submitted by /u/Merchant_Lawrence [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-28T14:10:14Z",
+  "fetched_at": "2026-09-28T21:33:42.292867Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "0979b20cc2373936",
+  "key": "reddit:1wsfo1j"
+}

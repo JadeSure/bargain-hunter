@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1ws9ydg",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1ws9ydg/nvidia_shipped_openshell_an_open_source_sandbox/",
+  "title": "NVIDIA shipped OpenShell, an open source sandbox that gives local and open agents real runtime limits instead of prompt rules. Over 100 firms joined the safety stack. OpenAI did not.",
+  "author": "/u/InternationalGap3698",
+  "body": "https://x.com/JensenHuang/status/2104499465055023424 submitted by /u/InternationalGap3698 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-28T09:27:53Z",
+  "fetched_at": "2026-09-28T21:33:42.292867Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "ffcee9b90e17806e",
+  "key": "reddit:1ws9ydg"
+}
