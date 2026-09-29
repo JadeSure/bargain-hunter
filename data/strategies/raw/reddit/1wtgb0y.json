@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wtgb0y",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wtgb0y/recommended_replacements_for_glm_47_flash/",
+  "title": "Recommended replacements for glm 4.7 flash",
+  "author": "/u/Defiant-Plantain1873",
+  "body": "I know I sound crazy, but i’m using a strix halo and finding that GLM 4.7 flash just runs significantly better than qwen 3.6 35 a3b. But its obviously quite old at this point, i wish we had a new glm that was 4.7 flash sized but is anyone using a model that they have found better than this. My brief testing with qwen shows that glm is better at tool calling and better at world knowledge, but maybe there’s a chance my qwen set up is wrong submitted by /u/Defiant-Plantain1873 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-29T17:25:05Z",
+  "fetched_at": "2026-09-29T20:29:08.120040Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "44b201bfb597154e",
+  "key": "reddit:1wtgb0y"
+}

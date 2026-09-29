@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wta2it",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wta2it/what_are_your_experiences_with_using_a_hybrid/",
+  "title": "What are your experiences with using a hybrid cloud/local setup to stretch usage for coding projects?",
+  "author": "/u/Ambitious_Fold_2874",
+  "body": "For example, directly using claude code or code, which is then hooked up to automatically delegate the actual code writing tasks to a local model like qwen 3.8 flash next, to save on cloud usage limits. I’m imagining the loop would be: User writes prompt Claude/codex thinks about it and the plan Claude/codex sends the specific and bounded coding instructions to the local model+harness (opencode, pi, etc) via api endpoint or MCP, with clear instructions on a defined endpoint One the local model+harness hits the clear endpoint/“done” step, it sends a ping back to claude/codex Claude/codex then verifies the output and then thinks about next steps to instruct the local model+harness on Does this actually lead to improved savings on the cloud model usage while preserving code quality? Or does this end up being unnecessarily complex and not saving on any cloud usage submitted by /u/Ambitious_Fold_2874 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-29T13:25:58Z",
+  "fetched_at": "2026-09-29T20:29:08.120040Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "6be4ebab99d5695f",
+  "key": "reddit:1wta2it"
+}

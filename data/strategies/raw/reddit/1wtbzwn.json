@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wtbzwn",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wtbzwn/help_me_find_a_good_stack_for_reversing_an_old/",
+  "title": "Help me find a good stack for reversing an old online game client",
+  "author": "/u/danielfrances",
+  "body": "Hi, so I was working on building a local server for an older online game client a few years ago, and the amount of data I had to synthesize was intense. I ended up shelving the project. I had managed to build a basic login server, sorted out some crypt stuff, but it was just way too slow of progress for me. I've got some decrypted packets and lots of data to work with, so the LLM is not going to be forced to do this entirely blind. I restarted it recently with Fable, and as expected, it has been a huge help. However, I'm consistently hitting the safety guardrails now that I am further into the project. I am wondering what you all would suggest for a local setup? I have 16GB of VRAM (RTX 4060 Ti) and 128GB of DDR4. If that is entirely insufficient, I might be willing to pay for hosting a more powerful local model. I'm fine with it being slow and chugging along all day and night - I am primarily concerned with it actually figuring out the client functions, and doing things as accurately as possible. I appreciate any insight into specific models, harnesses, and other stuff I should be looking into. Thanks! submitted by /u/danielfrances [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-09-29T14:42:57Z",
+  "fetched_at": "2026-09-29T20:29:08.120040Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "2c1b8210ba477b30",
+  "key": "reddit:1wtbzwn"
+}
