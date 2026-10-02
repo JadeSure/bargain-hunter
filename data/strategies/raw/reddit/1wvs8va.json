@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wvs8va",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wvs8va/i_made_my_own_cybersecurity_benchmark_and_ran/",
+  "title": "I made my own cybersecurity benchmark and ran Qwen3.8 27B, here's how a local model actually does at hacking",
+  "author": "/u/lbgos_Loss783",
+  "body": "Hey local AI community, I've been working on this for a while and finally feel ok sharing it. It's a cyber benchmark where the model gets a shell in an isolated docker box and has to find the exact flag. Pwn, web, crypto, rev, forensics, a few real CVEs and some multi-stage ranges. 19 tasks, 6 models, 544 scored attempts. To be clear, I didn't build every task by hand. GLM 5.3 helped me create several of them. For an open model its cyber capability is really high, and it barely refuses anything, so it was one of the best options for this. GLM 5.3 isn't one of the benchmarked models. The local part: I ran Qwen3.8 27B (Unsloth Q4_K_XL, xhigh) on a llama.cpp RPC pool across a 3090 and a 3080 in two Proxmox nodes, connected over a direct 2.5G link. That gave me enough concurrent tps to run several agents at once. I also started a low reasoning run, but it was taking 20+ hours because of a harness problem, so I killed it. Why I'm posting now: John Hammond put out a video about how threat actors use AI ( https://www.youtube.com/watch?v=xHDc6-7bjyw ). One part is a guide from a criminal forum on running abliterated models on RunPod, and one of the models in it is Qwen3.8 27B. I had benchmark data on that exact model, so here's what it can actually do. Stock Qwen3.8 27B got 28.1% on the first try and 0% on pwn. Not bad for a 27B on two gaming cards, but not much of a threat on its own either. The cheap API models are a different story: - MiMo 2.6 Flash solved 73.7% on the first try - GPT-6 Luna solved 90.9% within 3 tries - On multi-stage ranges, where you chain several steps, the top models got 92-96% Pwn is still hard for everyone (best was 56%), and 3 tasks haven't been solved by any model in 82 attempts. Results: https://lbgos.dev/bench Harness (MIT): https://github.com/lbgos/rangebench-harness The tasks aren't public so they don't leak into training data, but you can still run them. DM me here or on X (lbgosna), and I'll send them over. You run it on your hardware or tokens and I'll add your results to the board. If a few people send local runs, I'll make a separate local-only table. This is my first time building something like this, so any feedback on methodology, task mix or what's missing is welcome. submitted by /u/lbgos_Loss783 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-02T12:15:13Z",
+  "fetched_at": "2026-10-02T20:23:02.091998Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "f4f7026ec0d05910",
+  "key": "reddit:1wvs8va"
+}

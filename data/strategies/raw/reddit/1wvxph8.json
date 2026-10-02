@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wvxph8",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wvxph8/new_benchmark_on_lms_fixing_bugs_before_users_run/",
+  "title": "New benchmark on LMs fixing bugs before users run into them",
+  "author": "/u/klieret",
+  "body": "Hi! This is a new benchmark that I created together with other researchers at Meta, Stanford, Harvard, UW. Most benchmarks these days seem to test models to just fix a bug that I as a user already encountered. But shouldn't we expect models by now to also find bugs before anyone runs into them? So in SWE-sweep we just hand an agent a big codebase and ask it to find & fix as many bugs as it can. We then give a score based on a hidden set of bugs that we know about in the repos. All the bugs are real-world bugs. We do a lot of filtering to make sure the bugs are actually discoverable & fixable from reading the repo alone. https://preview.redd.it/irffy7x5v2th1.png?width=1080&format=png&auto=webp&s=847a08f1a255fe39addd004cbb2a65561b1cf2a6 We're still expanding the leaderboard list with more local models (unfortunately it's always a big harder with funding/infra etc), but right now it seems like it's quite hard to beat Luna xhigh in terms of cost efficiency. Also the scores are way lower than I would've expected. Some tasks are legitimately superhuman in practice (like fixing up all of numpy), but there's also lots of small repos, where I would've expected a lot more from current models. Everything is open source (MIT license) on github and you can find paper etc. on the website . Happy to answer questions here, also super curious what open weights models you'd recommend running next (we're working on an update next week). submitted by /u/klieret [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-02T16:05:34Z",
+  "fetched_at": "2026-10-02T20:23:02.091998Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "3872005fa159fbd5",
+  "key": "reddit:1wvxph8"
+}

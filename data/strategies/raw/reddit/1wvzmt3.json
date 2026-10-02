@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wvzmt3",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wvzmt3/heavily_quantized_qwen38flash_vs_q8_qwen3827b/",
+  "title": "Heavily quantized Qwen3.8-Flash vs Q8 Qwen3.8-27B - thoughts?",
+  "author": "/u/EmPips",
+  "body": "I'm currently choosing between IQ3_XXS Qwen-3.8-Flash and Q8_0 27B. This month I don't have anything complex enough to justify either's potential so I've got a fairly bad read on how these two stack up in terms of intelligence. Have any of you compared the two enough to speak to which you've had a better experience with? submitted by /u/EmPips [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-02T17:22:24Z",
+  "fetched_at": "2026-10-02T20:23:02.091998Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "869a4252fe7175d4",
+  "key": "reddit:1wvzmt3"
+}
