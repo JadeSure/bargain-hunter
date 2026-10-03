@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wws6o6",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wws6o6/i_built_a_code_knowledge_graph_tool_thats/",
+  "title": "I built a code knowledge graph tool that's actually MIT licensed (fully local, no cloud)",
+  "author": "/u/Unique-Business-9201",
+  "body": "So this is maybe a niche problem, but at my job I work on a huge Python codebase and every time I change some shared function I'm basically playing roulette. grep tells who mentions it in the code base, not who actually calls it. And more essentially, Claude Code (my major coding agent) mainly uses grep so it doesn't give better results. The tool I wanted already exists (GitNexus) but it's PolyForm licensed, so that's a hard nope at work. And honestly even beyond the license, half the code graph tools out there want you to upload your repo to their cloud or spin up a docker stack with a vector database, and I can't do either of those at work. So I spent some weekends building this my own version: MIT licensed, and everything runs on the local machine. The tool is called repopedia. You can pip install and then run it on a repo, and it builds a little code graph in a plain SQLite file (tree-sitter does the parsing). The advance is basically no server, no docker, no API keys. Nothing gets uploaded anywhere, the graph is just a .db file sitting on your disk. You can then ask things like who calls this function, or what's the blast radius if I change it, meaning all the transitive callers. It can also dump out a wiki of the codebase, though honestly that part is mostly there because I wanted the docs for myself. The bit I ended up using the most is the MCP server. I use Claude Code, which already greps around the codebase on its own — but instead of it doing five rounds of text search to figure out who calls what, it asks the graph directly and gets the exact answer with file:line in one call. There's no embedding model involved, it's just... the graph. Which probably matters even more for local models, since they're not exactly great at search. Demo (2min): https://youtu.be/B7GLgjoy7G8 Repo: https://github.com/bolongpa/repopedia Fair warning, it's 0.2.1. Python and TypeScript only. Method calls through self. get resolved by name matching, which is exactly as sketchy as it sounds for big class trees. If anyone runs it on their repo and it spits out something dumb, I genuinely want to hear about it. ¯\\_(ツ)_/¯ submitted by /u/Unique-Business-9201 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-03T17:01:14Z",
+  "fetched_at": "2026-10-03T18:46:52.940901Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "4f7e2b24201f0cf3",
+  "key": "reddit:1wws6o6"
+}

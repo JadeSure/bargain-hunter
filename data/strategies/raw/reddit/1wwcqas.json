@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wwcqas",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wwcqas/anyone_sitting_on_a_lot_of_slow_system_memory_and/",
+  "title": "Anyone sitting on a lot of slow system memory and a modest GPU.. try Strata + Qwen3.8 Next.",
+  "author": "/u/EmPips",
+  "body": "IQ3_XXS weights are just under 80GB and my slowww DDR4+7900XTX is stabilizing around 45-70/s (sometimes higher while coding depending on mtp). Looking online I'm seeing similar results for users with 12GB and 16GB cards, and significantly faster numbers for owners of DDR5. (In comparison, Llama CPP with tuning was maxing out around 22.5t/s on the same rig. Quality seems reliably superior (I wouldn't recommend the Q2 weights though)) Seriously. Ask <LLM of your choosing> to set it up for your specs. If 27B doesnt fit well for you, here's a shot at beating it. submitted by /u/EmPips [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-03T03:12:29Z",
+  "fetched_at": "2026-10-03T18:46:52.940901Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "c96694e5b1f58c0e",
+  "key": "reddit:1wwcqas"
+}

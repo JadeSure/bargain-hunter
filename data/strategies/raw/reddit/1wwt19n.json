@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wwt19n",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wwt19n/flash_next_rig_born_from_mining_parts/",
+  "title": "Flash next rig born from mining parts.",
+  "author": "/u/MD_Reptile",
+  "body": "Been testing 3x 3060 12gb for flash next in an open air frame. Honestly, with strata it's kicking ass. 38-40 t/s while llama.cpp can only get 13.2 t/s. This is on IQ3 through strata. Anybody else running dated mining hardware with decent success? PS flash next kicks ass. Rig details: - Kingwin 8x mining rig frame (stacked on top of another with my unraid server) - Asus prime z370p mobo - 8th gen i7 - 64GB ddr4 - 1000w PSU with enough strands for each card and riser submitted by /u/MD_Reptile [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-03T17:36:49Z",
+  "fetched_at": "2026-10-03T18:46:52.940901Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "67371f1c4183628a",
+  "key": "reddit:1wwt19n"
+}

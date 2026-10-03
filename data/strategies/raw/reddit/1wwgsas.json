@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wwgsas",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wwgsas/i_tried_building_a_small_rag_search_node_for/",
+  "title": "I tried building a small RAG search node for Qwen3.8 27B using a fake AliExpress Mini PC... and Intel sent me back to 2018.",
+  "author": "/u/Ok-Shower7286",
+  "body": "I love Qwen3.8 27B so much that I decided to show my gratitude to the Alibaba ecosystem by building a dedicated RAG/search node using a cheap Mini PC from AliExpress. Turns out, my ecosystem loyalty got rewarded with an absolute masterpiece of fraud: Promised: Intel N150 + DDR4/DDR5 Delivered: Core i3-7020U (2018 Kaby Lake, 2C/4T) + DDR3 1600MHz The Scam: The seller literally hardcoded New_N150 into the BIOS release string ( HSHW_M6_DDR3_EC_Intel_Com_New_N150_K001 ). So now my Qwen3.8 RAG stack is full of fake specs that can barely index a text file, let alone run vector sidecars. Filing a credit card chargeback now. Stay safe out there! submitted by /u/Ok-Shower7286 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-03T07:08:14Z",
+  "fetched_at": "2026-10-03T18:46:52.940901Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "7f5cb54d495bb6d1",
+  "key": "reddit:1wwgsas"
+}
