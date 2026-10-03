@@ -29,6 +29,15 @@ FIXTURE_YOUHUI = json.loads(
 NOW = datetime(2026, 8, 21, 12, 0, 0, tzinfo=UTC)
 
 
+class _FixtureClock(datetime):
+    """fetch() reads the real clock; the fixtures are from 2026-08-21, and its 72h
+    cutoff would otherwise drop every row once the calendar moved on."""
+
+    @classmethod
+    def now(cls, tz=None):
+        return NOW
+
+
 def _home_deals() -> dict[str, mod.Deal]:
     src = SmzdmSource()
     return {d.deal_id: d for d in src._parse_page("home", FIXTURE_HOME, True, NOW)}
@@ -129,6 +138,7 @@ def _patch_get(monkeypatch, responses: dict[tuple[str, int], httpx.Response]) ->
 
     monkeypatch.setattr(mod.httpx, "get", fake_get)
     monkeypatch.setattr(mod.time, "sleep", lambda _s: None)
+    monkeypatch.setattr(mod, "datetime", _FixtureClock)
     return requested
 
 

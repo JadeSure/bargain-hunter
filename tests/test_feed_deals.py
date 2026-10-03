@@ -16,6 +16,17 @@ from bargain_hunter.sources import feed_deals as mod
 from bargain_hunter.sources.feed_deals import FeedDealsSource
 
 FIXTURES = Path(__file__).parent / "fixtures"
+# The fixtures were captured 2026-08-20, so parse them as of then: against the
+# real clock the staleness cutoff turns every item stale as the months pass.
+FIXTURE_NOW = datetime(2026, 8, 21, tzinfo=UTC)
+
+
+class _FixtureClock(datetime):
+    """Stands in for feed_deals.datetime where a test can only reach parse() via fetch()."""
+
+    @classmethod
+    def now(cls, tz=None):
+        return FIXTURE_NOW
 
 RSS_ITEM = (
     '<?xml version="1.0"?><rss version="2.0"><channel>'
@@ -27,25 +38,25 @@ RSS_ITEM = (
 
 def _dealnews():
     return FeedDealsSource(name="dealnews", feed_urls=[], currency="USD").parse(
-        (FIXTURES / "dealnews_sample.xml").read_text(encoding="utf-8")
+        (FIXTURES / "dealnews_sample.xml").read_text(encoding="utf-8"), now=FIXTURE_NOW
     )
 
 
 def _slickdeals():
     return FeedDealsSource(name="slickdeals", feed_urls=[], currency="USD").parse(
-        (FIXTURES / "slickdeals_sample.xml").read_text(encoding="utf-8")
+        (FIXTURES / "slickdeals_sample.xml").read_text(encoding="utf-8"), now=FIXTURE_NOW
     )
 
 
 def _v2ex():
     return FeedDealsSource(name="v2ex", feed_urls=[], currency="CNY").parse(
-        (FIXTURES / "v2ex_sample.xml").read_text(encoding="utf-8")
+        (FIXTURES / "v2ex_sample.xml").read_text(encoding="utf-8"), now=FIXTURE_NOW
     )
 
 
 def _iknowthepilot():
     return FeedDealsSource(name="iknowthepilot", feed_urls=[], currency="AUD").parse(
-        (FIXTURES / "iknowthepilot_sample.xml").read_text(encoding="utf-8")
+        (FIXTURES / "iknowthepilot_sample.xml").read_text(encoding="utf-8"), now=FIXTURE_NOW
     )
 
 
@@ -177,6 +188,7 @@ def test_403_on_one_feed_does_not_lose_others(monkeypatch):
         return httpx.Response(200, text=dealnews_xml, request=req)
 
     monkeypatch.setattr(mod.httpx, "get", fake_get)
+    monkeypatch.setattr(mod, "datetime", _FixtureClock)
     src = FeedDealsSource(
         name="dealnews",
         feed_urls=["https://example.com/dead-feed", "https://example.com/ok-feed"],
