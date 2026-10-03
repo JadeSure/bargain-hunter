@@ -524,3 +524,37 @@ def test_atom_xhtml_content_is_read_not_silently_empty():
 
     escaped = by_title["A second offer, 50% off, whose body is escaped HTML not xhtml"]
     assert escaped.description == "Plain escaped body, 50% off."
+
+
+# -- one malformed item must not sink the source ---------------------------------
+
+
+def test_v2ex_title_with_lone_dollar_comma_parses():
+    """The live v2ex title shape that raised float('') for ~40h (2026-10-01..03)."""
+    xml = RSS_ITEM.format(title="[推广] 免费领取 $, 限时福利", link="https://www.v2ex.com/t/1",
+                          desc="desc", guid="g1")
+    deals = FeedDealsSource(name="v2ex", feed_urls=[], currency="CNY",
+                            max_item_age_hours=None).parse(xml)
+    assert [d.title for d in deals] == ["[推广] 免费领取 $, 限时福利"]
+    assert deals[0].price is None
+
+
+def test_an_item_that_raises_is_skipped_not_fatal(monkeypatch, caplog):
+    xml = (
+        '<?xml version="1.0"?><rss version="2.0"><channel>'
+        "<item><title>bad</title><link>https://x.example/1</link><guid>g1</guid></item>"
+        "<item><title>good</title><link>https://x.example/2</link><guid>g2</guid></item>"
+        "</channel></rss>"
+    )
+    src = FeedDealsSource(name="dealnews", feed_urls=[], max_item_age_hours=None)
+    real = src._parse_item
+
+    def flaky(item, now):
+        if item.findtext("title") == "bad":
+            raise ValueError("could not convert string to float: ''")
+        return real(item, now)
+
+    monkeypatch.setattr(src, "_parse_item", flaky)
+    deals = src.parse(xml)
+    assert [d.title for d in deals] == ["good"]
+    assert "skipping unparseable item" in caplog.text

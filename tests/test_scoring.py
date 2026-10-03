@@ -687,3 +687,13 @@ def test_compute_hot_score_scales_with_heat_ratio():
     score_ratio_1 = compute_hot_score(d, snaps, cfg, heat_ratio=1.0)
     score_ratio_low = compute_hot_score(d, snaps, cfg, heat_ratio=0.5)
     assert score_ratio_low > score_ratio_1
+
+
+@pytest.mark.parametrize("text", ["羊毛 $, 免费领", "was $, now cheaper", "RRP $ , today"])
+def test_lone_comma_after_dollar_is_not_a_price(text):
+    # 2026-10-01..03: `[\d,]+` matched the "," and float("") killed every v2ex parse.
+    assert extract_price_signals(text) == (None, None, None)
+
+
+def test_amount_with_trailing_comma_still_parses():
+    assert extract_price_signals("Monitor $1,299, delivered")[0] == 1299.0

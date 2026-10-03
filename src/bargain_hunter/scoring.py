@@ -18,12 +18,14 @@ from .models import Deal, DealSnapshot
 # Price / discount extraction (best-effort; see PRD §6.3)
 # ---------------------------------------------------------------------------
 
-# Matches: $49.99, $1,299, $49
-_PRICE_RE = re.compile(r"\$\s*([\d,]+(?:\.\d{1,2})?)")
+# Matches: $49.99, $1,299, $49. The amount must start with a digit: `[\d,]+` alone
+# matched the lone comma in a title like "… $, …", and float("") then killed the
+# whole v2ex parse for ~40h (2026-10-01..03).
+_PRICE_RE = re.compile(r"\$\s*(\d[\d,]*(?:\.\d{1,2})?)")
 # Matches: "30% off", "30%off"
 _PCT_OFF_RE = re.compile(r"(\d+(?:\.\d+)?)\s*%\s*off", re.IGNORECASE)
 # Matches: "was $X", "RRP $X", "RRP: $X"
-_WAS_RE = re.compile(r"(?:was|rrp):?\s*\$\s*([\d,]+(?:\.\d{1,2})?)", re.IGNORECASE)
+_WAS_RE = re.compile(r"(?:was|rrp):?\s*\$\s*(\d[\d,]*(?:\.\d{1,2})?)", re.IGNORECASE)
 # "Up to 96% off" is a sale-banner ceiling (the best item in a multi-item sale),
 # not one item's real discount, unlike a bare "96% off". Used only to gate hot
 # candidacy (see is_banner_discount below) — discount_percent itself is left

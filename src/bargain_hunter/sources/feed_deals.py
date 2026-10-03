@@ -278,7 +278,14 @@ class FeedDealsSource(Source):
         dropped_no_keyword = 0
         dropped_blocked = 0
         for item in items:
-            deal = self._parse_item(item, now)
+            try:
+                deal = self._parse_item(item, now)
+            except Exception as exc:
+                # One malformed item must not take the whole source down with it
+                # (a "$," title did exactly that to v2ex for ~40h, 2026-10-01..03).
+                log.warning("%s: skipping unparseable item (%s: %s)",
+                            self.name, type(exc).__name__, exc)
+                continue
             if deal is None:
                 continue
             if deal.posted_at and (
