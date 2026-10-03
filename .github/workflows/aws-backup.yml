@@ -31,6 +31,10 @@ permissions:
 
 jobs:
   deploy:
+    # Skip (not fail) until the backup is configured: without the state bucket
+    # `terraform init` rejects the empty backend value. Set repo variable
+    # AWS_TF_STATE_BUCKET plus AWS_ACCESS_KEY_ID/SECRET_ACCESS_KEY to enable.
+    if: vars.AWS_TF_STATE_BUCKET != ''
     runs-on: ubuntu-latest
     defaults:
       run:

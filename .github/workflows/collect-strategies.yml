@@ -22,10 +22,11 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      # Shallow on purpose: full history (observations land every ~5 min) took
+      # 18-28 min to clone against a 30 min timeout. The rebase-on-push retry
+      # only needs the checked-out commit, as hunt.yml's push-with-retry shows.
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0   # full history so the rebase-on-push retry works
 
       - name: Set up Python
         uses: actions/setup-python@v5
