@@ -56,9 +56,12 @@ it here, but know where the pieces live:
   DB; `match_watch` / `filter_watch_matches` apply the noise guard (≥5 votes
   OzBargain / ≥10% discount CamelCamelCamel) before a keyword fires.
 - **Alerting throttle** (`alert_throttle.py`): maintainer failure emails only
-  after 3 consecutive pipeline failures, then at most hourly — a clean run
-  resets the counter. Don't bypass this when adding new failure paths in
-  `main.py`.
+  after 12 consecutive pipeline failures (~1h), then at most once a day — a
+  clean run resets the counter. Only run-level failures count: a single
+  source's fetch error goes to `summary["source_errors"]` and never alerts on
+  its own (a run where every source fails still does, via zero deals).
+  Crashes go through the same throttle. Don't bypass this when adding new
+  failure paths in `main.py`.
 - **Portal auth proxy**: `portal-worker` (Hono, deployed to
   `*.workers.dev`) issues the session cookie, but the site is served from a
   different origin (`*.pages.dev`/custom domain via Cloudflare Pages), so

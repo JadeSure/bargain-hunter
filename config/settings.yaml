@@ -383,8 +383,11 @@ cold_start:
   ignore_deals_older_than_hours: 6  # on first sight, skip deals older than this
 
 alerting:
-  min_consecutive_failures: 3      # send maintainer alert only after this many consecutive failures
-  cooldown_hours: 1.0              # silence period after an alert fires
+  # Owner's call (2026-10-03): no more hourly failure mail. Only run-level failures
+  # count (a single source failing never does -- main.py `source_errors`), it must
+  # persist ~1h on the 5-min schedule, and then it mails at most once a day.
+  min_consecutive_failures: 12     # send maintainer alert only after this many consecutive failures
+  cooldown_hours: 24.0             # silence period after an alert fires
 
 # ---------------------------------------------------------------------------
 # Cashback stacking: a hand-maintained merchant→rate map, surfaced on matching

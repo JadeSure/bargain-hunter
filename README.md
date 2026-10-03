@@ -340,7 +340,7 @@ the site deploys via `deploy-frontend.yml`. Full design: [`docs/WEB_PLAN.md`](do
 
 ## Alerting
 
-Maintainer alert emails are throttled: only sent after 3 consecutive failures, then at most once per hour while failures persist. A clean run resets the counter.
+Maintainer alert emails are throttled: only sent after 12 consecutive failed runs (~1h), then at most once a day while failures persist. A clean run resets the counter. One source failing (e.g. a feed that 403s or changes format) is logged but is not a failed run; a run that fetches zero deals, or crashes, is.
 
 ## Current status (v1.1 — 2026-06-24)
 

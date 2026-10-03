@@ -190,7 +190,14 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         "watch_matches": 0,
         "notifications_sent": 0,
         "queued": 0,
+        # Run-level failures (subscribers, dedup, sent log, zero deals): these alert.
         "errors": [],
+        # One source's fetch failing. Logged, never alerted on by itself: the other
+        # sources still deliver, and an hourly email about a third-party feed the
+        # owner can't fix is noise (v2ex, 2026-10-01..03: 486 "failed" runs, all
+        # with ~110 deals fetched). A run where every source fails still alerts,
+        # via the zero-deals check below.
+        "source_errors": [],
         "cold_start": False,
     }
 
@@ -218,7 +225,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         except Exception as exc:
             msg = f"OzBargain fetch failed: {exc}"
             log.error(msg)
-            summary["errors"].append(msg)
+            summary["source_errors"].append(msg)
 
     ccc_cfg = settings.sources.get("camelcamelcamel")
     if ccc_cfg and ccc_cfg.enabled:
@@ -231,7 +238,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         except Exception as exc:
             msg = f"CamelCamelCamel fetch failed: {exc}"
             log.error(msg)
-            summary["errors"].append(msg)
+            summary["source_errors"].append(msg)
 
     # Slower-cadence sources (hourly/daily), gated on state.due_for_fetch so
     # the 5-min hot-path loop doesn't hammer them every run.
@@ -263,7 +270,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         except Exception as exc:
             msg = f"{src_name} fetch failed: {exc}"
             log.error(msg)
-            summary["errors"].append(msg)
+            summary["source_errors"].append(msg)
 
     or_cfg = settings.sources.get("openrouter")
     if _fetch_gate(
@@ -286,7 +293,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         except Exception as exc:
             msg = f"openrouter fetch failed: {exc}"
             log.error(msg)
-            summary["errors"].append(msg)
+            summary["source_errors"].append(msg)
 
     br_cfg = settings.sources.get("bank_rates")
     if _fetch_gate(
@@ -312,7 +319,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         except Exception as exc:
             msg = f"bank_rates fetch failed: {exc}"
             log.error(msg)
-            summary["errors"].append(msg)
+            summary["source_errors"].append(msg)
 
     as_cfg = settings.sources.get("appsumo")
     if _fetch_gate(state, "appsumo", as_cfg, getattr(as_cfg, "poll_interval_minutes", 360), now):
@@ -328,7 +335,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         except Exception as exc:
             msg = f"appsumo fetch failed: {exc}"
             log.error(msg)
-            summary["errors"].append(msg)
+            summary["source_errors"].append(msg)
 
     sm_cfg = settings.sources.get("smzdm")
     if _fetch_gate(state, "smzdm", sm_cfg, getattr(sm_cfg, "poll_interval_minutes", 60), now):
@@ -348,7 +355,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         except Exception as exc:
             msg = f"smzdm fetch failed: {exc}"
             log.error(msg)
-            summary["errors"].append(msg)
+            summary["source_errors"].append(msg)
 
     fl_cfg = settings.sources.get("free_llm")
     if _fetch_gate(state, "free_llm", fl_cfg, getattr(fl_cfg, "poll_interval_minutes", 1440), now):
@@ -362,7 +369,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         except Exception as exc:
             msg = f"free_llm fetch failed: {exc}"
             log.error(msg)
-            summary["errors"].append(msg)
+            summary["source_errors"].append(msg)
 
     cn_cfg = settings.sources.get("cn_llm_docs")
     if _fetch_gate(
@@ -378,13 +385,16 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         except Exception as exc:
             msg = f"cn_llm_docs fetch failed: {exc}"
             log.error(msg)
-            summary["errors"].append(msg)
+            summary["source_errors"].append(msg)
 
     summary["stale_sources"] = _check_staleness(settings, state, now)
 
-    if not all_deals and not summary["errors"]:
-        # Feed returned 0 deals without error — likely a format change.
-        msg = "0 deals fetched — possible feed format change."
+    if not all_deals:
+        if summary["source_errors"]:
+            msg = f"0 deals fetched — {len(summary['source_errors'])} source(s) failed."
+        else:
+            # Feed returned 0 deals without error — likely a format change.
+            msg = "0 deals fetched — possible feed format change."
         log.error(msg)
         summary["errors"].append(msg)
 
@@ -875,12 +885,14 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     _save_state(state, dry_run)
 
     log.info(
-        "Run complete. fetched=%d hot=%d watch_hits=%d sent=%d errors=%d cold_start=%s",
+        "Run complete. fetched=%d hot=%d watch_hits=%d sent=%d errors=%d source_errors=%d "
+        "cold_start=%s",
         summary["deals_fetched"],
         summary["hot_deals"],
         summary["watch_matches"],
         summary["notifications_sent"],
         len(summary["errors"]),
+        len(summary["source_errors"]),
         summary["cold_start"],
     )
     return summary
@@ -971,13 +983,22 @@ def _hot_reason(deal: Deal) -> str:
     return " · ".join(parts) or "Hot deal"
 
 
-def _alert_if_needed(summary: dict, settings: Settings, now: datetime) -> None:
-    """Send maintainer alert on failure or zero-deal anomaly, with throttling."""
+def _throttle(settings: Settings) -> AlertThrottle:
     throttle = AlertThrottle(
         min_consecutive_failures=settings.alerting.min_consecutive_failures,
         cooldown_hours=settings.alerting.cooldown_hours,
     )
     throttle.load()
+    return throttle
+
+
+def _alert_if_needed(summary: dict, settings: Settings, now: datetime) -> None:
+    """Send maintainer alert on failure or zero-deal anomaly, with throttling.
+
+    Per-source fetch failures (summary["source_errors"]) never count as a failed
+    run on their own; they only ride along in the body of a real alert.
+    """
+    throttle = _throttle(settings)
 
     has_error = bool(summary["errors"]) or (
         summary["deals_fetched"] == 0 and not summary["cold_start"]
@@ -998,9 +1019,24 @@ def _alert_if_needed(summary: dict, settings: Settings, now: datetime) -> None:
             f"  cold_start    : {summary['cold_start']}\n"
             f"  errors:\n" + "\n".join(f"    - {e}" for e in summary["errors"])
         )
+        if summary["source_errors"]:
+            body += "\n  source errors:\n" + "\n".join(
+                f"    - {e}" for e in summary["source_errors"]
+            )
         send_maintainer_alert(subject, body)
         throttle.record_sent(now)
 
+    throttle.save()
+
+
+def _alert_on_crash(settings: Settings, now: datetime, tb: str) -> None:
+    """A crashed run counts as a failure in the same throttle, so a crash loop on the
+    5-minute schedule emails at most once per cooldown instead of every run."""
+    throttle = _throttle(settings)
+    throttle.record_failure()
+    if throttle.should_alert(now):
+        send_maintainer_alert(f"Unhandled exception ({throttle._failures} consecutive)", tb)
+        throttle.record_sent(now)
     throttle.save()
 
 
@@ -1043,8 +1079,8 @@ def main() -> None:
     if dry_run:
         log.info("=== DRY RUN MODE: no emails will be sent, Notion not written ===")
 
+    now = datetime.now(UTC)
     try:
-        now = datetime.now(UTC)
         summary = run(settings, dry_run=dry_run, force=getattr(args, "force", False))
         if not dry_run:
             _alert_if_needed(summary, settings, now)
@@ -1052,7 +1088,11 @@ def main() -> None:
     except Exception:
         tb = traceback.format_exc()
         log.critical("Unhandled exception:\n%s", tb)
-        send_maintainer_alert("Unhandled exception", tb)
+        try:
+            _alert_on_crash(settings, now, tb)
+        except Exception as exc:  # throttle state unusable: alert rather than stay silent
+            log.error("Alert throttle failed (%s); sending unthrottled.", exc)
+            send_maintainer_alert("Unhandled exception", tb)
         sys.exit(1)
 
 
