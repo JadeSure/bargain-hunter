@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wy55p2",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wy55p2/clef_flash_plays_snake_in_real_time_on_rtx_5080/",
+  "title": "Clef Flash plays Snake in Real Time on RTX 5080",
+  "author": "/u/bigboyparpa",
+  "body": "The cool part is No training was needed. No hacking of the game state or algorithms needed Just simple instructions about what the snake can see, etc, and it can play in real time. 135ms is the turn limit of Google snake, so basically could be a human playing. Ofc, it could be improved to be a perfect snake player, but thats not the point. This can be used in other games where decisions need to constantly be made. Running Clef Flash (9B model at Q4 on an RTX 5080) submitted by /u/bigboyparpa [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-05T10:33:28Z",
+  "fetched_at": "2026-10-05T22:07:01.609243Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "9378a34046bf0572",
+  "key": "reddit:1wy55p2"
+}

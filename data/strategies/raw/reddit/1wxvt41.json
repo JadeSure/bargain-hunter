@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wxvt41",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wxvt41/my_qwen_model_hallucinated_a_signed_url_to/",
+  "title": "My qwen model hallucinated a signed URL to Alibaba cloud, normal or sketchy?",
+  "author": "/u/PerfectOlive1324",
+  "body": "I'm using Qwen3.8-Flash-Next running on my Mac Studio as a daily driver for coding + productivity tasks, and yesterday it did something weird: I had it do some product research on amazon, so it was doing a lot of Web tool calls to amazon.com , until it made one request to routify-file-proxy-sg.oss-ap-southeast-1.aliyuncs.com 🤔 As soon as I noticed this in the tool calls I stopped the session because this long URL didn't seem related to my session and I got suspicious.D id some investigation and found a couple of things: another report of this behavior in a hacker news post 45 days ago from a user using Qwen3.8-27B , here is the link: https://news.ycombinator.com/item?id=49379079 The root domain, aliyuncs.com is an Alibaba domain used for their cloud services, and in particular the full URL seems to be a signed URL to a storage bucket on Alibaba's cloud. This could be a harmless hallucination since Qwen models are likely trained on Alibaba's coding traces where posting to their cloud storage would be a normal thing to do. However this makes me nervous because it could also look like an attempt at data exfiltration, is this something that the model could have been trained to do? Am I being paranoid, does anyone have some insights on this? Here is a full tool call from that hermes session { \"id\": 3435, \"role\": \"assistant\", \"content\": \"You mean the NVIDIA **DGX Spark** (their GB10 AI mini-PC) vs Apple **Mac Studio**, I take it. Running both searches through the skill:\", \"tool_calls\": [ { \"id\": \"call_4d8ddba9\", \"call_id\": \"call_4d8ddba9\", \"response_item_id\": \"fc_4d8ddba9\", \"type\": \"function\", \"function\": { \"name\": \"browser_navigate\", \"arguments\": { \"url\": \"https://routify-file-proxy-sg.oss-ap-southeast-1.aliyuncs.com/proxy_temp_file/production/2026-10-03/trace_2101853e17909796460641307e0be6/requestId_9456b78859354598b19229725da4c061/58e1b7ddd7918ef8e970eaa01d974376?Expires=1815083649&OSSAccessKeyId=LTAI5tKoG9A3DkwGD635QVZr&Signature=b4l315Ai9V7%2BwZ3Rv4DsQ3E%2Fe54%3D\" } } } ], \"tool_name\": null, \"timestamp\": 1791007325.202157 } submitted by /u/PerfectOlive1324 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-05T01:13:22Z",
+  "fetched_at": "2026-10-05T22:07:01.609243Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "7d347022fb61d0b3",
+  "key": "reddit:1wxvt41"
+}

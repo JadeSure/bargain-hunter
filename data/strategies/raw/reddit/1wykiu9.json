@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wykiu9",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wykiu9/blackwell_consumer_gpu/",
+  "title": "Blackwell + consumer GPU",
+  "author": "/u/Otherwise-Tangelo-52",
+  "body": "My machine isnt that terrible.. but nowhere near what some people run as an aI workstation. I am wondering if i can combine the 2 GPUs. I got a cheap Blackwell 4000 (little bit under MSRP) 24 GB and have an old 3060 12GB .. I was gonna try to get the best model loaded, mainly coding tasks than anything else and work with it relatively safely with a good buffer. any recommendations ? and will tensor split work on this combo? submitted by /u/Otherwise-Tangelo-52 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-05T21:14:48Z",
+  "fetched_at": "2026-10-05T22:07:01.609243Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "1acfcef68ebfa645",
+  "key": "reddit:1wykiu9"
+}
