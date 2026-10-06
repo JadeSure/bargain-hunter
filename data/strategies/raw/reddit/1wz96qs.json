@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wz96qs",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wz96qs/aplomb_1_openweights_53b_decision_model_1m/",
+  "title": "Aplomb 1: open-weights 5.3B decision model, 1M context, text/image/video/audio in one request, #1 among 4B models on the Decision Index",
+  "author": "/u/empiriolabsai",
+  "body": "We released Aplomb 1 today, a 5.3B decision model with open weights. It reads up to 1M tokens of text, JSON, images, video and audio in a single request, and on our API it makes a decision on a 1M-token document in about 3 seconds, at $0.02 per 1M input tokens with free output and ZDR by default. On Decision Index 0.2.1 it scores 44.86 on our run of the official kit, #1 among 4B models on the published board , and it has the top score among models up to 5.3B on 8 of the 38 benchmarks, including MMLU-Pro, GPQA Diamond and BBH. We've submitted it to the board, and the full run is public. It also scores 77.5% on JevBench Hard and averages 75% zero-shot intent accuracy across 51 languages on MASSIVE. As far as we know, it's the only decision model that returns probabilities for tool arguments, reads 1M tokens, or takes text, images, video and audio together. Tool selection gives a probability for every tool and for each enum and boolean argument in one request: on \"Order B-44120 arrived with a cracked screen. I want my money back.\" with three tools, it picks issue_refund at 0.969, reason \"damaged\" at 0.993 and full_refund true at 0.761, so an agent can act on confident calls and hand the rest to a larger model. Any question can also return the probability that the input doesn't contain the answer. The 1M-token speed comes from a long-context mode in our own inference runtime: about 3 seconds instead of about 111 for a full read, and it answered all 525 decisions in our long-context tests correctly. It's currently only available on our API, so the open weights read every token. On the API, a short question takes about 15 ms of model time (around 200ms e2e latency), and the OpenAI, Anthropic and Gemini formats work alongside our Decisions API. Aplomb 1 is built on Qwen3.5-4B with the audio encoder from Qwen3-Omni-30B-A3B-Instruct , both Apache-2.0. We extended the window from 262K to 1M tokens, added our own decision head and trained the model for decisions. Thanks to the Qwen team. Disclosure: the training data included the public train splits of WinoGrande and ContractNLI, two of the 38 index benchmarks. The weights run in bf16 on about 12 GB of GPU memory with the reference script, under the EmpirioLabs Model License, which is free for research, evaluation, personal use and internal use at companies under $1M in annual revenue. Weights: https://huggingface.co/empiriolabsai/aplomb-1 Blog with the full tables: https://empiriolabs.ai/blog/introducing-aplomb-1 Docs: https://docs.empiriolabs.ai/models/aplomb-1 Playground: https://platform.empiriolabs.ai/dashboard/playground?model=aplomb-1 submitted by /u/empiriolabsai [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-06T17:49:23Z",
+  "fetched_at": "2026-10-06T20:28:19.072336Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "d37219edf9305ca7",
+  "key": "reddit:1wz96qs"
+}
