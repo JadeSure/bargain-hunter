@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1wzqyfl",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1wzqyfl/i_retrained_the_dflash_2_drafter_for_ternary/",
+  "title": "I re-trained the DFlash 2 drafter for Ternary Bonsai 2 27B: 2.2x on an L4 (3.2x on code edits with ngram lookup), 1.5x on a Mac, 1.2x in Chrome",
+  "author": "/u/naklitechie",
+  "body": "PrismML's Ternary Bonsai 2 27B fits a 24 GB card or Mac, but decodes at ~30 tok/s on an L4 and ~21 on an M4 Pro. z-lab's DFlash 2 drafter was trained on bf16 Qwen3.8-27B, so it guesses worse on the ternary model. I fine-tuned it on 1.5M tokens of Bonsai 2's own greedy output. Drafter (safetensors + Q4_K_M GGUF): https://huggingface.co/naklitechie/Qwen3.8-27B-DFlash2-ternary-bonsai2 Setup for all three runtimes: https://github.com/NakliTechie/dflash-mlx-bonsai2/blob/main/docs/USAGE.md NVIDIA (PrismML's llama.cpp fork, prism branch): llama-server -m Ternary-Bonsai-2-27B-PQ2_0.gguf -md Qwen3.8-27B-DFlash2-r3-Q4_K_M.gguf \\ --spec-type draft-dflash --spec-draft-n-max 7 --spec-type ngram-mod \\ -ngl 999 -ngld 999 -fa on --jinja One L4, greedy: GSM8K 2.17x, MBPP 2.17x, MATH-500 2.20x, MT-Bench 1.39x. Code edits: 3.15x with ngram-mod stacked (drafter alone 2.46x). Accuracy within 1-2 problems per set. Mac : a fork of bstnxbt/dflash-mlx with an 8-row 2-bit Metal GEMM for the verify step. M4 Pro: 1.5x on raw code completion, 1.3x on chat code, 1.2x on math. One script gives you an OpenAI-compatible server. Browser : a WGSL port inside LocalMind ( https://localmind.naklitechie.com ), on by default for Bonsai 2 27B. 1.18x on code, output identical. Chat and prose are about break-even. Use temperature 0. Credit to z-lab (DFlash 2), PrismML (Bonsai 2, llama.cpp fork) and bstnxbt (dflash-mlx). Numbers are from one L4 and one M4 Pro; results from a 3090, 4090 or other Apple chips are welcome. submitted by /u/naklitechie [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-07T08:13:23Z",
+  "fetched_at": "2026-10-07T20:42:30.783770Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "0c8ad103850f9b2d",
+  "key": "reddit:1wzqyfl"
+}
