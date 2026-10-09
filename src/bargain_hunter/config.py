@@ -111,6 +111,10 @@ class HotConfig(StrictConfigModel):
     # get a second, discount-only candidacy path instead. Vote-based sources are
     # untouched by this path.
     voteless_sources: list[str] = Field(default_factory=lambda: ["camelcamelcamel"])
+    # Sources that never become hot candidates — they reach subscribers only via
+    # watch keywords. For firehose sources whose discounts are vs retailer-claimed
+    # RRPs, the voteless discount path would make every clearance hot.
+    excluded_sources: list[str] = Field(default_factory=list)
     # Minimum discount % for a voteless-source deal to become a hot candidate.
     # None disables the discount candidacy path entirely.
     discount_candidate_min: float | None = 40.0

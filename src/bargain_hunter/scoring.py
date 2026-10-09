@@ -444,6 +444,9 @@ def is_hot_candidate(
     now = now or datetime.now(UTC)
     hot = cfg.hot
 
+    if deal.source in hot.excluded_sources:
+        return False
+
     if is_voteless_source(deal, hot):
         # No vote signal means no score decay either, so age is the only
         # staleness gate on this path. A deal with no parseable posted_at

@@ -36,6 +36,7 @@ SOURCE_LABELS = {
     "vercel": "Vercel Offers",
     "aff": "Frequent Flyer (AU)",
     "pointhacks": "Point Hacks (AU)",
+    "bargainradar": "Bargain Radar (AU)",
 }
 
 _warned_missing_unsubscribe_config = False

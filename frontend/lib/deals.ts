@@ -159,6 +159,11 @@ const LEVEL_RANK: Record<string, number> = { top: 3, great: 2, good: 1 }
 // sync with `enabled: false` entries in settings.yaml.
 const RETIRED_SOURCES = new Set(['smzdm'])
 
+// Sources that reach subscribers only via watch keywords — keep in sync with
+// scoring.hot.excluded_sources in config/settings.yaml. bargainradar is an AU
+// retail markdown firehose; on recency it would fill the AU section by discount.
+const WATCH_ONLY_SOURCES = new Set(['bargainradar'])
+
 const EVENT_EMITTING_SOURCES = new Set(['openrouter', 'bank_rates', 'cn_llm_docs', 'free_llm'])
 
 type ObsRow = Awaited<ReturnType<typeof readObservationsFile>>[number]
@@ -368,6 +373,7 @@ export async function getLiveDeals(): Promise<LiveDeal[]> {
     const source = sourceFromKey(key)
     if (source === 'ozbargain' || source === 'camelcamelcamel') continue
     if (RETIRED_SOURCES.has(source)) continue
+    if (WATCH_ONLY_SOURCES.has(source)) continue
     if (!EVENT_EMITTING_SOURCES.has(source) && !isStillInLatestSourceBatch(key, agg)) continue
     // A card the reader can't act on is worse than a missing one — see
     // resolveUrl().

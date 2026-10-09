@@ -27,6 +27,23 @@ sources:
     enabled: true
     feed_url: "https://au.camelcamelcamel.com/top_drops/feed"
 
+  # Bargain Radar: AU retail price-drop tracker (13 stores, each rescanned
+  # every few minutes). No feed: this is the undocumented JSON API behind its
+  # own SPA, so it can change or vanish without notice — disable here if so.
+  # Measured 2026-10-09: ~784 items/24h at >=30% off, dominated by whole-brand
+  # clearances and retailer-claimed RRPs. Watch-only on purpose (see
+  # scoring.hot.excluded_sources). Amazon excluded: CamelCamelCamel covers it
+  # and its RRPs are the noisiest. Store names must match /api/stores exactly.
+  bargainradar:
+    enabled: true
+    poll_interval_minutes: 30
+    lookback_minutes: 120     # 4x poll overlap: a late/failed run loses nothing; dedup absorbs repeats
+    min_discount_percent: 20
+    max_pages: 3
+    stores: ["jb hi-fi", "the good guys", "bing lee", "big w", "target", "myer",
+             "david jones", "bunnings", "officeworks", "costco", "total tools",
+             "sydney tools"]
+
   # --- Global digital deals. All voteless (see scoring.hot.voteless_sources)
   # and reach subscribers via watch keywords (scoring.watch.trusted_sources).
   dealnews:
@@ -330,7 +347,10 @@ scoring:
     voteless_sources: ["camelcamelcamel", "dealnews", "slickdeals", "v2ex",
                         "openrouter", "bank_rates", "iknowthepilot", "cn_llm_docs",
                         "vercel", "appsumo", "aff", "pointhacks",
-                        "smzdm", "free_llm"]
+                        "smzdm", "free_llm", "bargainradar"]
+    # Never enter the hot ladder; reach subscribers via watch keywords only.
+    # Keep in sync with WATCH_ONLY_SOURCES in frontend/lib/deals.ts.
+    excluded_sources: ["bargainradar"]
     # Age cap (hours since posted_at) for the voteless discount-only candidacy
     # path — the only staleness gate on it, since there's no vote velocity to
     # decay a score. Without this, an old high-discount item from a global

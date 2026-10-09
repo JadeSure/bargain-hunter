@@ -44,6 +44,7 @@ from .scoring import (
 )
 from .sources.appsumo import AppSumoSource
 from .sources.bank_rates import BankRatesSource
+from .sources.bargainradar import BargainRadarSource
 from .sources.camelcamelcamel import CamelCamelCamelSource
 from .sources.cn_llm_docs import CnLlmDocsSource
 from .sources.feed_deals import FeedDealsSource
@@ -334,6 +335,26 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
             state.mark_fetched("appsumo", now)
         except Exception as exc:
             msg = f"appsumo fetch failed: {exc}"
+            log.error(msg)
+            summary["source_errors"].append(msg)
+
+    radar_cfg = settings.sources.get("bargainradar")
+    if _fetch_gate(
+        state, "bargainradar", radar_cfg, getattr(radar_cfg, "poll_interval_minutes", 30), now
+    ):
+        try:
+            src = BargainRadarSource(
+                stores=list(getattr(radar_cfg, "stores", [])),
+                min_discount_percent=getattr(radar_cfg, "min_discount_percent", 20.0),
+                lookback_minutes=getattr(radar_cfg, "lookback_minutes", 120),
+                max_pages=getattr(radar_cfg, "max_pages", 3),
+            )
+            raw_deals = src.fetch()
+            log.info("bargainradar: fetched %d deals.", len(raw_deals))
+            all_deals.extend(raw_deals)
+            state.mark_fetched("bargainradar", now)
+        except Exception as exc:
+            msg = f"bargainradar fetch failed: {exc}"
             log.error(msg)
             summary["source_errors"].append(msg)
 
