@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x1lclx",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1x1lclx/qwenimage21turbo_released/",
+  "title": "Qwen-Image-2.1-Turbo released!",
+  "author": "/u/ResearchCrafty1804",
+  "body": "Qwen-Image-2.1-Turbo, create and edit images in just 8 denoising steps! Open weights now available! Built on Qwen-Image-2.1, Turbo is an accelerated checkpoint on the same 7B visual generation architecture. Fewer steps does not mean lower quality: it still generates strong 2K images from text, and supports continued creation through natural-language edits, from adding accessories to changing a scene. Start directly with Diffusers: load QwenImage21Pipeline and the checkpoint’s recommended 8-step sampling schedule is ready to go. Hugging Face: https://huggingface.co/Qwen/Qwen-Image-2.1-Turbo submitted by /u/ResearchCrafty1804 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-09T13:27:18Z",
+  "fetched_at": "2026-10-09T20:13:54.524712Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "a55e3881a9dec164",
+  "key": "reddit:1x1lclx"
+}
