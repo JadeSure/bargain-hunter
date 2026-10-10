@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x2nn4b",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1x2nn4b/benefits_of_using_bigger_models_than_qwen_38/",
+  "title": "Benefits of using bigger models than Qwen 3.8 flash next?",
+  "author": "/u/MasterNomie",
+  "body": "I recently started using local LLM for mostly coding tasks for my personal projects. I also have found local models responding much better for topics such as health, fitness, ergonomics etc. compared to the quality I had observed with ChatGPT Go (which is still a basic level) and free models from Claude and Gemini. Qwen 3.8 27b was the first model I tried on Ninfer at NVFP4 and then shifted to Flash next after seeing issues with 27b such as not willing to yield to instructions set in AGENTS.md or agent skills. Although 27b was generally good on my personal projects, it was clear that the breadth of analysis, foresight was bit lacking when I compared with flash next. I am currently happy with flash next but I am still exploring. I have 5090 so moving past flash next seems to be the hurdle. Before I make the financial blunder, I need to understand more. My subjective questions to you are: Have you noticed considerable better quality by moving to bigger models? Is the model upgrade worth it while sacrificing the speed? Do you get more work done in overall time spent because model is smarter from get go and requires very little hand holding compared to smaller models? Have you ever moved up the model, regretted, and moved back to smaller for any reason? Help out an LLM beginner. Thanks! submitted by /u/MasterNomie [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-10T19:21:28Z",
+  "fetched_at": "2026-10-10T19:26:11.647024Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "669594ddfdb909cf",
+  "key": "reddit:1x2nn4b"
+}

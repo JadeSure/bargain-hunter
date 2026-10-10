@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x2bt72",
+  "url": "https://www.reddit.com/r/AusFinance/comments/1x2bt72/the_flybuys_4c_fuel_voucher_activation/",
+  "title": "The Flybuys 4c fuel voucher activation requirement is deliberate breakage and consumer friction",
+  "author": "/u/No-Speech4554",
+  "body": "Has anyone else noticed how anti consumer the current Flybuys fuel docket process has become? Here is the context: even if you have not opted into digital receipts and get a physical paper receipt at the Coles register, scanning your Flybuys card automatically strips the 4c/L fuel barcode off your printed receipt and converts it into a digital offer in the app. Instead of that offer automatically applying when you scan your Flybuys card at Shell / Reddy Express, Flybuys requires you to open their app and manually tap Activate before paying at the pump. From a consumer finance and mechanics perspective, this setup is completely flawed: 1. Deliberate Breakage: In loyalty/retail models, adding unnecessary friction lowers redemption rates. By forcing a manual app activation step, Flybuys relies on breakage. Shoppers who spent the $30+ at Coles to earn the perk forget to open the app beforehand and lose the discount at the pump. 2. Safety Rule Contradiction: Service stations strictly prohibit mobile phone usage on the forecourt. Requiring users to pull out a phone and navigate an app right as they pull up to refuel directly conflicts with petrol station safety regulations. 3. Unplanned Consumption: Petrol is not a planned grocery shop. Most drivers fill up when their low fuel light comes on or when passing a station. Expecting consumers to pre activate a digital voucher hours or days in advance is deliberately out of touch with real world behavior. If you spent the qualifying amount at Coles and scanned your card, the 4c discount should either print directly on the paper receipt you received or auto apply at the console register when you scan your Flybuys card. submitted by /u/No-Speech4554 [link] [comments]",
+  "board": "r/AusFinance",
+  "created_at": "2026-10-10T10:20:09Z",
+  "fetched_at": "2026-10-10T19:26:11.647024Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 2,
+  "content_hash": "2aaaa67423449680",
+  "key": "reddit:1x2bt72"
+}
