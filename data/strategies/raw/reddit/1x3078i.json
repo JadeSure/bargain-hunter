@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x3078i",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1x3078i/converting_dense_models_into_mixtureofexperts/",
+  "title": "Converting dense models into Mixture-of-Experts",
+  "author": "/u/Bayliner1980",
+  "body": "For the past few weeks I've been trying out converting existing dense models to sparse Mixture-of-Experts models, with no pretraining from scratch. The Idea If you can turn a dense model into an MoE that only runs part of its MLP per token, you get a model that's cheaper per token for roughly the same knowledge. Bigger labs do this kind of \"upcycling\" with huge compute budgets. I wanted to see how I could get with my RTX 4060 (8gb). Conversions I have converted two models so far, Qwen/Qwen2.5-0.5B and HuggingFaceTB/SmolLM2-360M (they're purposefully small since my pc can't handle anything else). The conversions can be found here bayliner1980/Qwen2.5-0.5B-MoE-A0.3B and here bayliner1980/SmolLM2-360M-MoE-A0.2B . Both models have 32 experts with top-8, plus a shared expert. Layers that were hardest to convert (the final layer, plus SmolLM2's layer 3) were replaced with they're original dense layers. This does cause a slight increase in MLP compute but I saw it as worth it. bayliner1980/Qwen2.5-0.5B-MoE-A0.3B has one dense at layer 23 and bayliner1980/SmolLM2-360M-MoE-A0.2B has two at layer 3 and layer 31. Both models were exported to Qwen2-MoE format. Evaluations bayliner1980/Qwen2.5-0.5B-MoE-A0.3B MLP Compute per token: ~40% of original - WikiText-2 ppl C4 ppl Qwen2.5-0.5B (dense) 14.66 21.29 Qwen2.5-0.5B-A0.3B (MoE) 19.20 28.97 - HellaSwag (norm) ARC-Easy (acc) ARC-Challenge (norm) WinoGrande OpenBookQA (norm) Mean acc_norm Dense 0.497 0.646 0.321 0.569 0.354 0.467 Converted MoE 0.440 0.555 0.265 0.519 0.308 0.408 bayliner1980/SmolLM2-360M-MoE-A0.2B MLP Compute per token: ~44% of original - WikiText-2 ppl C4 ppl Dense 12.94 18.09 Converted MoE 19.11 26.50 - HellaSwag (norm) ARC-Easy (acc) ARC-Challenge (norm) WinoGrande OpenBookQA (norm) Mean acc_norm Dense 0.525 0.702 0.386 0.590 0.374 0.514 Converted MoE 0.446 0.579 0.290 0.506 0.316 0.417 Limitations There will most likely always be a quality gap. Since the model is at most using 50% of its original MLP compute it can't compete with the original. At this scale the performance improvement is next to nothing since these models are already tiny. These models were chosen since they're small enough for me to actually work with on my hardware. What's next Converting larger models, longer training, and testing finer expert layouts. Larger models need more compute than my card can give, so if you find this interesting there's a Ko-fi on the model pages, and anything new will be released openly. This is mostly just an experiment that I found interesting but I'd still love feedback. Which model would you want to see converted next? submitted by /u/Bayliner1980 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-11T05:45:52Z",
+  "fetched_at": "2026-10-11T19:38:41.447554Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "6ab2f3718a690b1f",
+  "key": "reddit:1x3078i"
+}
