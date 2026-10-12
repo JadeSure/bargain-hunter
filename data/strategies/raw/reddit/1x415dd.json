@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x415dd",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1x415dd/llc_lightweight_open_webui_alt_now_with/",
+  "title": "LLC: lightweight Open WebUI alt now with Agents+MCP+RAG+Image Editing",
+  "author": "/u/PromptInjection_",
+  "body": "Quick context: LocalLightChat (LLC) is a chat frontend for local LLMs. Download it, run it, that's it. No installation (unless you want to), no dependencies, and it runs on pretty much anything, including ancient hardware. I originally built it because Open WebUI kept feeling heavier than the models I was running. One of the main criticisms I got from you was the lack of Agents, MCP and RAG. Well, that's changed now. All three are integrated. I put a lot of effort into making the agentic system as token-efficient as possible. Thanks to several optimizations, it can work smoothly with large files even when using smaller context windows. There's also an integrated RAG system, which works great with embedding models like Qwen3 (setup instructions included). And a couple of extras: A standalone alternative to NPX Supergateway. Image editing through ComfyUI, with automatic binding detection for all major image models. All of this without turning LLC into the heavyweight application I originally wanted to get away from. I'd love to hear what you think, especially if you've tried earlier versions! Download: https://www.locallightai.com/llc GitHub: https://github.com/srware-net/LocalLightChat submitted by /u/PromptInjection_ [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-12T12:57:20Z",
+  "fetched_at": "2026-10-12T22:33:05.945093Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "b60cc6d1f4b3c79a",
+  "key": "reddit:1x415dd"
+}
