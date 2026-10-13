@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x4sit6",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1x4sit6/based_on_advice_from_localllama_implemented_a_n2/",
+  "title": "Based on advice from LocalLLama implemented a n+2 lookahead prediction for ssd streaming Qwen Flash Next - and it worked!",
+  "author": "/u/turtleninja99",
+  "body": "My project is optimising qwen flash next on Mac Mini m5 64gb through SSD streaming. I recently asked LocalLLama for guidance on how to optimise token output. Today a popular method to do this is a lookahead guesser which fetches experts one layer ahead of the current layer. One popular suggestion was building a prediction model to start loading experts two layers ahead. This netted me +8% on chat and +4.2% on code. The way the various optimisations stack on top of each other this may actually net alot more on a base vanilla setup. https://github.com/skeggsguy/Flash-next-ssd Pretty cool! Thanks reddit LocalLLama! I’ll go find the og post to link now. Edit: Kudos to sdroege_ for og suggestion! submitted by /u/turtleninja99 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-13T09:57:21Z",
+  "fetched_at": "2026-10-13T20:46:32.714391Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "2b7a706446b22097",
+  "key": "reddit:1x4sit6"
+}
