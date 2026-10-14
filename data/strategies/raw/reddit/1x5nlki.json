@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x5nlki",
+  "url": "https://www.reddit.com/r/AusFinance/comments/1x5nlki/bait_and_switch_or_am_i_a_stupid_powershop_switch/",
+  "title": "Bait and switch or am I a stupid? - Powershop Switch Saver plan",
+  "author": "/u/mrk240",
+  "body": "Recently signed up with Powershop and thought the Switch Saver plan would suit us best based the fact we have solar+batteries. Did research via Energy Made Easy and based my choice on the time of use table provided. Also switched providers using the method provided. The Powershop app has been a pile of shit since signing up but they seemed to have ironed out the issues this week so I thought I'd double check what is what and I found the time of use charges did not match to what I signed up against. I checked the Switch Saver plan directly via the Powershop website and the link it takes you to on the Energy Made Easy site has completely different information vs just going to Energy Made Easy and doing the comparison. What I thought I signed up to - Plan ID: PSH1147906MRE3. Note the 13.01c/kWh shoulder rate. https://www.energymadeeasy.gov.au/plan?id=PSH1147906MRE3&postcode=2165&pricingPeriod=yearly&withDiscounts=true&benchmarkUsage=medium What we're actually on - Plan ID: PSH1147913MRE3 Note the flat rate of 35.52c/kWh. https://www.energymadeeasy.gov.au/plan?id=PSH1147913MRE&utm_source=Powershop&utm_campaign=bpi-retailer&utm_medium=retailer&postcode=2165 Same plan, different IDs. I looked over everything and I cant work out what happened. submitted by /u/mrk240 [link] [comments]",
+  "board": "r/AusFinance",
+  "created_at": "2026-10-14T10:22:40Z",
+  "fetched_at": "2026-10-14T19:35:27.345417Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "aeb0d0eacd91c54e",
+  "key": "reddit:1x5nlki"
+}
