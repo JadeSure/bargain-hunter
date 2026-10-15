@@ -1,0 +1,17 @@
+{
+  "source": "ozbargain_comments",
+  "post_id": "979134",
+  "url": "https://www.ozbargain.com.au/node/979134",
+  "title": "ASUS RT-BE92U BE9700 Tri-Band Wi-Fi 7 Router (EU Stock) $295.31 Delivered @ Amazon DE via AU",
+  "author": null,
+  "body": "Deal: ASUS RT-BE92U BE9700 Tri-Band Wi-Fi 7 Router (EU Stock) $295.31 Delivered @ Amazon DE via AU\n\n[sn809] Does the caveat about EU versions having lower antenna range still apply>?\n[Tyler Kwok] was about to ask. most likely still the same, best avoid if so.\n[sn809] Google states yes but waiting on a local expert lol\n[Bappy] Yep it has been discussed previously…\nCopied from an old post:\nEU routers follow EU regulations and have weaker WiFi signals out of the box. This restriction is often applied at the hardware level, meaning that changing the country code to AU likely won't improve signal strength.\nIn contrast, Australia has some of the most relaxed regulations; therefore, routers targeted at the AU market often have stronger WiFi. However, this isn't always the case, as some models are sold globally and do not use specialized chips for the Australian market.\n[Tyler Kwok] eu is always as amazing as their plastic bottle with attached cap.\n[Wiadro] Which ones have Aussie specialized chips?\n[McFly] https://www.asus.com/au/networking-iot-servers/wifi-7/all-se… is a bit cheaper but only dual channel - HP stands for high power.\nTP-Link (Archer) and Synology also have but cost more.\n[alfrsr] It’s really not about the chips,\nDifferent countries and regions have different restrictions on what channels/frequencies can be used. The router will either be flashed with a firmware or will be hardcoded in silicon for a specific region.\nJust buy a router for the region you live in.\nI really wish OZB would just block all these overseas router posts. They’re not bargains.\n[sn809] Can 2 of these be used as a mesh and support MLO?\nEdit its a lot of money for no warranty\n[hellofan] Yes. I've got two at home. One from EU and another from US. Never had a problem with mesh and MLO.\n[R4] I've just installed a TPLink BE550 Pro with a couple of BE550s as satellites on an Easymesh setup. It's working brilliantly although was a bit tricky to set up. With the recent Amazon Prime day and OW price match, I bought them for about $312 each - apart from the pro which was a bit more.\n[batrarobin] Don't risk it, many overseas routers are lower powered as compared to AU.",
+  "board": "OzBargain Deals (comments)",
+  "created_at": null,
+  "fetched_at": "2026-10-15T19:23:55.425199Z",
+  "score": null,
+  "num_comments": 12,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "f64c67a66d0cd6d0",
+  "key": "ozbargain_comments:979134"
+}

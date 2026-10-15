@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x6o31q",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1x6o31q/nvidianvidianemotron35bolt74ba9b24gb_hugging_face/",
+  "title": "nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB · Hugging Face",
+  "author": "/u/jacek2023",
+  "body": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB-GGUF https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB-LiLiCorr-GGUF NVIDIA Nemotron 3.5 Bolt 74B-A9B 24GB is a vision-language model (VLM) designed to run everyday agentic tasks locally, using a native 2-bit quantization to fit in 24GB of memory and run alongside other applications. It optimizes intelligence and speed per GB. It aims to achieve the optimal balance between speed and intelligence, being faster than most popular dense models while smarter than most popular MoE models with a similar memory footprint. This model is ready for commercial or non‑commercial use. Model Summary Total Parameters 74B (9B active) Architecture Mamba-2–Transformer hybrid LatentMoE with a C-RADIO v4-H vision encoder Precision IQ2 (2-bit quantization with quantization-aware training) Context Length Up to 256K tokens Inputs / Outputs Text, images, and video / text Deployment 24GB packed model; vLLM on NVIDIA Ampere (A100), Hopper (H100-80GB), or Blackwell Speculative Decoding LiLiCorr drafter via DFlash; 7 speculative tokens in the companion Bolt vLLM recipes Reasoning Mode Chat-template controls ( enable_thinking=True/False ), inherited from the Super 3.5 VL client Recommended Sampling Text: temperature 1.0, top_p 0.95 (inherited from the Super 3.5 VL client) Best For Running everyday agentic tasks locally License OpenMDW-1.1 Model Overview Model Developer: NVIDIA Corporation Model Dates: December 2025 - May 2026 Data Freshness: The post-training data has a cutoff date of May 2026. What is Nemotron? NVIDIA Nemotron™ is a family of open models with open weights, training data, and recipes, delivering leading efficiency and accuracy for building specialized AI agents.NVIDIA Nemotron 3.5 Bolt 74B-A9B 24GB is a vision-language model (VLM) designed to run everyday agentic tasks locally, using a native 2-bit quantization to fit in 24GB of memory and run alongside other applications. It optimizes intelligence and speed per GB. It aims to achieve the optimal balance between speed and intelligence, being faster than most popular dense models while smarter than most popular MoE models with a similar memory footprint. This model is ready for commercial or non‑commercial use. bolt! submitted by /u/jacek2023 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-15T15:04:12Z",
+  "fetched_at": "2026-10-15T19:18:19.861248Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "45a386e5f42a1ea1",
+  "key": "reddit:1x6o31q"
+}
