@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x7msmj",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1x7msmj/tyger_openweights_streaming_asr_fullduplex/",
+  "title": "Tyger: open-weights streaming ASR + full-duplex turn-control in one model",
+  "author": "/u/ylankgz",
+  "body": "Hi r/LocalLLaMA , we're releasing Tyger, a small model that handles full-duplex turn-control for voice agents. What it is Base: NVIDIA Nemotron 3.5 ASR Streaming 0.6B + 14M causal GRU on top. Every 80 ms, with no lookahead, it picks one of three states: - answer : the user finished their turn - stop : the user cut in, so the agent stops talking - chime in : the agent says “mm-hm”, “oh, really” and keeps listening It hears both the mic and the agent's own playback, so the agent doesn't mistake its own echo for the user. tyger-s2s (Apache-2.0) A full voice agent: Tuger + Gemma 4 E4B FP8 + VoxCPM2. - Tool calls - Up to 4 concurrent conversations - ~0.7 s replies on an RTX 5090 [measured from end of user speech to first audio] - Optional hosted \"expert\" [openai], off by default. With it off, everything runs locally and no audio or text leaves your machine. Limitations - Tyger itself is small, but the tyger-s2s stack needs 28 GB VRAM. Tested on 5090, otger GPUs are untested; 3090/4090 reports welcome. - FP32 only, quantization untested - Offline benchmarks only so far Links - Model: https://huggingface.co/nineninesix/tyger - Agent: https://github.com/nineninesix-ai/tyger-s2s - Demo (free sign-up): https://www.nineninesix.ai/ Feedback welcome, especially on where turn-taking still feels off. submitted by /u/ylankgz [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-16T17:42:26Z",
+  "fetched_at": "2026-10-16T18:54:43.888957Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "c5ca52b2707768d8",
+  "key": "reddit:1x7msmj"
+}
