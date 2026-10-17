@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x80dbq",
+  "url": "https://www.reddit.com/r/AusFinance/comments/1x80dbq/cgt_rules_post_1727_timing_of_share_purchase_and/",
+  "title": "CGT rules post 1/7/27 - timing of share purchase and selling",
+  "author": "/u/alchemist3679",
+  "body": "As we all know, capital gains tax is replaced with cost-base indexation and a 30% minimum tax rate on real capital gains. CPI quarterly data is available on 31/3, 30/6, 30/9 and 31/12. Say for example I decided to invest $10000 in shares for a period of 6 months only. Would it make more sense to purchase shares on 30/3 as opposed to 1/4? And sell them on 1/10 instead of 29/9? The more CPI quarterly dates the shares fit under then the more the cost base will be indexed to inflation, thus decreasing the capital gains tax. Say if CPI increased by 1% on 31/3, 1% on 30/6 and 1% on 30/9, then the cost base will increase by 10000x 1.01 = $10100 for 31/3, then 10100 x 1.01 = $10201 for 30/6, then 10201x1.01 = $10303.01 for 30/9. Whereas if the shares were purchased on 1/4 and sold on 29/9 then only the 30/6 CPI data of 1% would apply to the cost base. Hence cost base only $10100. As a result, we have a $203.01 difference in the cost base by purchasing and selling shares only a few days apart from the CPI quarterly releases. I also see an added benefit for those in the lower tax brackets to buy shares before CPI quarterly releases as shares with quarterly distributions would provide distributions at their tax rate and the price of the shares would also drop. Am I onto something? It's a small difference but it would work for those who like to optimise? My rationale is based on a debt recycling strategy where I sell shares for a profit to then debt recycle further (have a net capital loss carried forward to offset). However as I will be splitting the loans at regular intervals, it is worth it for me consider when is the best time to buy and sell based on the new CGT rules. Thanks! submitted by /u/alchemist3679 [link] [comments]",
+  "board": "r/AusFinance",
+  "created_at": "2026-10-17T03:52:31Z",
+  "fetched_at": "2026-10-17T17:54:26.748003Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "b2be6a9b2c0734cf",
+  "key": "reddit:1x80dbq"
+}

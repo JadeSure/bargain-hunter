@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x8e813",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1x8e813/finetuned_minicpm5_1b_testing/",
+  "title": "FineTuned MiniCPM5 1B Testing",
+  "author": "/u/XtrComSu",
+  "body": "Hey everyone, Releasing v1 of XT-Luna 1B a fine-tuned MiniCPM5 1B focused on agentic and coding workloads. Tested against the official MiniCPM5 1B SFT and Qwen 3.5 4B reasoning benchmarks and comparison screenshots are in the model card. Still actively working on it, so feedback and bug reports are very welcome. that's partly why I'm releasing early. Recommend running with thinking mode enabled. https://huggingface.co/XtrCom/XT-Luna-1B submitted by /u/XtrComSu [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-17T16:16:36Z",
+  "fetched_at": "2026-10-17T17:54:26.748003Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "7fa2291fd889a415",
+  "key": "reddit:1x8e813"
+}

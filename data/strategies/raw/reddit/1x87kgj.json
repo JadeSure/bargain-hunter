@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x87kgj",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1x87kgj/model_add_kolibri1_alephalpha_support_by_riteme/",
+  "title": "model : add Kolibri-1 (Aleph-Alpha) support by riteme · Pull Request #30673 · ggml-org/llama.cpp",
+  "author": "/u/jacek2023",
+  "body": "European 78B A3.4B model is now supported by llama.cpp, I am waiting for some GGUFs https://huggingface.co/Aleph-Alpha/Kolibri-1 Kolibri is Aleph Alpha's mixture-of-experts (MoE) reasoning model, with a focus on German and English. The model supports an explicit reasoning mode and tool calling. It is optimized for long-context and inference efficiency. Model overview Model Kolibri 1 Model Provider Aleph Alpha GmbH Model Developer Aleph Alpha Research GmbH Architecture Mixture-of-Experts Total parameters 78B ( 78,103,074,560 ) Active parameters / token 3.46B ( 3,457,573,120 ) Languages German, English Context length 1,048,576 tokens ; we recommend ≤262,144 tokens for serving efficiency and complex tasks Precision float8_e4m3fn weights in 128×128 blocks with dynamically quantized activations, evaluated with an FP8 KV cache; embeddings, LM head, norms and MoE router in bfloat16 Reasoning mode Yes Tool calling Yes License Apache 2.0 Acceptable Use Policy n/a, cf. Responsible Use Knowledge cutoff EN: June 18, 2026, DE: June 18, 2026 This only affects implicit knowledge, the model may use more recent information through tool use. Hardware requirements Model memory footprint: ~78 GB (FP8 weights). Minimum: 2× A100 80 GB, 2× H100 SXM5, 1× H200, 1× B200 or 1× B300. Recommended: 2× H100 SXM5, 2× H200, 1× B200 or 1× B300. Best for Multi-step reasoning, retrieval-augmented generation, agentic tool calling, coding, German- and English-language assistant Release Date 3rd of October 2026 Code of Practice Aleph Alpha is a signatory of the EU GPAI Code of Practice, see https://digital-strategy.ec.europa.eu/en/policies/contents-code-gpai . Training Data Pre-training: Trained on 20T tokens of a filtered, bilingual corpus (~62.5% English, ~23.9% German, ~13.6% code) combining curated web data, synthetic rephrasings and translations, and high-quality sources. Additionally trained on 3.44T in mid-training and 201B for long-context extension.Post-training: The SFT mix contained filtered, bilingual data that combines open-source datasets and synthetically generated data. For RL we used a broad mix of environments that cover reasoning, agentic, and instruction following use-cases. Training method We trained a transformer 50-layer MoE model with 4:1 SWA:GQA attention, using Muon and Exact Quantile Balancing on 384 experts per layer, with 1 shared and 6 routed. Computing Resources Pre-training (based on actual measurements), excluding mid-training and long-context : Hardware: 768 NVIDIA B200 (96 HGX 8xB200 nodes); Parallelism: EP8 FSDP16 DP6; Time: 21 days (511h, 392k GPUh) Mid-training : 5 days, 90k GPUh (same setup as above) Long-Context : 13h, 10k GPUh (same setup as above except parallelism: FSDP128 DP6)FLOPS: 6.4e23 Tech Report https://aleph-alpha.com/downloads/tech-report.pdf submitted by /u/jacek2023 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-17T11:07:59Z",
+  "fetched_at": "2026-10-17T17:54:26.748003Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "b693cbf2ecc98e01",
+  "key": "reddit:1x87kgj"
+}

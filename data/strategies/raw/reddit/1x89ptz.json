@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x89ptz",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1x89ptz/qwen_27b_iq4_xs_q8q4_kv_at_full_262k_context_on_a/",
+  "title": "Qwen 27B (IQ4_XS, Q8/Q4 KV) at full 262k context on a 16GB RX 9070 XT: 80+ t/s decode with Adaptive KV Streaming",
+  "author": "/u/bottlestreet3d",
+  "body": "I have been working on implementing adaptive KV streaming and RDNA 4 / ROCm optimizations for llama.cpp to enable running Qwen3.8-27B (IQ4_XS weights, Q8_0/Q4_0 KV cache) with its full 262,144-token context window on a single 16 GB RX 9070 XT GPU at 80+ t/s decode. Qwen 27B IQ4_XS is ~14.3 GB, leaving insufficient VRAM headroom on a 16 GB card. The ASCII-condensed version trims non-ASCII vocabulary down to ~13.6 GB (12.6 GiB), leaving ~3.4 GiB of usable VRAM. Even with a Q8_0/Q4_0 KV cache, 262k context needs ~7.4 GiB for KV tensors alone, triggering OOM past ~65k tokens on llama.cpp. I came across RaymondHuang210129/llama.cpp-adaptive-kv-streaming , which introduced adaptive KV streaming for NVIDIA/CUDA but did not support AMD/ROCm. I ported this to ROCm/HIP, retaining the full 262k cache in host RAM (~7.4 GB) while asynchronously streaming bounded working sets (~450 MiB prefill, ~2,100 MiB decode) over PCIe SDMA alongside compute. I also incorporated kernel optimizations from stew675/llama-cpp-rdna-boosts (4-row multi-column mmvq, 16-byte vectorized loads for Q4_K/Q5_K, SwiGLU fusions, and single-queue async HIP graphs). Further improvements: Sibling activation reuse : Reuses quantized activations across parallel projections (gate/up and Q/K/V) to avoid redundant memory passes. In-register fused residual add + RMSNorm : Retains activations in VGPRs between passes and directly writes quantized q8_1 copies for mmvq. Multi-column SwiGLU & GDN fusions : Extends fused Gate/Up + SwiGLU to 4-column verify batches in mmvq and fuses recurrent linear-attention gates for hybrid layers. Online Log-Sum-Exp prefill & pipelined prefetch : Computes chunked prefill across streamed pages via online LSE accumulation and overlaps layer L+1 PCIe transfers with layer L compute. Persistent graph arenas : Reuses arenas across prefill/decode phase switches to eliminate teardown overhead. Stream-optimized speculative decoding : Merged single-head MTP verify catch-up into the first draft step (cutting MTP forward passes in half and preventing draft KV pollution), dedicated arenas for verify graphs to eliminate rebuild bubbles, extended paged decode attention to verify batches, and stacked opportunistic n-grams with probabilistic rejection sampling. Benchmark performance: Decode : 36.5 t/s (1k) -> 32.1 t/s (65k) -> 27.0 t/s (131k) -> 9.5 t/s (262k). Decode (with MTP) : 71.8-86.5 t/s (1k-4k) -> 72.9 t/s (65k) -> 78.6 t/s (131k) -> 31.1 t/s (262k). Prefill : 1368.4 t/s (1k) -> 1120.3 t/s (65k) -> 863.0 t/s (131k) -> 585.8 t/s (262k). Operating the 9070 XT at a 231W limit (-24% relative to 304W default TDP) incurs only a 3.6% prefill latency penalty and delivers virtually identical decode throughput, saving power and keeping the card quiet during long runs. Take a look at the repository for the full details: https://github.com/achyudh/llama.cpp/tree/feature/adaptive-kv-stream-rocm submitted by /u/bottlestreet3d [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-17T13:01:59Z",
+  "fetched_at": "2026-10-17T17:54:26.748003Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "38b8cb6b0023bc3c",
+  "key": "reddit:1x89ptz"
+}
