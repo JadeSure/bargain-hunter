@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x8wmbp",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1x8wmbp/told_qwen38_27b_to_hack_my_router/",
+  "title": "told Qwen3.8 27b to hack my router",
+  "author": "/u/chocofoxy",
+  "body": "i wanted to change my router firmware to openwrt and so i told claude to do it but of course the guard blocked me even opus 4.8 didn't want to do it , so i launched my Qwen3.8 27b and told it the same thing i gave it the link to the giude page and it did change the firmware perfectly the thing is this is the normal model it's not ablitreated, do you think that cyber will be guarded in future qwen models ? PS: even tho this is not the point it didn't do a simple flash it changed the firmware from xioami to openwrt not throught upload bin it did exploit a method in the CGI that get an icon to pass a payload that enable ssh from there it SSHed the router and flashed it and it's not a 0 day discovery thing i gave it the guide from openwrt own website https://openwrt.org/toh/xiaomi/ax3000t , the topic here is AI safeguards submitted by /u/chocofoxy [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-18T07:02:09Z",
+  "fetched_at": "2026-10-18T18:15:06.254795Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "c391216534b0d979",
+  "key": "reddit:1x8wmbp"
+}
