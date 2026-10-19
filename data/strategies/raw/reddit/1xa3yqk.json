@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xa3yqk",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xa3yqk/i_checked_bitnet_and_bonsai_on_cpu_against/",
+  "title": "I checked BitNet and Bonsai on CPU against references: bitnet.cpp main still gives wrong output, Bonsai 1.7B is correct wherever it loads, and ik_llama.cpp with -rtr is usually fastest",
+  "author": "/u/matheus-c-feitosa",
+  "body": "I wanted to know which low-bit (1-bit / ternary / 2-bit) GGUF files actually give correct output on CPU, and how fast they run, so I compared each runtime against a reference instead of judging by how the text looks. Machines: an ARM server (Neoverse-N1) and x86 VMs with AVX2 (Intel Xeon, AMD EPYC). BitNet b1.58 2B4T bitnet.cpp main ( 0b341e5 ) is wrong on CPU. On x86 the text looks fine, but perplexity is ~6× the HF transformers reference on the same tokens. On ARM it prints ???? . The causes were already reported (#588: SiLU where the model uses ReLU²; #470 for ARM). What I added is a test of each proposed fix against the reference. What works is the activation fix from #588 (a one-line change, or #605 plus a runtime key), plus isHuangXin/llama.cpp#2 on ARM. #642, in its third version (Oct 15), bundles the one-line change with the same ARM kernel and is correct on ARM and x86. Without patches, today: ik_llama.cpp, after converting the file once to iq2_bn_r4 (correct on both CPUs). Bonsai / Ternary-Bonsai (PrismML) The 1.7B files give correct output wherever they load, in llama.cpp, the Prism fork and ik_llama.cpp (KL against an exact F16 reference, on ARM and x86). For the 27B, Prism and ik_llama.cpp agree with each other. Speed depends on file × runtime × CPU, not on file size. Ternary-Bonsai 1.7B on x86, prompt processing: 71 t/s for PQ2_0 in ik_llama.cpp with -rtr , 28 in Prism, 2 for Q2_0 g64 in Prism, which has no SIMD kernel for it yet. llama.cpp merged an AVX2 kernel on Oct 13 (~6× faster), and ik_llama.cpp added Q2_0 the same day (~15× faster than Prism, correct on ARM and x86). -rtr is off by default, and without it ik_llama.cpp is often the slowest. 27B: the smaller PTQ1_0 file is ~4.4× slower than PQ2_0 for prompt processing in Prism on AVX2. The Q2_0 file marked \"recommended\" on the Ternary-Bonsai-1.7B card doesn't load in any of the three runtimes. Use PQ2_0 (Prism, ik_llama.cpp) or Q2_0_g64 (llama.cpp, Prism, and ik_llama.cpp since Oct 13). Every number has the runtime commit, the file sha256 and the flags, and one script reruns the main measurements. A notebook runs a subset on a free Kaggle or Colab VM (~30 min to 1 h) and compares it with the published numbers. I only have Neoverse-N1 and AVX2 x86. Results from AVX-512 / Zen 4, Graviton 3/4 or Raspberry Pi 5 would fill the biggest gaps; Apple Silicon too, but the scripts are Linux-only so far. Report: https://github.com/matheus-c-feitosa/lowbit-atlas Corrections welcome. I already fixed one: an earlier \"~6× slower\" for the 27B PTQ1_0 file came from rough timings; llama-bench says 4.4×. (English isn't my first language. I used Claude Code to help with the analysis and the wording; the runs were done on my ARM server and on free Kaggle/Colab VMs, and I checked the numbers.) submitted by /u/matheus-c-feitosa [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-19T17:57:01Z",
+  "fetched_at": "2026-10-19T20:40:46.946186Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "791b34afb691c149",
+  "key": "reddit:1xa3yqk"
+}

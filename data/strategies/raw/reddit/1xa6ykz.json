@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xa6ykz",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xa6ykz/has_anyone_else_here_found_a_place_for/",
+  "title": "Has anyone else here found a place for DiffusionGemma in their local work?",
+  "author": "/u/SysPsych",
+  "body": "So, I was always really fascinated with the idea of a smart/capable-enough model that worked at blazing fast speed. I assumed we needed some kind of ASIC-style dedicated hardware for a specific LLM to manage that, but then I saw DiffusionGemma could actually get some massive speeds on the right hardware, and lucky me, I've got it. It turned out that you can also make DG work with image analysis too, and the speed is still there. So I've been using it with an offline agent for generating images, and damn, it's led to a massive increase in getting things done. Sure, it can't code, it can't call tools, but being able to get instant prompts for images, video, etc, etc, has been a gamechanger for me, and I feel like the tradeoff of getting that much speed with reasonable-enough descriptive capabilities is worth it. Anyway, I was curious if anyone else was finding a use for this kind of super-fast model, since now that I have it going, I want to apply it in other contexts too and could use the ideas. submitted by /u/SysPsych [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-19T19:46:24Z",
+  "fetched_at": "2026-10-19T20:40:46.946186Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "e9195352881a4a7a",
+  "key": "reddit:1xa6ykz"
+}

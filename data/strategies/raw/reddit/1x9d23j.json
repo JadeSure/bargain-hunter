@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1x9d23j",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1x9d23j/72_hours_four_big_open_weights_drops_the_only_one/",
+  "title": "72 hours, four big open weights drops. The only one that fits in 24GB came from NVIDIA, of all companies.",
+  "author": "/u/BTA_Labs",
+  "body": "What a week. Quick recap, all numbers from the official repos and model cards: Thursday: Meta drops Muse Spark Open. 816B total, 42B active, 1M context. The launch post says it brings agentic AI \"to your desktop\". The desktop is two M5 Ultra Mac Studios with 512GB each, a config Apple says ships \"late October\" and still hasn't put a price on. The alternative is four 256GB Studios, roughly $38k. On top of that it's a custom license: mandatory \"Built with Muse Spark Open\" attribution and a separate deal once you're past $20M revenue. And Meta's own model card puts it at 39 on the Artificial Analysis index, behind GLM 5.3 (45) and Kimi K3 (44). Same day: NVIDIA ships Nemotron 3.5 Bolt. 74B total, 9B active, trained quantization aware down to 2 bit, so the whole thing is 22GB plus a 1.7GB vision projector. Built to fit in 24GB on purpose. Unsloth GGUFs on day one, plus llama.cpp, Ollama and LM Studio support. Friday: Reflection actually ships Beam. 501B total, 23B active, Apache 2.0, no strings. Smallest official checkpoint is NVFP4 at 294GB. Saturday afternoon: DeepSeek posts V4.1 Flash 1017 on X like it's nothing. MIT. Their own table has it at 77.0 on DeepSWE vs 74.0 for Opus 5 (vendor numbers, salt accordingly). The repo is 510GB. So I put them all on one chart against the 24GB line most of us live under. My takeaways: \"Runs locally\" now officially means \"runs on a computer that costs more than a car.\" The company that keeps selling us 24GB cards is the only lab this week that built a model for 24GB cards. Not sure if that's wholesome or a sales funnel. Licenses mattered more than parameter counts this week. MIT and Apache 2.0 from DeepSeek and Reflection, attribution plus a revenue clause from the company with the loudest \"open\" marketing. Mistral says the Large 4 weights (\"Le Chonk\", 1T total) land before the end of the month, so the 24GB line is about to get even lonelier. Sources in the comments. submitted by /u/BTA_Labs [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-18T20:10:16Z",
+  "fetched_at": "2026-10-19T20:40:46.946186Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "4c5d7bf477a788a9",
+  "key": "reddit:1x9d23j"
+}
