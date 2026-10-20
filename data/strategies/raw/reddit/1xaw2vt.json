@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xaw2vt",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xaw2vt/phonon_is_now_opensource_31m_and_40m_tts_models/",
+  "title": "Phonon is now open-source, 31M and 40M TTS models designed to run on the edge",
+  "author": "/u/l-m-z",
+  "body": "At Gradium we just made our first open-source model release with Phonon, a collection of small Text-to-Speech models designed to run on device. The inference stack is fully open-source and targets 10+ different backends (CPUs, GPUs, NPUs), most of them in Rust. We hope that the community will build lots of different things on tops of our models and code, any feedback is very welcome and we're looking forward to many more open-source releases! https://huggingface.co/spaces/gradium/phonon submitted by /u/l-m-z [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-20T16:01:49Z",
+  "fetched_at": "2026-10-20T19:29:06.139840Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "af0cd1ffd318dc0e",
+  "key": "reddit:1xaw2vt"
+}
