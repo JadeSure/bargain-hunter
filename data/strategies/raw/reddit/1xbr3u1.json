@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xbr3u1",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xbr3u1/now_that_3090_frenzy_warning_post_makes_sense/",
+  "title": "Now that 3090 frenzy warning post makes sense.",
+  "author": "/u/sn2006gy",
+  "body": "I don't have a 3090 to confirm, but curious if the anyone in this community can back this up. Good win for 3090 and curious if that translates to other GPUs. I have a long vague memory of some hacks done to prevent mining demand that could be fixed and help LLMs. I wonder if this was one that lived on? submitted by /u/sn2006gy [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-21T16:00:07Z",
+  "fetched_at": "2026-10-21T19:28:00.694860Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "48b8e3d69f54c553",
+  "key": "reddit:1xbr3u1"
+}

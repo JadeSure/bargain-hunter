@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xbuzj5",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xbuzj5/amazing_free_3090_speedup_hack_verified_works_15/",
+  "title": "Amazing free 3090 speedup hack, verified works 15% PP, 5% TG for free",
+  "author": "/u/Striking_Luck_886",
+  "body": "I saw this today on X and decided to try it, I havent seen it posted here yet. I ran it on a single 3090 benchmarked it with qwen 3.8 27B before and after the optimization and saw these results: Observed prompt-processing throughput improved 22–30% ; generation speed improved 1–5% . All tests passed without GPU errors. Edit: Keep in mind performance gains can be higher, my 3090 is power limited to 230 watts including during my tests submitted by /u/Striking_Luck_886 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-21T18:19:42Z",
+  "fetched_at": "2026-10-21T19:28:00.694860Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "ee6a91ce897f901a",
+  "key": "reddit:1xbuzj5"
+}
