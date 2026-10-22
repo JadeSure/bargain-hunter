@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xcoelw",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xcoelw/deepseek_and_minimax_clear_chinas_ai_export_rules/",
+  "title": "DeepSeek and MiniMax Clear China’s AI Export Rules for Overseas Open-Source Releases",
+  "author": "/u/Stannis_Loyalist",
+  "body": "On October 22, Chinese media reported that DeepSeek and MiniMax have officially completed the required registration filings under China’s new temporary AI export regulations. By submitting their technologies for cross-border review, both companies successfully fulfilled the administrative requirements established by China’s Ministry of Commerce for distributing advanced AI models overseas. For DeepSeek and MiniMax, this clearance grants explicit regulatory approval to continue open-sourcing model weights and securing authorized international commercial partnerships. Securing these filings eliminates regulatory uncertainty, ensuring both companies can maintain their global operations and release future model updates internationally within a clear, compliant legal framework. source Yuyuan Tantian submitted by /u/Stannis_Loyalist [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-22T17:07:31Z",
+  "fetched_at": "2026-10-22T19:21:23.252184Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "2f1c74e13e690b69",
+  "key": "reddit:1xcoelw"
+}

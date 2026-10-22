@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xcmkyh",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xcmkyh/is_128gb_ram_worth_it/",
+  "title": "Is 128GB RAM worth it?",
+  "author": "/u/Borkato",
+  "body": "I have 48GB VRAM (2x3090 24GB) and 48GB DDR4 RAM. If I get 128 GB DDR4 RAM can I run things like Deepseek V4.1 1017 and GLM 5.3 Flash at low quants with at least 20T/s or so and have it be better than Qwen 3.8 Flash Next etc? If not, is there another system I should get, maybe switch all the way to DDR5? submitted by /u/Borkato [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-22T16:00:55Z",
+  "fetched_at": "2026-10-22T19:21:23.252184Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "29128f6de684128f",
+  "key": "reddit:1xcmkyh"
+}

@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xcf8kb",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xcf8kb/llamacpp_pr_how_to_beat_strata_decode_performance/",
+  "title": "Llama.cpp PR: How to beat strata decode performance with a R9700",
+  "author": "/u/keyboardhack",
+  "body": "submitted by /u/keyboardhack [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-22T10:48:15Z",
+  "fetched_at": "2026-10-22T19:21:23.252184Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "7f9262fd83088d1e",
+  "key": "reddit:1xcf8kb"
+}
