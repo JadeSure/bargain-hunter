@@ -13,6 +13,7 @@ const CHANNEL_OPTIONS = [
 ]
 
 const REGION_OPTIONS = [
+  { id: 'au', label: 'Australia' },
   { id: 'us', label: 'US & global (software, AI, USD deals)' },
   { id: 'cn', label: 'Mainland China (中国大陆)' },
 ]
@@ -46,7 +47,7 @@ export default function SettingsPage() {
   const [maxWatchAlerts, setMaxWatchAlerts] = useState<string>(String(user.maxWatchAlertsPerDay))
   const [channels, setChannels] = useState<string[]>(user.channels)
   const [categories, setCategories] = useState<string[]>(user.categories)
-  const [regions, setRegions] = useState<string[]>(user.regions ?? [])
+  const [regions, setRegions] = useState<string[]>(user.regions?.length ? user.regions : ['au'])
   const [hotLevel, setHotLevel] = useState<string>(user.hotLevel ?? '')
   const [quietCustom, setQuietCustom] = useState<boolean>(
     Boolean(user.quietHoursStart && user.quietHoursEnd)
@@ -195,7 +196,7 @@ export default function SettingsPage() {
       {/* Regions */}
       <div className="settings-section">
         <div className="settings-section-title">Regions</div>
-        <div className="settings-field-sub" style={{ marginBottom: '16px' }}>Australian deals are always included. Tick to also get deals from these regions — applies to hot deals and keyword matches.</div>
+        <div className="settings-field-sub" style={{ marginBottom: '16px' }}>Which regions&apos; deals you receive — applies to hot deals and keyword matches. Keep at least one ticked.</div>
         <div className="settings-checkbox-group">
           {REGION_OPTIONS.map(({ id, label }) => (
             <label key={id} className="settings-checkbox-row">
@@ -203,6 +204,7 @@ export default function SettingsPage() {
                 type="checkbox"
                 className="settings-checkbox"
                 checked={regions.includes(id)}
+                disabled={regions.length === 1 && regions.includes(id)}
                 onChange={() => { setRegions(regions.includes(id) ? regions.filter((r) => r !== id) : [...regions, id]); markDirty() }}
               />
               <span className="settings-checkbox-label">{label}</span>

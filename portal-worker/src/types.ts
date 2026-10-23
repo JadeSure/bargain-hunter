@@ -41,7 +41,7 @@ export interface SubscriberData {
   maxAlertsPerDay: number
   maxWatchAlertsPerDay: number
   channels: string[]
-  // Extra regions beyond Australia: "us" | "cn".
+  // Deal regions: "au" | "us" | "cn" (empty in Notion = Australia only).
   regions: string[]
   categories: string[]
   hotLevel: string | null
@@ -58,7 +58,7 @@ export interface SubscriberUpdate {
   maxAlertsPerDay?: number
   maxWatchAlertsPerDay?: number
   channels?: string[]
-  // Extra regions beyond Australia: "us" | "cn".
+  // Deal regions: "au" | "us" | "cn" (empty in Notion = Australia only).
   regions?: string[]
   categories?: string[]
   hotLevel?: string | null

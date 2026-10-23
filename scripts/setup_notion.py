@@ -70,9 +70,11 @@ SUBSCRIBERS_PROPS: dict = {
     "Subscribe Hot Deals": {"checkbox": {}},
     "Watch Keywords": {"rich_text": {}},
     "Min Discount %": {"number": {"format": "number"}},
+    # Deal regions a subscriber receives; empty is treated as ["au"].
     "Regions": {
         "multi_select": {
             "options": [
+                {"name": "au", "color": "green"},
                 {"name": "us", "color": "blue"},
                 {"name": "cn", "color": "red"},
             ]

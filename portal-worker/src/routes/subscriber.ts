@@ -94,10 +94,12 @@ app.put("/me", async (c) => {
     update.channels = body.channels.filter((ch) => valid.has(String(ch)));
   }
   if (Array.isArray(body.regions)) {
-    const valid = new Set(["us", "cn"]);
-    update.regions = [...new Set(body.regions.map((r) => String(r).trim().toLowerCase()))].filter(
+    const valid = new Set(["au", "us", "cn"]);
+    const regions = [...new Set(body.regions.map((r) => String(r).trim().toLowerCase()))].filter(
       (r) => valid.has(r),
     );
+    // Never store an empty selection — it would silently mean "Australia only".
+    update.regions = regions.length ? regions : ["au"];
   }
   if (Array.isArray(body.categories)) {
     update.categories = body.categories.map((c) => String(c).trim()).filter(Boolean);

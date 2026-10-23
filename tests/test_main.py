@@ -673,6 +673,17 @@ def test_hot_region_filter(monkeypatch, tmp_path):
     assert len(_run_hot(monkeypatch, tmp_path, [_hot_deal()], au_only)) == 1
 
 
+def test_region_au_is_opt_out(monkeypatch, tmp_path):
+    au_deal, us_deal = _hot_deal(), _hot_deal("dealnews")
+    explicit_au = Subscriber(name="A", email="a@example.com", regions=["au"])
+    assert len(_run_hot(monkeypatch, tmp_path, [au_deal], explicit_au)) == 1
+    us_only = Subscriber(name="U", email="u@example.com", regions=["us"])
+    assert _run_hot(monkeypatch, tmp_path, [au_deal], us_only) == []
+    both = Subscriber(name="B", email="b@example.com", regions=["au", "us"])
+    [(_, items, _)] = _run_hot(monkeypatch, tmp_path, [au_deal, us_deal], both)
+    assert {i.deal.source for i in items} == {"ozbargain", "dealnews"}
+
+
 def test_channel_gate(monkeypatch, tmp_path):
     for channels, expected in (([], 0), (["Telegram"], 0), (["Email"], 1)):
         sub = Subscriber(name="C", email="c@example.com", channels=channels)

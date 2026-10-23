@@ -76,7 +76,9 @@ function parseSubscriber(
   if (!active) throw new Error("Subscriber is not active");
 
   const channels = multiSelect(props, P.CHANNELS);
-  const regions = multiSelect(props, P.REGIONS);
+  // An empty Regions cell means Australia only (pipeline DEFAULT_REGIONS).
+  const storedRegions = multiSelect(props, P.REGIONS);
+  const regions = storedRegions.length ? storedRegions : ["au"];
   const subscribeHot = (props[P.HOT] as { checkbox?: boolean })?.checkbox ?? false;
   const watchKeywords = parseKeywords(richText(props, P.KEYWORDS));
   const blockKeywords = parseKeywords(richText(props, P.BLOCK_KEYWORDS));
@@ -192,9 +194,11 @@ export async function createInactiveSubscriber(
         [P.EMAIL]: { email },
         [P.ACTIVE]: { checkbox: false },
         // Onboarding defaults so an approved applicant starts configured like the
-        // rest of the DB: Email channel, hot deals on, 10 alerts/day, top tier.
+        // rest of the DB: Email channel, Australian deals, hot deals on,
+        // 10 alerts/day, top tier.
         // Active stays false — access still requires owner approval.
         [P.CHANNELS]: { multi_select: [{ name: "Email" }] },
+        [P.REGIONS]: { multi_select: [{ name: "au" }] },
         [P.HOT]: { checkbox: true },
         [P.MAX_ALERTS]: { number: 10 },
         [P.HOT_LEVEL]: { select: { name: "top" } },

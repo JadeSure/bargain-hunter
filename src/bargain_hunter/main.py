@@ -90,9 +90,11 @@ DIGITAL_SOURCES = {
     "free_llm",
 }
 
-# Which shoppers each source serves. Every subscriber gets "au"; "us"/"cn" only
-# when opted into via Subscriber.regions. Unlisted sources reach nobody — every
-# configured source must appear here (enforced by tests/test_main.py).
+# Which shoppers each source serves. A subscriber receives the regions ticked in
+# Subscriber.regions ("au" / "us" / "cn"); none ticked means DEFAULT_REGIONS.
+# Unlisted sources reach nobody — every configured source must appear here
+# (enforced by tests/test_main.py).
+DEFAULT_REGIONS = frozenset({"au"})
 SOURCE_REGIONS = {
     "ozbargain": "au",
     "camelcamelcamel": "au",
@@ -1014,7 +1016,7 @@ def _delivery_channels(sub: Subscriber, *, telegram_enabled: bool) -> list[str]:
 
 
 def _region_allowed(deal: Deal, sub: Subscriber) -> bool:
-    return SOURCE_REGIONS.get(deal.source) in {"au", *sub.regions}
+    return SOURCE_REGIONS.get(deal.source) in (set(sub.regions) or DEFAULT_REGIONS)
 
 
 def _split_digital(items: list[DealItem]) -> tuple[list[DealItem], list[DealItem]]:
