@@ -91,6 +91,10 @@ _P_FB_DEAL_ID = "Deal ID"
 _P_FB_VERDICT = "Verdict"
 _P_FB_EMAIL = "Subscriber Email"
 _P_FB_AT = "At"
+# Hand-labelled rows (Source = "manual") carry a Label instead of a Verdict.
+# "Meh" counts as negative, matching the digest's "👎 Meh" link.
+_P_FB_LABEL = "Label"
+_LABEL_POSITIVE = {"Good": True, "Meh": False, "Bad": False}
 
 
 # ---------------------------------------------------------------------------
@@ -169,19 +173,34 @@ def parse_sent_record(props: dict) -> SentRecord | None:
     )
 
 
-def parse_feedback_record(props: dict) -> FeedbackRecord | None:
+def parse_feedback_record(props: dict, created_time: str | None = None) -> FeedbackRecord | None:
+    """Parse a Feedback DB row: a subscriber 👍/👎 (Verdict) or a manual Label.
+
+    Verdict wins when both are set. A manual row without an ``At`` date falls
+    back to the page's ``created_time``.
+
+    >>> parse_feedback_record({"Deal ID": {"title": [{"plain_text": "ozbargain:1"}]},
+    ...                        "Label": {"select": {"name": "Good"}}},
+    ...                       created_time="2026-10-20T01:00:00Z").positive
+    True
+    """
     deal_key = _prop_text(props, _P_FB_DEAL_ID)
     verdict = (props.get(_P_FB_VERDICT, {}).get("select") or {}).get("name")
-    at_raw = (props.get(_P_FB_AT, {}).get("date") or {}).get("start")
-    if not deal_key or verdict not in ("up", "down") or not at_raw:
+    label = (props.get(_P_FB_LABEL, {}).get("select") or {}).get("name")
+    if verdict in ("up", "down"):
+        positive = verdict == "up"
+    elif label in _LABEL_POSITIVE:
+        positive = _LABEL_POSITIVE[label]
+    else:
+        return None
+    at_raw = (props.get(_P_FB_AT, {}).get("date") or {}).get("start") or created_time
+    if not deal_key or not at_raw:
         return None
     at = datetime.fromisoformat(at_raw)
     if at.tzinfo is None:
         at = at.replace(tzinfo=UTC)
     email = props.get(_P_FB_EMAIL, {}).get("email") or ""
-    return FeedbackRecord(
-        deal_key=deal_key, subscriber_email=email, positive=verdict == "up", at=at
-    )
+    return FeedbackRecord(deal_key=deal_key, subscriber_email=email, positive=positive, at=at)
 
 
 def fetch_sent_log(notion: Client, db_id: str, since: datetime) -> list[SentRecord]:
@@ -195,10 +214,23 @@ def fetch_sent_log(notion: Client, db_id: str, since: datetime) -> list[SentReco
 
 
 def fetch_feedback(notion: Client, db_id: str, since: datetime) -> list[FeedbackRecord]:
-    filter_payload = {"property": _P_FB_AT, "date": {"after": since.isoformat()}}
+    after = since.isoformat()
+    # Manual labels are often entered without an At date — window those by
+    # creation time instead so they aren't silently dropped.
+    filter_payload = {
+        "or": [
+            {"property": _P_FB_AT, "date": {"after": after}},
+            {
+                "and": [
+                    {"property": _P_FB_AT, "date": {"is_empty": True}},
+                    {"timestamp": "created_time", "created_time": {"after": after}},
+                ]
+            },
+        ]
+    }
     records = []
     for page in _query_all(notion, db_id, filter_payload):
-        rec = parse_feedback_record(page.get("properties", {}))
+        rec = parse_feedback_record(page.get("properties", {}), page.get("created_time"))
         if rec:
             records.append(rec)
     return records

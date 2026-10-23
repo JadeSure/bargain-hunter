@@ -20,6 +20,7 @@ from bargain_hunter.calibration import (
     join_feedback,
     latest_observation_by_deal,
     latest_sent_by_deal,
+    parse_feedback_record,
     rate_by_source,
     rate_by_tier,
     rate_by_track,
@@ -70,6 +71,34 @@ def test_deal_source_parses_prefix():
     assert deal_source("ozbargain:123") == "ozbargain"
     assert deal_source("camelcamelcamel:B0AB") == "camelcamelcamel"
     assert deal_source("no-colon-here") == "unknown"
+
+
+def _fb_props(**props) -> dict:
+    out = {"Deal ID": {"title": [{"plain_text": "ozbargain:1"}]}}
+    for key, value in props.items():
+        if key == "At":
+            out["At"] = {"date": {"start": value}}
+        else:
+            out[key] = {"select": {"name": value}}
+    return out
+
+
+def test_parse_feedback_record_verdict_and_manual_labels():
+    at = "2026-10-20T01:00:00+00:00"
+    assert parse_feedback_record(_fb_props(Verdict="up", At=at)).positive is True
+    assert parse_feedback_record(_fb_props(Verdict="down", At=at)).positive is False
+    assert parse_feedback_record(_fb_props(Label="Good", At=at)).positive is True
+    assert parse_feedback_record(_fb_props(Label="Meh", At=at)).positive is False
+    assert parse_feedback_record(_fb_props(Label="Bad", At=at)).positive is False
+    # Verdict wins over a conflicting Label.
+    assert parse_feedback_record(_fb_props(Verdict="up", Label="Bad", At=at)).positive is True
+    assert parse_feedback_record(_fb_props(At=at)) is None
+
+
+def test_parse_feedback_record_falls_back_to_created_time():
+    rec = parse_feedback_record(_fb_props(Label="Good"), created_time="2026-10-20T01:00:00.000Z")
+    assert rec.at == datetime(2026, 10, 20, 1, 0, tzinfo=UTC)
+    assert parse_feedback_record(_fb_props(Label="Good")) is None
 
 
 def test_latest_sent_by_deal_picks_most_recent():
