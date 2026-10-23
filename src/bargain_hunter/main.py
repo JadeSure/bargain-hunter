@@ -30,6 +30,7 @@ from .matching import _keyword_pattern, filter_watch_matches
 from .models import Deal, Subscriber
 from .notify.email import EmailSender, send_maintainer_alert
 from .notify.render import DealItem
+from .notify.telegram import TelegramSender
 from .observations import ObservationLog, build_observation
 from .price_history import enrich_price_ranks
 from .queue_store import NotificationQueue
@@ -645,12 +646,14 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     max_age = settings.run.quiet_hours_queue_max_age_hours
 
     sender = EmailSender(dry_run=dry_run)
+    tg_sender = TelegramSender(dry_run=dry_run)
 
     for sub in subscribers:
         if not sub.active:
             continue
-        if "Email" not in sub.channels:
-            log.info("[%s] Email channel not selected; skipping.", sub.ref)
+        channels = _delivery_channels(sub, telegram_enabled=tg_sender.enabled)
+        if not channels:
+            log.info("[%s] No usable delivery channel; skipping.", sub.ref)
             continue
 
         # This subscriber's effective quiet window (own override, else global).
@@ -909,9 +912,16 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
 
         summary["watch_matches"] += len(watch_items)
 
-        # Send
-        ok = sender.send_digest(sub, items, cap_suppressed=cap_suppressed)
-        if ok:
+        # Send on every selected channel; one success counts as delivered, so
+        # the Sent Log (dedup + caps) gets one row per deal, not one per channel.
+        delivered: list[str] = []
+        if "Telegram" in channels and tg_sender.send_digest(
+            sub, items, cap_suppressed=cap_suppressed
+        ):
+            delivered.append("Telegram")
+        if "Email" in channels and sender.send_digest(sub, items, cap_suppressed=cap_suppressed):
+            delivered.append("Email")
+        if delivered:
             summary["notifications_sent"] += len(items)
             for item in items:
                 trigger_sig = f"{item.track}:{item.reason[:200]}"
@@ -921,7 +931,7 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
                         sent_log_db,
                         item.deal,
                         sub,
-                        channel="Email",
+                        channel=delivered[0],
                         track=item.track,
                         trigger_sig=trigger_sig,
                     )
@@ -986,6 +996,21 @@ def _hot_level_eligible(
     if deal_matches_categories(deal, sub.categories, taxonomy):
         return True
     return universal_top and level == top_name
+
+
+def _delivery_channels(sub: Subscriber, *, telegram_enabled: bool) -> list[str]:
+    """Channels this subscriber selected that can actually deliver this run.
+
+    Telegram needs a linked chat id and a configured bot; email needs an
+    address. A selected-but-unusable channel is silently dropped, so a
+    subscriber with both selected still gets email while Telegram is unlinked.
+    """
+    channels: list[str] = []
+    if "Telegram" in sub.channels and sub.telegram_chat_id and telegram_enabled:
+        channels.append("Telegram")
+    if "Email" in sub.channels and sub.email:
+        channels.append("Email")
+    return channels
 
 
 def _region_allowed(deal: Deal, sub: Subscriber) -> bool:

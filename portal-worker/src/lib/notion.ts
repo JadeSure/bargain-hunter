@@ -326,6 +326,70 @@ export async function updateSubscriber(
   }
 }
 
+// --- Telegram channel linking ---
+
+async function readChannels(token: string, pageId: string): Promise<string[]> {
+  const resp = await fetch(`${NOTION_API}/pages/${pageId}`, { headers: headers(token) });
+  if (!resp.ok) throw new Error(`Notion page read failed: ${resp.status}`);
+  const page = (await resp.json()) as { properties: Record<string, unknown> };
+  return multiSelect(page.properties, P.CHANNELS);
+}
+
+// Stores the chat id and switches the Telegram channel on (other channels kept).
+export async function linkTelegram(
+  token: string,
+  pageId: string,
+  chatId: string
+): Promise<void> {
+  const channels = await readChannels(token, pageId);
+  if (!channels.includes("Telegram")) channels.push("Telegram");
+  const resp = await fetch(`${NOTION_API}/pages/${pageId}`, {
+    method: "PATCH",
+    headers: headers(token),
+    body: JSON.stringify({
+      properties: {
+        [P.TELEGRAM]: { rich_text: [{ text: { content: chatId } }] },
+        [P.CHANNELS]: { multi_select: channels.map((name) => ({ name })) },
+      },
+    }),
+  });
+  if (!resp.ok) throw new Error(`Notion telegram link failed: ${resp.status}`);
+}
+
+// Clears the chat id and switches the Telegram channel off (other channels kept).
+export async function unlinkTelegram(token: string, pageId: string): Promise<void> {
+  const channels = (await readChannels(token, pageId)).filter((ch) => ch !== "Telegram");
+  const resp = await fetch(`${NOTION_API}/pages/${pageId}`, {
+    method: "PATCH",
+    headers: headers(token),
+    body: JSON.stringify({
+      properties: {
+        [P.TELEGRAM]: { rich_text: [] },
+        [P.CHANNELS]: { multi_select: channels.map((name) => ({ name })) },
+      },
+    }),
+  });
+  if (!resp.ok) throw new Error(`Notion telegram unlink failed: ${resp.status}`);
+}
+
+export async function findSubscriberPageByTelegram(
+  token: string,
+  dbId: string,
+  chatId: string
+): Promise<string | null> {
+  const resp = await fetch(`${NOTION_API}/databases/${dbId}/query`, {
+    method: "POST",
+    headers: headers(token),
+    body: JSON.stringify({
+      filter: { property: P.TELEGRAM, rich_text: { equals: chatId } },
+      page_size: 1,
+    }),
+  });
+  if (!resp.ok) throw new Error(`Notion query failed: ${resp.status}`);
+  const data = (await resp.json()) as { results: Array<{ id: string }> };
+  return data.results[0]?.id ?? null;
+}
+
 // --- Access waitlist (separate Notion database) ---
 // Create a Notion database, share it with the integration, and put its id in
 // WAITLIST_DB_ID. It must expose these properties (exact names + types):

@@ -5,6 +5,9 @@
   // Secrets: npx wrangler secret put NOTION_TOKEN
   //          npx wrangler secret put RESEND_API_KEY
   //          npx wrangler secret put GOOGLE_CLIENT_SECRET
+  //          npx wrangler secret put TELEGRAM_BOT_TOKEN       (optional, with the two below)
+  //          npx wrangler secret put TELEGRAM_WEBHOOK_SECRET
+  //          + var TELEGRAM_BOT_USERNAME (bot username without @)
   "name": "bargain-portal-api",
   "main": "src/index.ts",
   "compatibility_date": "2026-01-01",

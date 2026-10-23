@@ -156,6 +156,7 @@ resource "aws_lambda_function" "hunt" {
       FEEDBACK_BASE_URL        = var.feedback_base_url
       FEEDBACK_HMAC_SECRET     = var.feedback_hmac_secret
       HEALTHCHECK_URL          = var.healthcheck_url
+      TELEGRAM_BOT_TOKEN       = var.telegram_bot_token
     }
   }
 

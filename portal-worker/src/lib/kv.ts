@@ -68,6 +68,31 @@ export async function readMagicToken(
   return email;
 }
 
+// One-time token for the Telegram /start deep link. Single-use is safe here
+// (unlike magic links): Telegram only sends it when the user presses Start.
+const TELEGRAM_LINK_TTL = 60 * 15;
+
+export async function createTelegramLinkToken(
+  kv: KVNamespace,
+  data: { email: string; notionPageId: string }
+): Promise<string> {
+  const token = generateId(); // 64 hex chars = Telegram's max start-payload length
+  await kv.put(`tglink:${token}`, JSON.stringify(data), {
+    expirationTtl: TELEGRAM_LINK_TTL,
+  });
+  return token;
+}
+
+export async function consumeTelegramLinkToken(
+  kv: KVNamespace,
+  token: string
+): Promise<{ email: string; notionPageId: string } | null> {
+  const raw = await kv.get(`tglink:${token}`);
+  if (!raw) return null;
+  await kv.delete(`tglink:${token}`);
+  return JSON.parse(raw) as { email: string; notionPageId: string };
+}
+
 // Marks an email as eligible for self-serve resubscribe. Set only when a
 // subscriber deactivates via the unsubscribe flow — this is what lets
 // /auth/resubscribe (and the reactivation branch in /auth/verify) tell a

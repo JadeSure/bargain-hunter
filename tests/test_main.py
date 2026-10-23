@@ -679,6 +679,56 @@ def test_channel_gate(monkeypatch, tmp_path):
         assert len(_run_hot(monkeypatch, tmp_path, [_hot_deal()], sub)) == expected
 
 
+def _run_hot_with_telegram(monkeypatch, tmp_path, sub, tg_ok=True):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "abc")
+    tg_sent = []
+
+    def fake_tg_send(self, subscriber, items, cap_suppressed=0):
+        tg_sent.append((subscriber.telegram_chat_id, list(items)))
+        return tg_ok
+
+    monkeypatch.setattr(main_mod.TelegramSender, "send_digest", fake_tg_send)
+
+    class ChannelDedup(_FakeDedup):
+        def __init__(self):
+            super().__init__()
+            self.channels = []
+
+        def record_sent(self, notion, db_id, deal, sub, channel, track, trigger_sig):
+            super().record_sent(notion, db_id, deal, sub, channel, track, trigger_sig)
+            self.channels.append(channel)
+
+    dedup = ChannelDedup()
+    monkeypatch.setattr(main_mod, "classify_hot", lambda *a, **kw: "top")
+    email_sent = _wire_run(monkeypatch, tmp_path, [_hot_deal()], sub, dedup, quiet=False)
+    main_mod.run(_watch_settings(), dry_run=True)
+    return email_sent, tg_sent, dedup.channels
+
+
+def test_telegram_channel_delivers_and_logs_once(monkeypatch, tmp_path):
+    sub = Subscriber(
+        name="T", email="t@example.com", telegram_chat_id="42", channels=["Telegram", "Email"]
+    )
+    email_sent, tg_sent, channels = _run_hot_with_telegram(monkeypatch, tmp_path, sub)
+    assert len(tg_sent) == 1 and len(email_sent) == 1
+    assert channels == ["Telegram"]  # one Sent Log row per deal, not per channel
+
+
+def test_telegram_only_unlinked_sends_nothing(monkeypatch, tmp_path):
+    sub = Subscriber(name="T", email="t@example.com", channels=["Telegram"])
+    email_sent, tg_sent, channels = _run_hot_with_telegram(monkeypatch, tmp_path, sub)
+    assert (email_sent, tg_sent, channels) == ([], [], [])
+
+
+def test_telegram_failure_falls_back_to_email_log(monkeypatch, tmp_path):
+    sub = Subscriber(
+        name="T", email="t@example.com", telegram_chat_id="42", channels=["Telegram", "Email"]
+    )
+    email_sent, tg_sent, channels = _run_hot_with_telegram(monkeypatch, tmp_path, sub, tg_ok=False)
+    assert len(tg_sent) == 1 and len(email_sent) == 1
+    assert channels == ["Email"]
+
+
 def test_hot_min_discount(monkeypatch, tmp_path):
     sub = Subscriber(name="M", email="m@example.com", min_discount_percent=20)
     assert _run_hot(monkeypatch, tmp_path, [_hot_deal(discount=10)], sub) == []

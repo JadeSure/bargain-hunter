@@ -59,6 +59,7 @@ jobs:
       TF_VAR_feedback_base_url: ${{ vars.FEEDBACK_BASE_URL }}
       TF_VAR_feedback_hmac_secret: ${{ secrets.FEEDBACK_HMAC_SECRET }}
       TF_VAR_healthcheck_url: ${{ secrets.HEALTHCHECK_URL }}
+      TF_VAR_telegram_bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -122,6 +122,31 @@ def build_unsubscribe_url(email: str) -> str | None:
     return f"{base}?e={quote(email)}&t={token}"
 
 
+def get_site_url() -> str:
+    return (
+        os.environ.get("SITE_URL") or "https://bargain-hunter.sylvalume.online"
+    ).strip().rstrip("/")
+
+
+def attach_feedback_urls(subscriber: Subscriber, items: list[DealItem]) -> None:
+    """Set per-deal signed 👍/👎 URLs on ``items`` (shared by every channel).
+
+    No-op unless FEEDBACK_BASE_URL and FEEDBACK_HMAC_SECRET are set and the
+    subscriber has an email — the feedback worker attributes votes by email.
+    """
+    feedback_base = (os.environ.get("FEEDBACK_BASE_URL") or "").strip() or None
+    hmac_secret = (os.environ.get("FEEDBACK_HMAC_SECRET") or "").strip() or None
+    if not (feedback_base and hmac_secret and subscriber.email):
+        return
+    for item in items:
+        item.feedback_up_url = _feedback_url(
+            feedback_base, hmac_secret, item.deal.key, "up", subscriber.email, item.deal.title
+        )
+        item.feedback_down_url = _feedback_url(
+            feedback_base, hmac_secret, item.deal.key, "down", subscriber.email, item.deal.title
+        )
+
+
 def render_email(
     subscriber: Subscriber,
     items: list[DealItem],
@@ -136,20 +161,8 @@ def render_email(
     """
     tmpl = _env.get_template("email.html.j2")
     sent_at = datetime.now(UTC).astimezone(_AET).strftime("%d %b %Y %H:%M AEST")
-    feedback_base = (os.environ.get("FEEDBACK_BASE_URL") or "").strip() or None
-    hmac_secret = (os.environ.get("FEEDBACK_HMAC_SECRET") or "").strip() or None
-    site_url = (
-        os.environ.get("SITE_URL") or "https://bargain-hunter.sylvalume.online"
-    ).strip().rstrip("/")
-
-    if feedback_base and hmac_secret and subscriber.email:
-        for item in items:
-            item.feedback_up_url = _feedback_url(
-                feedback_base, hmac_secret, item.deal.key, "up", subscriber.email, item.deal.title
-            )
-            item.feedback_down_url = _feedback_url(
-                feedback_base, hmac_secret, item.deal.key, "down", subscriber.email, item.deal.title
-            )
+    site_url = get_site_url()
+    attach_feedback_urls(subscriber, items)
 
     unsubscribe_url = build_unsubscribe_url(subscriber.email) if subscriber.email else None
 

@@ -261,12 +261,15 @@ Add these to Settings → Secrets and variables → Actions:
 | `R2_ACCESS_KEY_ID` | Cloudflare R2 S3 API access key (for Terraform state) |
 | `R2_SECRET_ACCESS_KEY` | Cloudflare R2 S3 API secret |
 | `CLOUDFLARE_API_TOKEN` | Cloudflare API token scoped to Workers Scripts: Edit |
+| `TELEGRAM_BOT_TOKEN` | *(optional)* Bot API token from @BotFather — enables the Telegram channel |
+| `TELEGRAM_WEBHOOK_SECRET` | *(optional)* Random string; Telegram echoes it on every webhook call |
 
 ### Variables
 
 | Variable | Description |
 |---|---|
 | `FEEDBACK_BASE_URL` | Public URL of the deployed feedback worker |
+| `TELEGRAM_BOT_USERNAME` | *(optional)* Bot username without `@`; the Telegram channel stays off while unset |
 | `CLOUDFLARE_ACCOUNT_ID` | 32-char Cloudflare account ID |
 | `NOTION_FEEDBACK_DB_ID` | From `setup_notion.py` output |
 | `TF_STATE_BUCKET` | R2 bucket name for Terraform state |
@@ -299,7 +302,7 @@ The first run is always a **cold start** — it records a baseline but sends not
 
 ## Feedback worker (Cloudflare Workers)
 
-Each digest email includes per-deal 👍/👎 links. Clicks hit a Cloudflare Worker that writes to a Notion Feedback database for calibration. Links are HMAC-signed — unsigned requests are rejected (403).
+Each digest email includes per-deal 👍/👎 links. Clicks hit a Cloudflare Worker that writes to a Notion Feedback database for calibration. Links are HMAC-signed — unsigned requests are rejected (403). A plain `GET` never records a vote (mail scanners pre-fetch links); the landing page records it with a script-issued `POST` — see [`feedback-worker/README.md`](feedback-worker/README.md#hardening).
 
 The worker is deployed automatically via Terraform on every push to `main` that touches `terraform/**` or `feedback-worker/src/**`. State is stored in a Cloudflare R2 bucket.
 
@@ -309,6 +312,33 @@ cd terraform
 terraform init -backend-config=backend.hcl
 terraform apply
 ```
+
+## Telegram channel (optional)
+
+Subscribers can get the same digest in Telegram (compact format, signed 👍/👎
+links included). Email keeps working alongside; if a Telegram send fails the
+email still goes out, and the Sent Log records one row per deal either way.
+
+One-time setup:
+
+1. Create a bot with [@BotFather](https://t.me/BotFather); note its token and username.
+2. Add the `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET` secrets and the
+   `TELEGRAM_BOT_USERNAME` variable (see [GitHub Actions setup](#github-actions-setup)),
+   then push/re-run `terraform-feedback.yml` so the portal worker gets them.
+3. Point the bot at the portal worker (once):
+
+   ```bash
+   curl -sS "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
+     -d url=https://bargain-portal-api.jadesure17.workers.dev/telegram/webhook \
+     -d secret_token="${TELEGRAM_WEBHOOK_SECRET}" \
+     -d 'allowed_updates=["message"]'
+   ```
+
+Subscribers then press **Connect Telegram** in portal Settings → **Open Telegram
+and press Start**. The one-time `/start <token>` deep link (15 min TTL) lets the
+worker write their chat id to Notion and switch the Telegram channel on; `/stop`
+in the bot disconnects. While any of the three settings is unset, the pipeline
+skips Telegram and the portal hides the option.
 
 ## Website & access portal
 
@@ -356,13 +386,13 @@ Live and running. Highlights since v1.0:
 
 ### TODO (v1.2 direction)
 
-| Priority | Item |
-|---|---|
-| High | Threshold calibration — after 1–2 weeks of data, tune `hot_threshold`, `min_votes`, `early_burst_*` against labelled Sent Log |
-| Medium | Feedback data loop — use 👍/👎 counts to validate which deal types subscribers actually act on |
-| Medium | Monitor feedback worker for mail-scanner pre-clicks (Safe Links / Proofpoint may trigger links before users do) |
-| Low | Telegram channel — interface already modelled; needs bot /start onboarding |
-| Low | Scheduling reliability — AWS Lambda + EventBridge for sub-5-min latency (v2) |
+| Priority | Item | Status |
+|---|---|---|
+| High | Threshold calibration — tune `scoring.hot.tiers[].min_score` & co. against labelled Sent Log | Tooling done (`bargain-hunter-calibrate` + weekly `calibrate.yml` report/issue, `bargain-hunter-backtest`). **Blocked on labels:** reports since 2026-08 show 0 feedback rows, so every grid cell is "insufficient data". Tune once a report shows n ≥ 20 per tier. |
+| Medium | Feedback data loop — use 👍/👎 counts to validate which deal types subscribers act on | Done: the weekly calibration report breaks 👍-rate down by tier / track / source. Telegram digests now carry 👍/👎 links too, to grow the sample. |
+| Medium | Mail-scanner pre-clicks on the feedback worker | Done: `GET` never records; votes need a script-issued `POST`; `HEAD` ignored; each vote logs its user-agent for monitoring. |
+| Low | Telegram channel | Done: Bot API sender in the pipeline, `/start` deep-link onboarding via portal-worker, Connect/Disconnect in portal Settings — see [Telegram channel](#telegram-channel-optional). Needs the bot secrets + `setWebhook` to go live. |
+| Low | Scheduling reliability — AWS Lambda + EventBridge | Done: [`aws/`](aws/README.md) failover (schedule ships disabled; enable when Actions cron lags). |
 
 ## Data retention & repo size
 

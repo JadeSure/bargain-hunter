@@ -8,6 +8,7 @@ import unsubscribeRoute from "./routes/auth/unsubscribe";
 import resubscribeRoute from "./routes/auth/resubscribe";
 import subscriberRoutes from "./routes/subscriber";
 import adminRoutes from "./routes/admin";
+import telegramRoutes from "./routes/telegram";
 import { allowedOrigins } from "./lib/origins";
 import type { Env } from "./types";
 
@@ -38,6 +39,7 @@ app.route("/auth/unsubscribe", unsubscribeRoute);
 app.route("/auth/resubscribe", resubscribeRoute);
 app.route("/api", subscriberRoutes);
 app.route("/api/admin", adminRoutes);
+app.route("/telegram", telegramRoutes);
 
 app.onError((err, c) => {
   console.error(err);

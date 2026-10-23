@@ -41,9 +41,23 @@ curl "https://bargain-feedback.<you>.workers.dev/?d=ozbargain:964116&v=up&e=test
 # -> a row appears in the Notion Feedback DB
 ```
 
-## Hardening (later)
+## Hardening
 
-The endpoint is unauthenticated, so corporate mail scanners (Safe Links /
-Proofpoint) and bots may pre-click links and create junk rows. When that
-becomes noticeable, add an HMAC token over `(email, deal_key)` to the link and
-verify it here before writing. Not needed for the first pass.
+- **Signed links.** Every link carries an HMAC token over `deal|verdict|email`
+  (`FEEDBACK_HMAC_SECRET`); unsigned or tampered requests get a 403.
+- **Mail-scanner pre-clicks.** Corporate scanners (Safe Links, Proofpoint,
+  Mimecast) fetch every link before the user does. A `GET` therefore only
+  verifies the token and serves a small page whose script `POST`s back to the
+  same URL — only the `POST` writes to Notion. `HEAD` probes are answered
+  without recording. A `<noscript>` confirm button covers users with scripts off.
+- **Monitoring.** Each recorded vote logs `{deal, verdict, ua}` to Workers Logs
+  (`npx wrangler tail bargain-feedback`, or the dashboard). A scanner that does
+  run JS shows up there as a burst of votes with a non-browser user-agent.
+
+Smoke test (GET must not write; POST must):
+
+```bash
+curl -I "$URL"            # 200, no row
+curl "$URL"               # confirm page, no row
+curl -X POST "$URL"       # row appears in the Feedback DB
+```

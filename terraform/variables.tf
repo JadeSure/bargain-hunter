@@ -67,6 +67,26 @@ variable "owner_email" {
   type        = string
 }
 
+variable "telegram_bot_username" {
+  description = "Telegram bot username (without @). Empty leaves the Telegram channel disabled."
+  type        = string
+  default     = ""
+}
+
+variable "telegram_bot_token" {
+  description = "Telegram Bot API token from @BotFather. Must match TELEGRAM_BOT_TOKEN in the Python app."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "telegram_webhook_secret" {
+  description = "Secret passed to Telegram setWebhook (secret_token); checked on every webhook call."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 variable "pages_project_name" {
   description = "Cloudflare Pages project name for the Next.js frontend."
   type        = string

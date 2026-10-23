@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useUser } from '../context'
+import { createTelegramLink, refreshMe, unlinkTelegram } from '@/lib/api'
 
 // ids must match the canonical Notion "Channels" multi-select values exactly
 // (see valid set in portal-worker/src/routes/subscriber.ts) — lowercase ids
@@ -35,7 +36,7 @@ const HOT_LEVEL_OPTIONS = [
 ]
 
 export default function SettingsPage() {
-  const { user, saveUpdate } = useUser()
+  const { user, setUser, saveUpdate } = useUser()
 
   const [subscribeHot, setSubscribeHot] = useState(user.subscribeHot)
   const [minDiscount, setMinDiscount] = useState<string>(
@@ -55,6 +56,9 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [dirty, setDirty] = useState(false)
+  const [telegramUrl, setTelegramUrl] = useState<string | null>(null)
+  const [telegramBusy, setTelegramBusy] = useState(false)
+  const [telegramError, setTelegramError] = useState<string | null>(null)
 
   function markDirty() { setDirty(true); setSaved(false) }
 
@@ -67,6 +71,42 @@ export default function SettingsPage() {
     setCategories((prev) => prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id])
     markDirty()
   }
+
+  // Linking happens out-of-band: the user presses Start in Telegram and the bot
+  // webhook writes the chat id to Notion, so we re-read /api/me afterwards.
+  async function telegramAction(action: () => Promise<void>) {
+    setTelegramBusy(true)
+    setTelegramError(null)
+    try {
+      await action()
+    } catch {
+      setTelegramError('Something went wrong — please try again.')
+    } finally {
+      setTelegramBusy(false)
+    }
+  }
+
+  const connectTelegram = () =>
+    telegramAction(async () => setTelegramUrl(await createTelegramLink()))
+
+  const checkTelegram = () =>
+    telegramAction(async () => {
+      const fresh = await refreshMe()
+      setUser(fresh)
+      if (fresh.telegramChatId) {
+        setTelegramUrl(null)
+        setChannels((prev) => (prev.includes('Telegram') ? prev : [...prev, 'Telegram']))
+      } else {
+        setTelegramError('Not connected yet — press Start in Telegram first.')
+      }
+    })
+
+  const disconnectTelegram = () =>
+    telegramAction(async () => {
+      await unlinkTelegram()
+      setUser({ ...user, telegramChatId: null, channels: user.channels.filter((c) => c !== 'Telegram') })
+      setChannels((prev) => prev.filter((c) => c !== 'Telegram'))
+    })
 
   async function handleSave() {
     setSaving(true)
@@ -257,7 +297,7 @@ export default function SettingsPage() {
       {/* Channels */}
       <div className="settings-section">
         <div className="settings-section-title">Alert channels</div>
-        <div className="settings-field-sub" style={{ marginBottom: '16px' }}>Untick to pause email alerts (you can still log in and edit settings).</div>
+        <div className="settings-field-sub" style={{ marginBottom: '16px' }}>Untick to pause alerts on a channel (you can still log in and edit settings).</div>
         <div className="settings-checkbox-group">
           {CHANNEL_OPTIONS.map(({ id, label }) => (
             <label key={id} className="settings-checkbox-row">
@@ -270,7 +310,50 @@ export default function SettingsPage() {
               <span className="settings-checkbox-label">{label}</span>
             </label>
           ))}
+          {user.telegramAvailable && user.telegramChatId && (
+            <label className="settings-checkbox-row">
+              <input
+                type="checkbox"
+                className="settings-checkbox"
+                checked={channels.includes('Telegram')}
+                onChange={() => toggleChannel('Telegram')}
+              />
+              <span className="settings-checkbox-label">Telegram (connected)</span>
+            </label>
+          )}
         </div>
+        {user.telegramAvailable && (
+          <div style={{ marginTop: '16px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+            {user.telegramChatId ? (
+              <button className="btn-logout" onClick={disconnectTelegram} disabled={telegramBusy}>
+                Disconnect Telegram
+              </button>
+            ) : telegramUrl ? (
+              <>
+                <a
+                  className="btn-save"
+                  href={telegramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'none', display: 'inline-block' }}
+                >
+                  Open Telegram and press Start ↗
+                </a>
+                <button className="btn-logout" onClick={checkTelegram} disabled={telegramBusy}>
+                  I&apos;ve pressed Start
+                </button>
+              </>
+            ) : (
+              <button className="btn-save" onClick={connectTelegram} disabled={telegramBusy}>
+                Connect Telegram
+              </button>
+            )}
+          </div>
+        )}
+        {telegramUrl && !user.telegramChatId && (
+          <div className="settings-telegram-note">The link works once and expires in 15 minutes. Telegram alerts arrive faster than email; email keeps working alongside.</div>
+        )}
+        {telegramError && <div className="settings-telegram-note">{telegramError}</div>}
       </div>
 
       {/* Categories */}

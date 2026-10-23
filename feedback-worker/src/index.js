@@ -8,7 +8,14 @@
 //   Var:    FEEDBACK_DB_ID    -> set in wrangler.jsonc
 //
 // Link shape (built in the email template):
-//   https://<worker>.workers.dev/?d=<deal_key>&v=up|down&e=<email>
+//   https://<worker>.workers.dev/?d=<deal_key>&v=up|down&e=<email>&t=<hmac>
+//
+// Mail scanners (Microsoft Safe Links, Proofpoint, Mimecast, ...) fetch every
+// link in an email before the user does, which would record fake votes. So a
+// GET only verifies the link and serves a page that records the vote via a
+// script-issued POST; scanners that don't run JS never reach the POST. A
+// <noscript> button covers real users with scripts disabled. Each vote logs
+// its user-agent (Workers Logs) so any scanner that does run JS shows up there.
 
 const NOTION_VERSION = "2022-06-28";
 
@@ -37,6 +44,28 @@ async function verifyHmac(secret, dealKey, verdict, email, token) {
   return timingSafeEqual(hex, token);
 }
 
+const confirmPage = (verdict) =>
+  new Response(
+    `<!doctype html><meta charset="utf-8">` +
+      `<meta name="viewport" content="width=device-width,initial-scale=1">` +
+      `<meta name="robots" content="noindex">` +
+      `<div id="m" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;` +
+      `max-width:480px;margin:64px auto;text-align:center;color:#111">` +
+      `<h2>Recording your ${verdict === "up" ? "👍" : "👎"}…</h2>` +
+      `<noscript><form method="post"><button style="font-size:16px;padding:10px 20px">` +
+      `Confirm ${verdict === "up" ? "👍" : "👎"}</button></form></noscript></div>` +
+      `<script>fetch(location.href,{method:"POST"}).then(r=>r.text()).then(h=>{` +
+      `document.open();document.write(h);document.close()}).catch(()=>{` +
+      `document.getElementById("m").innerHTML="<h2>Couldn't record that — please try again.</h2>"})</script>`,
+    {
+      headers: {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": "no-store",
+        "x-robots-tag": "noindex",
+      },
+    },
+  );
+
 const page = (msg) =>
   new Response(
     `<!doctype html><meta charset="utf-8">` +
@@ -50,6 +79,11 @@ const page = (msg) =>
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    if (request.method !== "GET" && request.method !== "POST") {
+      // HEAD / OPTIONS probes from link scanners: answer, never record.
+      return new Response(null, { status: request.method === "HEAD" ? 200 : 405 });
+    }
 
     // Health / smoke check
     if (url.pathname === "/" && !url.search) {
@@ -69,6 +103,15 @@ export default {
     if (!token || !(await verifyHmac(env.FEEDBACK_HMAC_SECRET, deal, verdict, email || "", token))) {
       return new Response("forbidden", { status: 403 });
     }
+
+    if (request.method === "GET") {
+      return confirmPage(verdict);
+    }
+
+    console.log(
+      "feedback vote",
+      JSON.stringify({ deal, verdict, ua: (request.headers.get("user-agent") || "").slice(0, 200) }),
+    );
 
     const resp = await fetch("https://api.notion.com/v1/pages", {
       method: "POST",

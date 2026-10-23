@@ -8,6 +8,10 @@ export interface Env {
   FRONTEND_URL: string
   OWNER_EMAIL: string
   UNSUBSCRIBE_HMAC_SECRET: string
+  // Telegram channel — all optional; the feature stays off until all three are set.
+  TELEGRAM_BOT_TOKEN?: string
+  TELEGRAM_BOT_USERNAME?: string
+  TELEGRAM_WEBHOOK_SECRET?: string
 }
 
 export interface SessionData {

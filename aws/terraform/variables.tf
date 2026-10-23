@@ -132,6 +132,13 @@ variable "feedback_hmac_secret" {
   default   = ""
 }
 
+variable "telegram_bot_token" {
+  description = "Telegram Bot API token. Empty disables the Telegram channel."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 variable "healthcheck_url" {
   description = "Dead-man's-switch ping URL (e.g. healthchecks.io). Pinged on clean runs."
   type        = string

@@ -63,7 +63,7 @@ resource "cloudflare_workers_script" "portal" {
   compatibility_date  = "2026-01-01"
   compatibility_flags = ["nodejs_compat"]
 
-  bindings = [
+  bindings = concat([
     {
       name         = "PORTAL_KV"
       type         = "kv_namespace"
@@ -112,7 +112,26 @@ resource "cloudflare_workers_script" "portal" {
       type = "plain_text"
       text = var.owner_email
     },
-  ]
+    ],
+    # Telegram channel: bound only once a bot is configured, so the worker's
+    # /telegram routes stay disabled (404) until then.
+    var.telegram_bot_username == "" ? [] : [
+      {
+        name = "TELEGRAM_BOT_TOKEN"
+        type = "secret_text"
+        text = var.telegram_bot_token
+      },
+      {
+        name = "TELEGRAM_WEBHOOK_SECRET"
+        type = "secret_text"
+        text = var.telegram_webhook_secret
+      },
+      {
+        name = "TELEGRAM_BOT_USERNAME"
+        type = "plain_text"
+        text = var.telegram_bot_username
+      },
+  ])
 }
 
 resource "cloudflare_workers_script_subdomain" "portal" {

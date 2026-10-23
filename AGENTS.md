@@ -28,7 +28,9 @@ infra:
 - **`feedback-worker/`** — Cloudflare Worker that records digest 👍/👎 feedback
   into Notion. **`portal-worker/`** — Hono API Worker behind the website:
   magic-link auth, subscriber settings (`/api/me`), and the access-request
-  **waitlist** (`POST /auth/request-access` → a separate Notion Waitlist DB).
+  **waitlist** (`POST /auth/request-access` → a separate Notion Waitlist DB),
+  and the optional Telegram bot webhook (`POST /telegram/webhook`: `/start
+  <token>` links a chat to a subscriber; off unless the `TELEGRAM_*` secrets are set).
   Google OAuth is scaffolded but not yet wired. CORS reads a comma-separated
   `FRONTEND_URL` allow-list. Both Workers deploy via Terraform.
 - **`terraform/`** — infra (both Workers + portal KV + secrets), auto-deployed

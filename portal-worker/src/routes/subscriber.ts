@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { requireAuth } from "../middleware/auth";
-import { findSubscriberByEmail, updateSubscriber } from "../lib/notion";
+import { findSubscriberByEmail, unlinkTelegram, updateSubscriber } from "../lib/notion";
+import { createTelegramLinkToken } from "../lib/kv";
+import { deepLink, telegramConfigured } from "../lib/telegram";
 import type { Env, SessionData, SubscriberUpdate } from "../types";
 
 type Variables = { user: SessionData };
@@ -18,7 +20,27 @@ app.get("/me", async (c) => {
     user.email
   );
   if (!found) return c.json({ error: "Subscriber not found" }, 404);
-  return c.json(found.subscriber);
+  return c.json({ ...found.subscriber, telegramAvailable: telegramConfigured(c.env) });
+});
+
+// POST /api/telegram/link — mint a one-time /start deep link for this account.
+// The chat id is written by the bot webhook (routes/telegram.ts) once the user
+// presses Start in Telegram.
+app.post("/telegram/link", async (c) => {
+  if (!telegramConfigured(c.env)) return c.json({ error: "Telegram is not enabled" }, 404);
+  const user = c.get("user");
+  const token = await createTelegramLinkToken(c.env.PORTAL_KV, {
+    email: user.email,
+    notionPageId: user.notionPageId,
+  });
+  return c.json({ url: deepLink(c.env, token) });
+});
+
+// DELETE /api/telegram/link — forget the linked chat and switch the channel off.
+app.delete("/telegram/link", async (c) => {
+  const user = c.get("user");
+  await unlinkTelegram(c.env.NOTION_TOKEN, user.notionPageId);
+  return c.json({ ok: true });
 });
 
 // PUT /api/me — update editable fields

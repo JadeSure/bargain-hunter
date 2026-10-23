@@ -51,6 +51,10 @@ jobs:
       TF_VAR_frontend_url: https://bargain-hunter.sylvalume.online,https://bargain-hunter.pages.dev
       TF_VAR_owner_email: ${{ secrets.TF_VAR_OWNER_EMAIL }}
       TF_VAR_pages_project_name: bargain-hunter
+      # Telegram channel (optional): leave unset to keep it disabled.
+      TF_VAR_telegram_bot_username: ${{ vars.TELEGRAM_BOT_USERNAME }}
+      TF_VAR_telegram_bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TF_VAR_telegram_webhook_secret: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

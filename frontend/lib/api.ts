@@ -15,6 +15,8 @@ export interface SubscriberData {
   // "HH:MM" (24h) or null = use the pipeline's global quiet-hours default.
   quietHoursStart: string | null
   quietHoursEnd: string | null
+  // Whether the portal worker has a Telegram bot configured.
+  telegramAvailable?: boolean
 }
 
 export interface SubscriberUpdate {
@@ -77,6 +79,25 @@ export async function updateMe(update: SubscriberUpdate): Promise<void> {
     credentials: 'include',
   })
   if (!res.ok) throw new Error(`${res.status}`)
+}
+
+// Telegram linking goes through the same-origin /api proxy (session cookie).
+export async function createTelegramLink(): Promise<string> {
+  const res = await fetch(`/api/telegram/link`, { method: 'POST', credentials: 'include' })
+  if (!res.ok) throw new Error(`${res.status}`)
+  const { url } = (await res.json()) as { url: string }
+  return url
+}
+
+export async function unlinkTelegram(): Promise<void> {
+  const res = await fetch(`/api/telegram/link`, { method: 'DELETE', credentials: 'include' })
+  if (!res.ok) throw new Error(`${res.status}`)
+}
+
+export async function refreshMe(): Promise<SubscriberData> {
+  const res = await fetch(`/api/me`, { credentials: 'include', cache: 'no-store' })
+  if (!res.ok) throw new Error(`${res.status}`)
+  return res.json() as Promise<SubscriberData>
 }
 
 export async function logout(cookie?: string): Promise<void> {
