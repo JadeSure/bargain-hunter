@@ -70,23 +70,49 @@ SUBSCRIBERS_PROPS: dict = {
     "Subscribe Hot Deals": {"checkbox": {}},
     "Watch Keywords": {"rich_text": {}},
     "Min Discount %": {"number": {"format": "number"}},
+    "Regions": {
+        "multi_select": {
+            "options": [
+                {"name": "us", "color": "blue"},
+                {"name": "cn", "color": "red"},
+            ]
+        }
+    },
+    # Option names are the category ids used by the portal and categories.py.
     "Categories": {
         "multi_select": {
             "options": [
-                {"name": "Computing", "color": "gray"},
-                {"name": "Gaming", "color": "purple"},
-                {"name": "Home & Garden", "color": "yellow"},
-                {"name": "Automotive", "color": "orange"},
-                {"name": "Travel", "color": "pink"},
-                {"name": "Clothing", "color": "red"},
-                {"name": "Health & Beauty", "color": "green"},
+                {"name": cat, "color": color}
+                for cat, color in (
+                    ("electronics", "yellow"),
+                    ("home", "brown"),
+                    ("fashion", "red"),
+                    ("sports", "green"),
+                    ("toys", "purple"),
+                    ("beauty", "pink"),
+                    ("food", "orange"),
+                    ("travel", "blue"),
+                    ("digital", "gray"),
+                )
+            ]
+        }
+    },
+    "Hot Level": {
+        "select": {
+            "options": [
+                {"name": "good", "color": "green"},
+                {"name": "great", "color": "yellow"},
+                {"name": "top", "color": "pink"},
             ]
         }
     },
     "Max Alerts/Day": {"number": {"format": "number"}},
     "Max Watch Alerts/Day": {"number": {"format": "number"}},
+    "Max Digital Alerts/Day": {"number": {"format": "number"}},
     "Block Keywords": {"rich_text": {}},
-    "Quiet Hours": {"rich_text": {}},
+    # "HH:MM" (AET); both set = per-subscriber override of the global quiet window.
+    "Quiet Hours Start": {"rich_text": {}},
+    "Quiet Hours End": {"rich_text": {}},
 }
 
 # ---------------------------------------------------------------------------
