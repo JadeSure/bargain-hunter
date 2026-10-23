@@ -37,6 +37,8 @@ export interface SubscriberData {
   maxAlertsPerDay: number
   maxWatchAlertsPerDay: number
   channels: string[]
+  // Extra regions beyond Australia: "us" | "cn".
+  regions: string[]
   categories: string[]
   hotLevel: string | null
   // "HH:MM" local time (run.timezone), or null to use the pipeline's global default.
@@ -52,6 +54,8 @@ export interface SubscriberUpdate {
   maxAlertsPerDay?: number
   maxWatchAlertsPerDay?: number
   channels?: string[]
+  // Extra regions beyond Australia: "us" | "cn".
+  regions?: string[]
   categories?: string[]
   hotLevel?: string | null
   quietHoursStart?: string | null

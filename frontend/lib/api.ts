@@ -9,6 +9,7 @@ export interface SubscriberData {
   maxAlertsPerDay: number
   maxWatchAlertsPerDay: number
   channels: string[]
+  regions: string[]
   categories: string[]
   hotLevel: string | null
   // "HH:MM" (24h) or null = use the pipeline's global quiet-hours default.
@@ -24,6 +25,7 @@ export interface SubscriberUpdate {
   maxAlertsPerDay?: number
   maxWatchAlertsPerDay?: number
   channels?: string[]
+  regions?: string[]
   categories?: string[]
   hotLevel?: string | null
   quietHoursStart?: string | null

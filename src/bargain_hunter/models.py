@@ -65,7 +65,10 @@ class Subscriber(BaseModel):
     email: str | None = None
     telegram_chat_id: str | None = None
     active: bool = True
-    channels: list[str] = Field(default_factory=list)  # "Email" | "Telegram"
+    channels: list[str] = Field(default_factory=lambda: ["Email"])  # "Email" | "Telegram"
+    # Extra regions beyond Australia the subscriber opted into ("us", "cn");
+    # Australian deals are always included.
+    regions: list[str] = Field(default_factory=list)
     subscribe_hot: bool = True
     watch_keywords: list[str] = Field(default_factory=list)
     min_discount_percent: float | None = None

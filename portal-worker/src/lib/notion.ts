@@ -10,6 +10,7 @@ const P = {
   TELEGRAM: "Telegram Chat ID",
   ACTIVE: "Active",
   CHANNELS: "Channels",
+  REGIONS: "Regions",
   HOT: "Subscribe Hot Deals",
   KEYWORDS: "Watch Keywords",
   MIN_DISCOUNT: "Min Discount %",
@@ -75,6 +76,7 @@ function parseSubscriber(
   if (!active) throw new Error("Subscriber is not active");
 
   const channels = multiSelect(props, P.CHANNELS);
+  const regions = multiSelect(props, P.REGIONS);
   const subscribeHot = (props[P.HOT] as { checkbox?: boolean })?.checkbox ?? false;
   const watchKeywords = parseKeywords(richText(props, P.KEYWORDS));
   const blockKeywords = parseKeywords(richText(props, P.BLOCK_KEYWORDS));
@@ -109,6 +111,7 @@ function parseSubscriber(
       maxAlertsPerDay,
       maxWatchAlertsPerDay,
       channels,
+      regions,
       categories,
       hotLevel,
       quietHoursStart,
@@ -279,6 +282,11 @@ export async function updateSubscriber(
   if (update.channels !== undefined) {
     properties[P.CHANNELS] = {
       multi_select: update.channels.map((name) => ({ name })),
+    };
+  }
+  if (update.regions !== undefined) {
+    properties[P.REGIONS] = {
+      multi_select: update.regions.map((name) => ({ name })),
     };
   }
   if (update.categories !== undefined) {

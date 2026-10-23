@@ -8,8 +8,12 @@ import { useUser } from '../context'
 // here would never match, so the checkboxes would show unchecked even when
 // the channel is actually on, and toggling would be silently dropped server-side.
 const CHANNEL_OPTIONS = [
-  { id: 'Telegram', label: 'Telegram' },
   { id: 'Email', label: 'Email' },
+]
+
+const REGION_OPTIONS = [
+  { id: 'us', label: 'US & global (software, AI, USD deals)' },
+  { id: 'cn', label: 'Mainland China (中国大陆)' },
 ]
 
 const CATEGORY_OPTIONS = [
@@ -41,6 +45,7 @@ export default function SettingsPage() {
   const [maxWatchAlerts, setMaxWatchAlerts] = useState<string>(String(user.maxWatchAlertsPerDay))
   const [channels, setChannels] = useState<string[]>(user.channels)
   const [categories, setCategories] = useState<string[]>(user.categories)
+  const [regions, setRegions] = useState<string[]>(user.regions ?? [])
   const [hotLevel, setHotLevel] = useState<string>(user.hotLevel ?? '')
   const [quietCustom, setQuietCustom] = useState<boolean>(
     Boolean(user.quietHoursStart && user.quietHoursEnd)
@@ -72,6 +77,7 @@ export default function SettingsPage() {
         maxAlertsPerDay: Number(maxAlerts) || 10,
         maxWatchAlertsPerDay: Number(maxWatchAlerts) || 5,
         channels,
+        regions,
         categories,
         hotLevel: hotLevel === '' ? null : hotLevel,
         quietHoursStart: quietCustom && quietStart ? quietStart : null,
@@ -95,8 +101,8 @@ export default function SettingsPage() {
         <div className="settings-section-title">Hot deals</div>
         <div className="settings-row">
           <div>
-            <div className="settings-field-label">Subscribe to hot deals</div>
-            <div className="settings-field-sub">Get alerts for deals that hit community hot thresholds.</div>
+            <div className="settings-field-label">Recommended hot deals</div>
+            <div className="settings-field-sub">On: community-hot deals plus your watch keywords. Off: only deals matching your watch keywords.</div>
           </div>
           <button
             role="switch"
@@ -132,7 +138,7 @@ export default function SettingsPage() {
         <div className="settings-row">
           <div>
             <div className="settings-field-label">Minimum discount %</div>
-            <div className="settings-field-sub">Leave blank to receive all deals regardless of discount.</div>
+            <div className="settings-field-sub">Hot deals with a stated discount below this are skipped; deals with no stated discount still come through. Leave blank for no limit.</div>
           </div>
           <input
             className="settings-number-input"
@@ -143,6 +149,25 @@ export default function SettingsPage() {
             value={minDiscount}
             onChange={(e) => { setMinDiscount(e.target.value); markDirty() }}
           />
+        </div>
+      </div>
+
+      {/* Regions */}
+      <div className="settings-section">
+        <div className="settings-section-title">Regions</div>
+        <div className="settings-field-sub" style={{ marginBottom: '16px' }}>Australian deals are always included. Tick to also get deals from these regions — applies to hot deals and keyword matches.</div>
+        <div className="settings-checkbox-group">
+          {REGION_OPTIONS.map(({ id, label }) => (
+            <label key={id} className="settings-checkbox-row">
+              <input
+                type="checkbox"
+                className="settings-checkbox"
+                checked={regions.includes(id)}
+                onChange={() => { setRegions(regions.includes(id) ? regions.filter((r) => r !== id) : [...regions, id]); markDirty() }}
+              />
+              <span className="settings-checkbox-label">{label}</span>
+            </label>
+          ))}
         </div>
       </div>
 
@@ -232,6 +257,7 @@ export default function SettingsPage() {
       {/* Channels */}
       <div className="settings-section">
         <div className="settings-section-title">Alert channels</div>
+        <div className="settings-field-sub" style={{ marginBottom: '16px' }}>Untick to pause email alerts (you can still log in and edit settings).</div>
         <div className="settings-checkbox-group">
           {CHANNEL_OPTIONS.map(({ id, label }) => (
             <label key={id} className="settings-checkbox-row">

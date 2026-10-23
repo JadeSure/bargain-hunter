@@ -89,6 +89,28 @@ DIGITAL_SOURCES = {
     "free_llm",
 }
 
+# Which shoppers each source serves. Every subscriber gets "au"; "us"/"cn" only
+# when opted into via Subscriber.regions. Unlisted sources reach nobody — every
+# configured source must appear here (enforced by tests/test_main.py).
+SOURCE_REGIONS = {
+    "ozbargain": "au",
+    "camelcamelcamel": "au",
+    "bargainradar": "au",
+    "bank_rates": "au",
+    "iknowthepilot": "au",
+    "aff": "au",
+    "pointhacks": "au",
+    "dealnews": "us",
+    "slickdeals": "us",
+    "appsumo": "us",
+    "vercel": "us",
+    "openrouter": "us",
+    "free_llm": "us",
+    "v2ex": "cn",
+    "smzdm": "cn",
+    "cn_llm_docs": "cn",
+}
+
 
 # Sources whose freshness is a single scalar (the newest item their feed
 # reports). cn_llm_docs is deliberately absent: it is per-page, and a scalar
@@ -627,6 +649,9 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
     for sub in subscribers:
         if not sub.active:
             continue
+        if "Email" not in sub.channels:
+            log.info("[%s] Email channel not selected; skipping.", sub.ref)
+            continue
 
         # This subscriber's effective quiet window (own override, else global).
         sub_quiet = not force and is_in_quiet_hours(sub, now, settings.run)
@@ -678,11 +703,20 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         # Hot track
         if sub.subscribe_hot and hot_deals:
             for deal in hot_deals:
+                if not _region_allowed(deal, sub):
+                    continue
                 if _is_blocked(deal, sub.block_keywords):
                     log.info("[%s] hot skip %s: blocked keyword", sub.ref, deal.key)
                     continue
                 if dedup.already_sent(deal, sub):
                     log.info("[%s] hot skip %s: already sent", sub.ref, deal.key)
+                    continue
+                if (
+                    sub.min_discount_percent is not None
+                    and deal.discount_percent is not None
+                    and deal.discount_percent < sub.min_discount_percent
+                ):
+                    log.info("[%s] hot skip %s: below min discount", sub.ref, deal.key)
                     continue
                 level = hot_levels.get(deal.key, top_name)
                 if not _hot_level_eligible(
@@ -761,7 +795,12 @@ def run(settings: Settings, dry_run: bool = False, force: bool = False) -> dict:
         }
 
         # Watch track (independent cap — does not share quota with hot)
-        watch_hits = filter_watch_matches(active_deals, sub, settings.scoring.watch, now=now)
+        watch_hits = filter_watch_matches(
+            [d for d in active_deals if _region_allowed(d, sub)],
+            sub,
+            settings.scoring.watch,
+            now=now,
+        )
         for deal, reason, watch_target_price in watch_hits:
             if deal.key in notified_keys:
                 # Already queued via hot — annotate as mixed (no watch cap cost).
@@ -947,6 +986,10 @@ def _hot_level_eligible(
     if deal_matches_categories(deal, sub.categories, taxonomy):
         return True
     return universal_top and level == top_name
+
+
+def _region_allowed(deal: Deal, sub: Subscriber) -> bool:
+    return SOURCE_REGIONS.get(deal.source) in {"au", *sub.regions}
 
 
 def _split_digital(items: list[DealItem]) -> tuple[list[DealItem], list[DealItem]]:

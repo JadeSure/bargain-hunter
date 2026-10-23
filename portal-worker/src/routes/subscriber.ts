@@ -71,6 +71,12 @@ app.put("/me", async (c) => {
     const valid = new Set(["Email", "Telegram"]);
     update.channels = body.channels.filter((ch) => valid.has(String(ch)));
   }
+  if (Array.isArray(body.regions)) {
+    const valid = new Set(["us", "cn"]);
+    update.regions = [...new Set(body.regions.map((r) => String(r).trim().toLowerCase()))].filter(
+      (r) => valid.has(r),
+    );
+  }
   if (Array.isArray(body.categories)) {
     update.categories = body.categories.map((c) => String(c).trim()).filter(Boolean);
   }

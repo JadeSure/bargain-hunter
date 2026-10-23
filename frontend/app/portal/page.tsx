@@ -20,7 +20,7 @@ export default function PortalOverview() {
   const floor = user.hotLevel ?? 'good'
   const floorRank = rank[floor] ?? 0
   const levelLabel = hotOff
-    ? 'Off'
+    ? 'Keywords only'
     : floor === 'top'
     ? 'Top only'
     : floor === 'great'

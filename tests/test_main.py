@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from bargain_hunter import main as main_mod
-from bargain_hunter.config import Settings
+from bargain_hunter.config import Settings, load_settings
 from bargain_hunter.main import _is_blocked
 from bargain_hunter.models import Deal, Subscriber
 
@@ -381,6 +381,7 @@ def test_digital_track_uses_independent_daily_cap(monkeypatch, tmp_path):
     )
     sub = Subscriber(
         name="Digital", email="digital@example.com",
+        regions=["us"],
         subscribe_hot=False, watch_keywords=["SuperGrok"],
         max_alerts_per_day=0, max_watch_alerts_per_day=0,
     )
@@ -410,7 +411,7 @@ def test_digital_entry_survives_quiet_hours_queue_and_drain(monkeypatch, tmp_pat
     )
     sub = Subscriber(
         name="Night", email="night@example.com",
-        subscribe_hot=False, watch_keywords=["SuperGrok"],
+        regions=["us"], subscribe_hot=False, watch_keywords=["SuperGrok"],
     )
     dedup = _FakeDedup()
 
@@ -454,6 +455,7 @@ def test_digital_source_deal_that_is_also_watch_matched_arrives_mixed(monkeypatc
     )
     sub = Subscriber(
         name="Mixed", email="mixed@example.com",
+        regions=["us"],
         subscribe_hot=True, watch_keywords=["NordVPN"],
     )
     dedup = _FakeDedup()
@@ -591,3 +593,94 @@ def test_live_run_persists_state_and_observations(monkeypatch, tmp_path):
 
     assert Path("data/deals_state.json").exists()
     assert list(Path("data/observations").glob("*.jsonl"))
+
+
+# ---------------------------------------------------------------------------
+# Regions, channels and min-discount routing.
+# ---------------------------------------------------------------------------
+
+
+def test_every_configured_source_has_a_region():
+    settings = load_settings()
+    assert set(settings.sources) <= set(main_mod.SOURCE_REGIONS)
+
+
+def _watch_trusted_settings() -> Settings:
+    return Settings.model_validate(
+        {
+            "sources": {"ozbargain": {"enabled": True}},
+            "scoring": {
+                "watch": {
+                    "min_votes": 5,
+                    "min_discount_percent": 10,
+                    "trusted_sources": ["dealnews", "v2ex"],
+                },
+            },
+        }
+    )
+
+
+def _run_watch(monkeypatch, tmp_path, source, regions):
+    deal = _deal(
+        source=source,
+        deal_id="r1",
+        title="Nintendo Switch OLED 40% off",
+        votes_pos=20,
+        discount_percent=40,
+        posted_at=datetime.now(UTC) - timedelta(hours=1),
+    )
+    sub = Subscriber(
+        name="R", email="r@example.com", subscribe_hot=False,
+        watch_keywords=["Nintendo"], regions=regions,
+    )
+    sent = _wire_run(monkeypatch, tmp_path, [deal], sub, _FakeDedup(), quiet=False)
+    main_mod.run(_watch_trusted_settings(), dry_run=True)
+    return sent
+
+
+def test_watch_region_filter(monkeypatch, tmp_path):
+    assert _run_watch(monkeypatch, tmp_path, "ozbargain", []) != []
+    for source, region in (("v2ex", "cn"), ("dealnews", "us")):
+        assert _run_watch(monkeypatch, tmp_path, source, []) == []
+        assert _run_watch(monkeypatch, tmp_path, source, [region]) != []
+        assert _run_watch(monkeypatch, tmp_path, source, ["cn" if region == "us" else "us"]) == []
+
+
+def _run_hot(monkeypatch, tmp_path, deals, sub):
+    monkeypatch.setattr(main_mod, "classify_hot", lambda *a, **kw: "top")
+    sent = _wire_run(monkeypatch, tmp_path, deals, sub, _FakeDedup(), quiet=False)
+    main_mod.run(_watch_settings(), dry_run=True)
+    return sent
+
+
+def _hot_deal(source="ozbargain", discount=None):
+    return _deal(
+        source=source,
+        deal_id="h1",
+        title="Some deal",
+        price=1.0,  # non-None skips title enrichment, keeping discount_percent as given
+        discount_percent=discount,
+        posted_at=datetime.now(UTC) - timedelta(hours=1),
+    )
+
+
+def test_hot_region_filter(monkeypatch, tmp_path):
+    deal = _hot_deal("dealnews")
+    au_only = Subscriber(name="A", email="a@example.com")
+    assert _run_hot(monkeypatch, tmp_path, [deal], au_only) == []
+    us = Subscriber(name="U", email="u@example.com", regions=["us"])
+    assert len(_run_hot(monkeypatch, tmp_path, [deal], us)) == 1
+    assert len(_run_hot(monkeypatch, tmp_path, [_hot_deal()], au_only)) == 1
+
+
+def test_channel_gate(monkeypatch, tmp_path):
+    for channels, expected in (([], 0), (["Telegram"], 0), (["Email"], 1)):
+        sub = Subscriber(name="C", email="c@example.com", channels=channels)
+        assert len(_run_hot(monkeypatch, tmp_path, [_hot_deal()], sub)) == expected
+
+
+def test_hot_min_discount(monkeypatch, tmp_path):
+    sub = Subscriber(name="M", email="m@example.com", min_discount_percent=20)
+    assert _run_hot(monkeypatch, tmp_path, [_hot_deal(discount=10)], sub) == []
+    assert len(_run_hot(monkeypatch, tmp_path, [_hot_deal(discount=30)], sub)) == 1
+    assert len(_run_hot(monkeypatch, tmp_path, [_hot_deal(discount=None)], sub)) == 1

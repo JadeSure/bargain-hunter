@@ -17,6 +17,7 @@ _P_EMAIL = "Email"
 _P_TELEGRAM = "Telegram Chat ID"
 _P_ACTIVE = "Active"
 _P_CHANNELS = "Channels"
+_P_REGIONS = "Regions"
 _P_HOT = "Subscribe Hot Deals"
 _P_KEYWORDS = "Watch Keywords"
 _P_MIN_DISCOUNT = "Min Discount %"
@@ -112,6 +113,7 @@ def _parse_subscriber(
     telegram = _text(props.get(_P_TELEGRAM, {})) or None
     active = _checkbox(props.get(_P_ACTIVE, {}))
     channels = _multiselect(props.get(_P_CHANNELS, {}))
+    regions = [r.strip().lower() for r in _multiselect(props.get(_P_REGIONS, {})) if r.strip()]
     subscribe_hot = _checkbox(props.get(_P_HOT, {}))
     keywords_raw = _text(props.get(_P_KEYWORDS, {}))
     watch_keywords = _parse_keywords(keywords_raw)
@@ -138,6 +140,7 @@ def _parse_subscriber(
         telegram_chat_id=telegram,
         active=active,
         channels=channels,
+        regions=regions,
         subscribe_hot=subscribe_hot,
         watch_keywords=watch_keywords,
         block_keywords=block_keywords,

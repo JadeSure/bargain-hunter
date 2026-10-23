@@ -71,3 +71,17 @@ def test_quiet_hours_parsed_when_present():
     )
     assert sub.quiet_hours_start == "22:00"
     assert sub.quiet_hours_end == "07:00"
+
+
+def test_regions_parsed_lowercased_and_default_empty():
+    sub = _parse_subscriber(
+        _props(Regions={"multi_select": [{"name": "US"}, {"name": "cn"}]}),
+        default_max_alerts_per_day=10,
+    )
+    assert sub.regions == ["us", "cn"]
+    assert _parse_subscriber(_props(), default_max_alerts_per_day=10).regions == []
+
+
+def test_empty_channels_parse_to_empty_list():
+    sub = _parse_subscriber(_props(Channels={"multi_select": []}), default_max_alerts_per_day=10)
+    assert sub.channels == []
