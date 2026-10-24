@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xebdzl",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xebdzl/8_gb_gpu_262k_context_35_bpw_qwenflashnext_coder/",
+  "title": "8 GB GPU, 262K context 3.5 BPW Qwen-Flash-Next Coder 70 T/s using llama.cpp",
+  "author": "/u/jonathanx37",
+  "body": "The methodology Qwen-Flash-Next has n-gram, MOE packing above its weight but it's still 6B active params. We exploit this by keeping most MOEs in RAM (Smallest MOEs go in VRAM for speedup) and n-gram on disk - ensure you put the model on your fastest SSD. 8 GB VRAM, 24 GB RAM cost. You can run this fine if you've ~32 GB total memory too, but you'd have to turn down context size . Customize the launch params to best suit your hardware. EDIT Note : Apparently CUDA struggles to run this with 8 GB VRAM, so please use Vulkan backend if it fails to run for you. You can also use the second launch params below in the same comment chain. Ontop of that reduce context size and ensure no background app is wasting your VRAM. You can disable your browsers HW acceleration for this purpose. The model & quant Many people mistake this model for a 1 bit quant so let's get that out of the way. This model here is a 3.5 Bits Per Weight \"Coder\" variant by ISTA DASLab , featuring GSQ RCO quantization. Half of its experts are removed, so relatively to original param size it has the size of a 1.9 bit quant but the actual weights use 3.5 BPW. see from model page: Averaged over the transformer, this corresponds to 1.89 bits per parameter of the original model. The figure is an effective rate: it amortises the removed experts over the original parameter count , and so expresses the combined effect of pruning and quantization. No individual weight is stored at 1.89 bits . The retained weights are stored at 3.5 bpw, unchanged by pruning , and the halved expert count accounts for the remainder of the reduction. Following the convention of the accompanying releases, the figure is reported over the transformer... Non-coding vocabulary pruned 400~ MB smaller, recommended Official ISTA DASLab quant The numbers With selective moe-offloading (regex) we reach 70 T/s PP and 8~ T/s TG (Limited by PCIE, which I've 3.0 YMMV) whereas if you'd use --n-cpu-moe for same effect it'd been slower due to the effects mentioned here Because of MMAP your first run will be slower , do a second run for accurate T/s results. Launch params are in the comments below. Ensure you use the qwen sharp chat template, it reduces overthinking. submitted by /u/jonathanx37 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-24T15:21:50Z",
+  "fetched_at": "2026-10-24T18:18:14.833173Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "e3aa4e9dc7f0ed94",
+  "key": "reddit:1xebdzl"
+}
