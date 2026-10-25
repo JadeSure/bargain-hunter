@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xf1cx0",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xf1cx0/how_much_difference_does_kv_cache_quants_even_make/",
+  "title": "how much difference does kv cache quants even make?",
+  "author": "/u/thatscoolbutno123",
+  "body": "I currently run qwen flash next 3.8 iq3xxs via strata (like almost everyone lol) and I currently have kv cache at q8 with 262k ctx. Ive never actually tried any other quant and dont know how big the difference even is. Id like to have a bit more context (like 300-400k) but it doesnt fit my ram then. how bad is q4 cache? Thanks for your help Edit: Thanks for all of your suggestions, opinions and information, i will try out 8k4v as many of you recommended, otherwise ill stay at 8 for both submitted by /u/thatscoolbutno123 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-25T12:41:13Z",
+  "fetched_at": "2026-10-25T18:31:20.696388Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "0ee4358e00c93c93",
+  "key": "reddit:1xf1cx0"
+}
