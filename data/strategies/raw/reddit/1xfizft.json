@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xfizft",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xfizft/psa_llamacpp_cve2026116096/",
+  "title": "PSA: llama.cpp CVE-2026-116096",
+  "author": "/u/Bulky-Priority6824",
+  "body": "https://nvd.nist.gov/vuln/detail/cve-2026-116096 25-10-2026 Description A weakness has been identified in ggml-org llama.cpp. Affected by this issue is the function list_pockettts_state_slots of the file tools/mtmd/models/pockettts-gen.cpp of the component Pocket-TTS. This manipulation of the argument mmproj causes out-of-bounds write. *The attack requires local access. The exploit has been made available to the public and could be used for attacks. Upgrading to version b11796 can resolve this issue. Patch name: 0a1ef309cdbb9f2024f58a38fb4c42352c5db569. The affected component should be upgraded. The reported heap out‑of‑bounds write (gen‑audio / pocket‑tts state_out path) is no longer a silent exploitable heap write on current master and the latest release b11871 - a malicious mmproj that previously triggered it now trips a release‑active GGML_ASSERT and aborts. But the submitter's recommended by‑construction fix (PR #29360 \"prevent OOB accesses from malformed mmproj files\") is still open. So the root cause is detected‑and‑aborted, not prevented‑by‑design. _--------------_ a second one 26 October 2026 https://nvd.nist.gov/vuln/detail/cve-2026-116467 CVE-2026-116467 Description A security flaw has been discovered in ggml-org llama.cpp up to 0.7.0. Affected by this vulnerability is an unknown functionality of the file src/llama-sampler.cpp of the component Mirostat Sampler. The manipulation results in reachable assertion. It is possible to launch the attack remotely. The project was informed of the problem early through a pull request but has not reacted yet. submitted by /u/Bulky-Priority6824 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-26T00:53:40Z",
+  "fetched_at": "2026-10-26T20:40:39.161844Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "cd4ee8e846c17f89",
+  "key": "reddit:1xfizft"
+}

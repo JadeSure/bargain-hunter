@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xfqj4p",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xfqj4p/3090_died_looking_for_replacement_card/",
+  "title": "3090 died, looking for replacement card",
+  "author": "/u/like_a_tensor",
+  "body": "My 3090 failed, not sure if the core is dead. I sent it to a reputable repair shop, so hopefully the card can be saved. I bought it back in 2023 for ~$750, so I have quite a bit of runway before I lose money on it given that prices for used 3090s are going upwards of $1500 now on eBay. I'm planning for the unfortunate scenario where it really is dead, in which case I'd like a replacement. I'm a heavy Qwen 3.8 27B user. I was looking at some of the Blackwell cards, but their prices are bonkers for at most 16GB. I was also looking at the 7900 xtx, but I also work with some protein folding models that require CUDA. Any recommendations? It's starting to look like I'll need to shell out >$1500 if I want to get anything close to what I had before. submitted by /u/like_a_tensor [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-26T07:51:19Z",
+  "fetched_at": "2026-10-26T20:40:39.161844Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "b60cba61ea6d108b",
+  "key": "reddit:1xfqj4p"
+}
