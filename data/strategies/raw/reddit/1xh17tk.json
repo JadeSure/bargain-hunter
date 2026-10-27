@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xh17tk",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xh17tk/statistically_lossless_qwen38_27b_ggufs/",
+  "title": "Statistically Lossless Qwen3.8 27B GGUFs",
+  "author": "/u/Dany0",
+  "body": "Reposting just the HF link because author hid their analysis behind a paywall on their blog & apparently want qwen3.8 FN to find an exploit on substack & upload the contents of his blog to an alibaba server submitted by /u/Dany0 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-27T18:52:27Z",
+  "fetched_at": "2026-10-27T20:11:15.792833Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "785ce3a0d7471344",
+  "key": "reddit:1xh17tk"
+}
