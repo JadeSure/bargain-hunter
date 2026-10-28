@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xhqlrw",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xhqlrw/alternative_to_artificialanalysis_for_assessing/",
+  "title": "Alternative to artificialanalysis for assessing latest models?",
+  "author": "/u/thiswebthisweb",
+  "body": "AA no longer lists GLM5.3 flash (despite clearly being one of the best models - and probably the cheapest per intelligence) , they seem to have been doing all sorts of changes to push US models and hiding good cost effective models, including qwen 3.8 flash, so that table is no good. I need a better one. Any alternatives. submitted by /u/thiswebthisweb [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-28T15:06:33Z",
+  "fetched_at": "2026-10-28T20:28:05.347251Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "223b814279fe45cd",
+  "key": "reddit:1xhqlrw"
+}
