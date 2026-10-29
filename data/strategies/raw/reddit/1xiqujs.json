@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xiqujs",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xiqujs/old_xeon_x99_pc_with_256gb_ram_rtx_3090_ti_worth/",
+  "title": "old Xeon X99 PC with 256GB RAM + RTX 3090 Ti worth it for Strata LLM inference?",
+  "author": "/u/Ammoryyy",
+  "body": "​ I found this used PC in my local market for around $420: - CPU: Xeon E5-2640 v3 (8C/16T) - Motherboard: X99 (exact model unknown) - RAM: 16GB DDR4 (planning to upgrade to 256GB) - Storage: 128GB SSD - Includes a 1080p 144Hz monitor and accessories. I'm planning to add my RTX 3090 Ti 24GB and upgrade to 256GB DDR4, mainly to run large LLMs using Strata Engine with RAM/VRAM offloading. This is one of the few affordable platforms available locally that might support more than 128GB RAM. My question: Would this old Xeon be usable for Strata inference, or would its CPU and memory bandwidth make it painfully slow? Is it worth buying, or should I avoid it? submitted by /u/Ammoryyy [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-29T17:44:22Z",
+  "fetched_at": "2026-10-29T20:26:51.732457Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "d204ac0a1c901b52",
+  "key": "reddit:1xiqujs"
+}
