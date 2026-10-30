@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xje5oo",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xje5oo/sensenovasensenovaloop9bpreview_hugging_face/",
+  "title": "sensenova/SenseNova-Loop-9B-Preview · Hugging Face",
+  "author": "/u/jacek2023",
+  "body": "Overview SenseNova-Loop-9B-Preview is a multimodal language model developed for long-context and agentic workflows. It accepts text and images and generates text for applications that combine document understanding, coding, and interaction with external tools. The model combines a looped decoder with two-stream manifold-constrained hyper-connections (mHC) . A contiguous block of decoder layers is executed twice with shared weights, while learned mappings manage information flow between two residual streams in the looped section. Together, these components provide a deeper execution path without duplicating the repeated block's parameters. Documented training recipes combine long sequences, multimodal inputs, and supervised task trajectories, with a maximum training sequence length of 262,144 tokens. For the best model performance, we recommend using our documented deployment environment and configuration parameters. Model highlights Shared looped block: 24 decoder layers are applied twice in sequence, producing 56 decoder-layer executions from 32 distinct layers. Two-stream mHC: learned mappings route and combine information across two residual streams in the looped section. Hybrid attention: the decoder interleaves linear and full attention in a repeating four-layer pattern. Long-context multimodal training: documented recipes include text, images, code, and tool trajectories at sequence lengths up to 256K tokens. submitted by /u/jacek2023 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-30T12:34:31Z",
+  "fetched_at": "2026-10-30T19:59:34.747160Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "f4ee56cc5c8c0d03",
+  "key": "reddit:1xje5oo"
+}

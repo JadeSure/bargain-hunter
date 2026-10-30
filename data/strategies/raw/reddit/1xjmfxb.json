@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xjmfxb",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xjmfxb/datalabtosuryaocr25_hugging_face/",
+  "title": "datalab-to/surya-ocr-2.5 · Hugging Face",
+  "author": "/u/pmttyji",
+  "body": "Surya is a 689M param OCR model with these features: Accuracy - scores 85.9 on OmniParseBench , the highest of the open models under 1B parameters we have scored, and 83.7% on olmOCR-bench Speed - throughput of 4.5 pages/s on one H100 at 192 DPI, 1.7x Surya 2 with MTP (see Throughput ) Multilingual - scores 74.9% on an internal benchmark set of 91 languages (more here ) Layout analysis (table, image, header, etc.) with reading order Tables as HTML, with merged cells as colspan / rowspan (row and column geometry needs a Surya 2 checkpoint; see Limitations) Commercial usage The Surya code is licensed under Apache 2.0. The model weights use a modified AI Pubs Open Rail-M license (free for research, personal use, and startups under $5M funding/revenue). For broader commercial licensing of the model weights, visit our pricing page here . Limitations This is specialized for document OCR. Performance on photos or natural scenes is not the goal. Layout / OCR / table_rec all need a running inference backend (vllm or llama.cpp). Detection runs purely on torch and works without it. Surya 2.5 reads tables as HTML (full-page OCR, block mode, surya_table ), but not row and column geometry: surya_table --mode simple returns an error. Use a Surya 2 checkpoint ( SURYA_MODEL_CHECKPOINT=datalab-to/surya-ocr-2 ) for geometry. Github : https://github.com/datalab-to/surya submitted by /u/pmttyji [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-30T17:55:46Z",
+  "fetched_at": "2026-10-30T19:59:34.747160Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "d7326ea7c8241fc4",
+  "key": "reddit:1xjmfxb"
+}

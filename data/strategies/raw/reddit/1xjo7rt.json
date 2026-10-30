@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xjo7rt",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xjo7rt/update_new_quants_swift_15_flash_next_heretic_v2/",
+  "title": "UPDATE - New Quants: Swift 1.5 Flash Next - Heretic v2 - ReverseEngineer",
+  "author": "/u/jjusko20",
+  "body": "Original post: https://www.reddit.com/r/LocalLLaMA/comments/1xix35p/release_swift_15_flash_next_heretic_v2/ Hello! At request I've released a few more formats of my Swift Flash Next Heretic reverse engineering edition. The original model is the IQ4_NL, the first quant I made and the best performance/size ratio. That's my favorite but its hefty and I appreciate people wanting other options. A: IQ4_XS - Based on the Unsloth IQ4_xS recipe, with about 1gb overhead added where it was worth the performance to size tradeoff. Estimated ~9.7% reduction in expert quantization error mass for +0.96 GiB over the plain UD-IQ4_XS recipe. Quantized with an identical imatrix to the IQ4_NL quant: 94.7 GB on disk compared to 109gb for the IQ4_NL. B: IQ3_S - most requested. Custom quant recipe based on data gathered from the model, in the same way the other quants were done. High quality and model specific. I modeled mine off of ISTALab's with a few adjustments. IQ3_S uses a more aggressive imatrix distribution than the IQ4 to try to preserve strong reverse engineering capabilities at lower bit widths, since it's getting small. While the IQ4 builds are 70%/30% distribution in the imatrix merge, this one is 80%/20% - better reverse engineering and reasoning ability at the cost of some general knowledge and accuracy. 85gb on disk (ISTA GSQ-RCO IQ3_S is 83.6 gb, so 1.4gb overhead - it's worth it for the accuracy improvements. https://huggingface.co/trubisky/Swift-1.5-Flash-Next-Heretic-ReverseEngineer Cheers. submitted by /u/jjusko20 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-30T19:02:34Z",
+  "fetched_at": "2026-10-30T19:59:34.747160Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "a483a62928c3a4bc",
+  "key": "reddit:1xjo7rt"
+}
