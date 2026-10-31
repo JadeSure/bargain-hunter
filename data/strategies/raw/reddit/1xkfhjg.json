@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xkfhjg",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xkfhjg/whats_the_advantage_of_building_a_custom_harness/",
+  "title": "What's the advantage of building a custom harness over using something like Unsloth?",
+  "author": "/u/Marino4K",
+  "body": "I’m still fairly new to local LLMs, got a decent machine (M5 Max, 64GB RAM), trying to understand something I’ve been seeing recommended a lot lately. In several threads where new users are frustrated/confused or even more experienced users are struggling to get good results from their local models, I keep seeing suggestions to have Claude or ChatGPT help them build a custom harness. I suppose I view it like the model is the engine and the harness is like the entire car? What I’m not understanding is why someone would go that route instead of using something like Unsloth or MLX Serve, which already have web search, tool calling, etc. Aren’t these programs essentially harnesses or am I completely incorrect? I’m probably just missing the point, maybe more tinkering/experimenting is just part of the hobby. I just want to learn and understand the differences per se. Obviously I’m sure this thread will have plenty of personal suggestions or ideas but the main thing is just the learning aspect, the purpose, etc. submitted by /u/Marino4K [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-31T17:03:51Z",
+  "fetched_at": "2026-10-31T19:27:11.168966Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "27c1c1e807fff201",
+  "key": "reddit:1xkfhjg"
+}
