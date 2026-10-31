@@ -7,6 +7,7 @@ on:
       - "frontend/**"
       - "data/strategies/guides/**"
       - "data/strategies/onboarding/**"
+      - "data/bf2026/**"
       - "data/leaderboard.json"
       - ".github/workflows/deploy-frontend.yml"
   schedule:

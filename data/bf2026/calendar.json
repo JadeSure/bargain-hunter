@@ -1,0 +1,172 @@
+[
+ {
+  "id": "cf",
+  "event": "Click Frenzy 主场",
+  "start": "2026-10-27",
+  "end": "2026-10-30",
+  "date_label": "10月27日 周二",
+  "status": "已结束",
+  "note": "已经错过",
+  "source": "https://www.ozbargain.com.au/pages/click-frenzy"
+ },
+ {
+  "id": "s11",
+  "event": "双 11 Singles Day",
+  "start": "2026-11-11",
+  "end": "2026-11-11",
+  "date_label": "11月11日 周三",
+  "status": "已确认",
+  "note": "韩妆、AliExpress、部分澳洲品牌参加",
+  "source": "https://www.shopback.com.au/blog/finance/au-black-friday-2026-when-to-buy-what"
+ },
+ {
+  "id": "early",
+  "event": "早鸟闪购（Dyson eBay 店、Costco、Amazon 单日价）",
+  "start": "2026-11-12",
+  "end": "2026-11-19",
+  "date_label": "11月12日 周四",
+  "status": "按往年推测",
+  "note": "2025 年 Supersonic $299、咖啡机 $518 都是 11/12 出现的",
+  "source": "https://www.ozbargain.com.au/product/dyson-supersonic"
+ },
+ {
+  "id": "amazon",
+  "event": "Amazon AU 黑五",
+  "start": "2026-11-18",
+  "end": "2026-12-01",
+  "date_label": "11月18日 周三",
+  "status": "按往年推测",
+  "note": "2025 年 11/18–12/1",
+  "source": "https://www.tomsguide.com/live/news/best-amazon-black-friday-2025-deals-australia-1"
+ },
+ {
+  "id": "tgg",
+  "event": "The Good Guys",
+  "start": "2026-11-19",
+  "end": "2026-11-30",
+  "date_label": "11月19日 周四",
+  "status": "按往年推测",
+  "note": "",
+  "source": "https://www.shopback.com.au/blog/finance/australia-black-friday-2026-sale-calendar"
+ },
+ {
+  "id": "kogan",
+  "event": "Kogan / Catch",
+  "start": "2026-11-20",
+  "end": "2026-11-30",
+  "date_label": "11月20日 周五",
+  "status": "按往年推测",
+  "note": "",
+  "source": "https://www.shopback.com.au/blog/finance/australia-black-friday-2026-sale-calendar"
+ },
+ {
+  "id": "jb",
+  "event": "JB Hi-Fi / Harvey Norman / Officeworks / Chemist Warehouse",
+  "start": "2026-11-23",
+  "end": "2026-11-30",
+  "date_label": "11月23日 周一",
+  "status": "按往年推测",
+  "note": "大部分大商场从这周一开始",
+  "source": "https://www.mozo.com.au/online-shopping/black-friday"
+ },
+ {
+  "id": "beauty",
+  "event": "Sephora / Adore Beauty（Mecca 很少参加）",
+  "start": "2026-11-24",
+  "end": "2026-12-01",
+  "date_label": "11月24日 周二",
+  "status": "按往年推测",
+  "note": "",
+  "source": "https://www.shopback.com.au/blog/finance/australia-black-friday-2026-sale-calendar"
+ },
+ {
+  "id": "dept",
+  "event": "Myer / David Jones / The Iconic",
+  "start": "2026-11-25",
+  "end": "2026-11-30",
+  "date_label": "11月25日 周三",
+  "status": "按往年推测",
+  "note": "",
+  "source": "https://www.shopback.com.au/blog/finance/australia-black-friday-2026-sale-calendar"
+ },
+ {
+  "id": "bf",
+  "event": "黑五 Black Friday",
+  "start": "2026-11-27",
+  "end": "2026-11-27",
+  "date_label": "11月27日 周五",
+  "status": "已确认",
+  "note": "周五",
+  "source": "https://www.mozo.com.au/online-shopping/black-friday"
+ },
+ {
+  "id": "apple",
+  "event": "Apple 购物活动（送礼品卡，不降价）",
+  "start": "2026-11-27",
+  "end": "2026-11-30",
+  "date_label": "11月27日 周五",
+  "status": "按往年推测",
+  "note": "2025 年 11/28–12/1",
+  "source": "https://www.gadgetguy.com.au/apple-black-friday-gift-card-iphone-macbook-promotion-2025"
+ },
+ {
+  "id": "cm",
+  "event": "网一 Cyber Monday",
+  "start": "2026-11-30",
+  "end": "2026-11-30",
+  "date_label": "11月30日 周一",
+  "status": "已确认",
+  "note": "周一",
+  "source": "https://www.mozo.com.au/online-shopping/black-friday"
+ },
+ {
+  "id": "cn-std",
+  "event": "寄中国：标准包裹截止",
+  "start": "2026-12-04",
+  "end": "2026-12-04",
+  "date_label": "12月4日 周五",
+  "status": "已确认",
+  "note": "经济包裹今年暂停",
+  "source": "https://auspost.com.au/personal/sending/christmas-sending-dates"
+ },
+ {
+  "id": "cn-exp",
+  "event": "寄中国：Express 截止",
+  "start": "2026-12-08",
+  "end": "2026-12-08",
+  "date_label": "12月8日 周二",
+  "status": "已确认",
+  "note": "",
+  "source": "https://auspost.com.au/personal/sending/christmas-sending-dates"
+ },
+ {
+  "id": "cn-cour",
+  "event": "寄中国：Courier 截止",
+  "start": "2026-12-15",
+  "end": "2026-12-15",
+  "date_label": "12月15日 周二",
+  "status": "已确认",
+  "note": "",
+  "source": "https://auspost.com.au/personal/sending/christmas-sending-dates"
+ },
+ {
+  "id": "au-post",
+  "event": "澳洲境内同州包裹截止",
+  "start": "2026-12-22",
+  "end": "2026-12-22",
+  "date_label": "12月22日 周二",
+  "status": "已确认",
+  "note": "Express Post 12/23",
+  "source": "https://auspost.com.au/personal/sending/christmas-sending-dates"
+ },
+ {
+  "id": "boxing",
+  "event": "节礼日 Boxing Day",
+  "start": "2026-12-26",
+  "end": "2027-01-02",
+  "date_label": "12月26日 周六",
+  "status": "按往年推测",
+  "note": "Sonos、服装清仓、旧款吸尘器",
+  "source": "https://www.shopback.com.au/blog/finance/eofy-vs-black-friday-vs-boxing-day-vs-click-frenzy-au-2026"
+ }
+]

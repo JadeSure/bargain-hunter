@@ -1,0 +1,50 @@
+[
+ {
+  "id": "parcel",
+  "topic": "寄回国：每个包裹限值",
+  "value": "RMB 2,000",
+  "status": "已确认（2024-12-01 起）",
+  "note": "超过按货物进口；单件不可分割的除外",
+  "source": "https://gss.mof.gov.cn/gzdt/zhengcefabu/202411/P020241129682518318359.pdf"
+ },
+ {
+  "id": "tax50",
+  "topic": "寄回国：免税条件",
+  "value": "应缴税额 ≤ RMB 50 免征",
+  "status": "已确认",
+  "note": "算的是税额，不是货值",
+  "source": "https://gss.mof.gov.cn/gzdt/zhengcefabu/202411/P020241129682518318359.pdf"
+ },
+ {
+  "id": "rate",
+  "topic": "寄回国：税率",
+  "value": "食品、药品 13%；衣服、运动用品及其他 20%；烟酒、首饰、高档化妆品 50%",
+  "status": "已确认",
+  "note": "保健品、奶粉、蜂蜜按食品类推断为 13%，未找到官方分类表确认",
+  "source": "https://gss.mof.gov.cn/gzdt/zhengcefabu/202411/P020241129682518318359.pdf"
+ },
+ {
+  "id": "carry",
+  "topic": "带回国：居民免税额",
+  "value": "RMB 5,000",
+  "status": "已确认",
+  "note": "超出部分征税；单件不可分割的全额征税",
+  "source": "https://gss.mof.gov.cn/gzdt/zhengcefabu/202411/P020241129682518318359.pdf"
+ },
+ {
+  "id": "qty",
+  "topic": "保健品 / 奶粉 / 蜂蜜数量",
+  "value": "“自用合理数量”，没有公开的具体数字",
+  "status": "未核实",
+  "note": "生鲜肉、奶制品在禁止寄递名录里；蜂蜜、奶粉能否邮寄没查到官方说法，打 12360 问",
+  "source": "https://paper.people.com.cn/hwbwap/html/2024-08/24/content_26076641.htm"
+ },
+ {
+  "id": "liquid",
+  "topic": "托运液体",
+  "value": "蜂蜜、乳霜超过 100 mL 放托运行李",
+  "status": "常识，按航司为准",
+  "note": "",
+  "source": ""
+ }
+]

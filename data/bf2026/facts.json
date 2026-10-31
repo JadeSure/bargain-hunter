@@ -1,0 +1,26 @@
+[
+ {
+  "id": "accc_2025",
+  "label": "ACCC 2025 年抽查约 50 家黑五商家",
+  "value": "约一半宣传有问题",
+  "source": "https://www.channelnews.com.au/accc-smashes-fake-black-friday-deals-as-major-retail-brands-fined/"
+ },
+ {
+  "id": "choice_doubt",
+  "label": "Choice 2025 年调查：认为黑五折扣不总是真的",
+  "value": "52%",
+  "source": "https://www.choice.com.au/shopping/online-shopping/buying-online/articles/black-friday-cyber-monday-online-shopping-tips"
+ },
+ {
+  "id": "ara_2025",
+  "label": "ARA 预测 2025 年黑五到网一 4 天消费",
+  "value": "$6.8b（+4%）",
+  "source": "https://www.roymorgan.com/findings/10053-ara-roy-morgan-media-release-christmas-spending-peak-season-2025"
+ },
+ {
+  "id": "nz_2023",
+  "label": "Consumer NZ 2023：黑五前几周同价或更便宜的商品",
+  "value": "77%（新西兰数据）",
+  "source": "https://www.scoop.co.nz/stories/BU2311/S00341/consumer-nz-study-finds-phony-black-friday-deals.htm"
+ }
+]
