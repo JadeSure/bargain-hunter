@@ -10,6 +10,16 @@
   "source": "https://www.ozbargain.com.au/pages/click-frenzy"
  },
  {
+  "id": "early",
+  "event": "黑五前两周（七成好价在黑五之前）",
+  "start": "2026-11-10",
+  "end": "2026-11-26",
+  "date_label": "11月10日 周二",
+  "status": "按往年推测",
+  "note": "OzBargain 2024、2025 年：69–76% 的黑五好价在黑五当天之前发出；2025 年 Supersonic $299、咖啡机 $518 都是 11/12 出现的",
+  "source": "https://www.ozbargain.com.au/event/black-friday"
+ },
+ {
   "id": "s11",
   "event": "双 11 Singles Day",
   "start": "2026-11-11",
@@ -20,14 +30,14 @@
   "source": "https://www.shopback.com.au/blog/finance/au-black-friday-2026-when-to-buy-what"
  },
  {
-  "id": "early",
-  "event": "早鸟闪购（Dyson eBay 店、Costco、Amazon 单日价）",
-  "start": "2026-11-12",
-  "end": "2026-11-19",
-  "date_label": "11月12日 周四",
+  "id": "d10",
+  "event": "黑五前第 10 天：发帖最集中",
+  "start": "2026-11-17",
+  "end": "2026-11-17",
+  "date_label": "11月17日 周二",
   "status": "按往年推测",
-  "note": "2025 年 Supersonic $299、咖啡机 $518 都是 11/12 出现的",
-  "source": "https://www.ozbargain.com.au/product/dyson-supersonic"
+  "note": "OzBargain：2024 年这天 196 条（全季第 1），2025 年 151 条（全季第 2，仅次于黑五当天）。准备工作要在前一天做完",
+  "source": "https://www.ozbargain.com.au/event/black-friday"
  },
  {
   "id": "amazon",
@@ -116,8 +126,8 @@
   "end": "2026-11-30",
   "date_label": "11月30日 周一",
   "status": "已确认",
-  "note": "周一",
-  "source": "https://www.mozo.com.au/online-shopping/black-friday"
+  "note": "周一。OzBargain 2025 年网一当天 71 条好价；2024 年活动页 12/1 后几乎没有帖子，所以没法判断那年的网一",
+  "source": "https://www.ozbargain.com.au/event/black-friday"
  },
  {
   "id": "cn-std",
@@ -158,6 +168,16 @@
   "status": "已确认",
   "note": "Express Post 12/23",
   "source": "https://auspost.com.au/personal/sending/christmas-sending-dates"
+ },
+ {
+  "id": "bd-open",
+  "event": "节礼日线上开闸",
+  "start": "2026-12-24",
+  "end": "2026-12-24",
+  "date_label": "12月24日 周四",
+  "status": "按往年推测",
+  "note": "OzBargain 2021–2025：12/24 发出 17.5%，12/25 26.5%，12/26 当天 41%，之后很少",
+  "source": "https://www.ozbargain.com.au/event/boxing-day"
  },
  {
   "id": "boxing",

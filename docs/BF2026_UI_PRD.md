@@ -9,7 +9,7 @@
 
 ## 1. 背景
 
-页面在 `/p/0c3751ac2af7`（不公开，见第 5 节），2026-10-31 上线，当时只有 67 条手工整理的价格。
+页面在 `/p/<隐藏随机码>`（不公开，见第 5 节），2026-10-31 上线，当时只有 67 条手工整理的价格。
 
 数据 AI 当天就抓回了 **5,749 条**（`points/` 下 4 个文件：OzBargain 黑五 2,530、OzBargain 节礼日 2,547、Dealmoon 605、curated 67）。用这些数据本地构建后，页面基本不能用：
 
@@ -30,7 +30,7 @@
 
 | 文件 | 内容 |
 |---|---|
-| `frontend/app/p/0c3751ac2af7/page.tsx` | 页面，服务端组件，构建时静态生成，**没有任何客户端 JS** |
+| `frontend/app/p/<隐藏随机码>/page.tsx` | 页面，服务端组件，构建时静态生成，**没有任何客户端 JS** |
 | `frontend/lib/bf2026.ts` | 读数据（构建时 fs，参照 `lib/guides.ts`）+ 纯函数计算：`discounts` `categorySummary` `compare` `bfVsBoxing` `forecast` `topVoted` `coverage` `seasonYear` `money` |
 | `data/bf2026/` | 数据，**不要改**。`points/*.json` 每个来源一个文件，页面读整个目录 |
 | `data/bf2026/check.py` | 数据格式校验 |
@@ -88,7 +88,7 @@
 
 **P1-3 搜索**
 - 搜商品名，在全部价格点里找。
-- 数据不要塞进 HTML：在隐藏路径下生成一个构建期静态 JSON（例如 `app/p/0c3751ac2af7/search/route.ts`，`dynamic = 'force-static'`），只放搜索需要的字段，用户输入时再取。
+- 数据不要塞进 HTML：在隐藏路径下生成一个构建期静态 JSON（例如 `app/p/<隐藏随机码>/search/route.ts`，`dynamic = 'force-static'`），只放搜索需要的字段，用户输入时再取。
 - 这个 JSON 也是隐藏的：不进 sitemap、不在别处链接。
 
 **P1-4 “怎么买最便宜”**
@@ -119,7 +119,7 @@
 ## 5. 硬约束
 
 1. **隐藏页**：
-   - 路径不变（`/p/0c3751ac2af7`）；
+   - 路径不变（`/p/<隐藏随机码>`）；
    - 保持 `robots: { index: false, follow: false }`；
    - 不进导航、sitemap、robots.txt（写进 robots.txt 反而暴露）；
    - 这个随机码只允许出现在本页（及 P1-3 的数据路由）的路径里。
@@ -138,7 +138,7 @@
 ## 6. 验收
 
 - [ ] `npm run lint`、`npx tsc --noEmit`、`npx next build`（本页 `○`）、`npx @cloudflare/next-on-pages` 全过。
-- [ ] 用 `data/bf2026-scraped` 分支的数据本地构建，本页 HTML ≤ 400 KB（`wc -c frontend/.next/server/app/p/0c3751ac2af7.html`）。
+- [ ] 用 `data/bf2026-scraped` 分支的数据本地构建，本页 HTML ≤ 400 KB（`wc -c frontend/.next/server/app/p/<隐藏随机码>.html`）。
 - [ ] 留一个能跑的自测脚本 `frontend/lib/bf2026.selftest.ts`，用 `node --experimental-strip-types` 跑，assert 覆盖：
   - 同一购物年才比（2025 黑五不和 2018 节礼日比，也不和 2026-07 比）；
   - 异常值排除（$13.86 / 原价 $998.64 这类、`conditions` 非空）；
@@ -154,7 +154,7 @@
   - Dyson V15 无提醒价
 - [ ] 隐藏检查：
   - 构建出的本页有 `<meta name="robots" content="noindex, nofollow">`；
-  - `grep -rl 0c3751ac2af7 frontend/.next/server/app | grep -v '/p/0c3751ac2af7'` 为空；
+  - `grep -rl <隐藏随机码> frontend/.next/server/app | grep -v '/p/<隐藏随机码>'` 为空；
   - `.vercel/output/static` 里除了 `_worker.js/` 和本页自己的文件以外没有这个随机码。
 - [ ] 桌面 1280 和手机 375 各一组截图放进 PR 描述。注意 Chrome 无头模式的最小窗口宽度约 500px，手机截图用一个 375px 宽的 iframe 包一层。
 

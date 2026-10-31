@@ -86,7 +86,7 @@
     "category": "数码电子",
     "who": "送伴侣家人 / 送国内亲友",
     "verdict": "小心虚标",
-    "why": "Reddit 网友称 10/8 起 Amazon 从 $299 涨到 $369（据 Google Shopping 价格历史，未核实）。黑五“降回” $299 不算便宜，往年黑五 $229–247 才算",
+    "why": "2025 年黑五当天 Amazon、Officeworks 都到过 $199（The Good Guys 比价按钮 $189，要申请，不算）。Reddit 网友称 10/8 起 Amazon 从 $299 涨到 $369（未核实），黑五“降回” $299 不算便宜",
     "kw": "kindle paperwhite"
   },
   {
@@ -114,7 +114,8 @@
     "who": "自用 / 送伴侣家人",
     "verdict": "不用等黑五",
     "why": "苹果官方黑五只送礼品卡、不降价；零售商的低价常在年中（2025 年 7 月 Big W 的 S10 46mm 到过 $549）",
-    "kw": "apple watch"
+    "kw": "apple watch",
+    "broad": true
   },
   {
     "key": "macbook-air",
@@ -132,7 +133,8 @@
     "who": "自用 / 送伴侣家人",
     "verdict": "黑五入手",
     "why": "每年黑五大约减 $200，2023 年套装 $506 是史低",
-    "kw": "ps5"
+    "kw": "ps5",
+    "broad": true
   },
   {
     "key": "switch-2",
@@ -150,7 +152,8 @@
     "who": "自用",
     "verdict": "不用等黑五",
     "why": "2025 年最低出现在 12/18（Beam $472、Era 300 $486），节礼日前后更好",
-    "kw": "sonos"
+    "kw": "sonos",
+    "broad": true
   },
   {
     "key": "garmin-fr265",
@@ -168,7 +171,8 @@
     "who": "自用 / 送伴侣家人",
     "verdict": "不用等黑五",
     "why": "We Made Too Much 清仓在节礼日那周更深（2023 年 $69 → $34）",
-    "kw": "lululemon"
+    "kw": "lululemon",
+    "broad": true
   },
   {
     "key": "comvita",
@@ -186,7 +190,8 @@
     "who": "送国内亲友",
     "verdict": "小心虚标",
     "why": "Choice 抓到过 CW 黑五前抬价再打折；半价活动全年轮着来",
-    "kw": "blackmores"
+    "kw": "blackmores",
+    "broad": true
   },
   {
     "key": "oralb-io",

@@ -1,0 +1,122 @@
+[
+ {
+  "id": "iphone",
+  "kind": "选品",
+  "title": "iPhone 17 / 18 Pro",
+  "detail": "关注清单里没有，却是华人热度最高的缺口。买法不是等降价，而是礼品卡叠加",
+  "evidence": "「$1468 69折拿下18pro」284 赞；「比价成功 boxing day 八折买iphone 17」76 赞",
+  "link": "/guides/buy-apple-products-au"
+ },
+ {
+  "id": "bags",
+  "kind": "选品",
+  "title": "包（Coach / Samsonite / Longchamp 等）",
+  "detail": "整个品类不在关注清单里，赞数很高",
+  "evidence": "「2025澳洲黑五复盘」572 赞；「Samsonite 黑五David Jones打骨折」130 赞",
+  "link": ""
+ },
+ {
+  "id": "ikea",
+  "kind": "选品",
+  "title": "IKEA",
+  "detail": "家居类热度最高",
+  "evidence": "「IKEA 黑五打折活动详情」516 赞",
+  "link": ""
+ },
+ {
+  "id": "alo",
+  "kind": "选品",
+  "title": "ALO Yoga",
+  "detail": "黑五七折，热度接近 lululemon",
+  "evidence": "「alo黑五7折要来了 连开3场 时间线攻略」192 赞",
+  "link": ""
+ },
+ {
+  "id": "dji",
+  "kind": "选品",
+  "title": "DJI Pocket / Action",
+  "detail": "节礼日档有明确折扣记录",
+  "evidence": "「Boxing Day 大疆超低折扣pocket action」173 赞",
+  "link": ""
+ },
+ {
+  "id": "bioceuticals",
+  "kind": "选品",
+  "title": "BioCeuticals",
+  "detail": "送国内亲友的保健品，清单里只有 Swisse / Blackmores / Comvita",
+  "evidence": "「黑五75折BioCeuticals」172 赞",
+  "link": ""
+ },
+ {
+  "id": "philips-airfryer",
+  "kind": "选品",
+  "title": "Philips 空气炸锅",
+  "detail": "Big W 特价",
+  "evidence": "「Bigw特价 Philips空气炸锅」131 赞",
+  "link": ""
+ },
+ {
+  "id": "breville-876",
+  "kind": "选品",
+  "title": "Breville BES876（不是清单里的 BES870）",
+  "detail": "华人实际买的是 876 型号",
+  "evidence": "「墨尔本黑五HN巨折拿下breville铂富876！」108 赞",
+  "link": ""
+ },
+ {
+  "id": "estee-lamer",
+  "kind": "选品",
+  "title": "雅诗兰黛 / La Mer / Aesop",
+  "detail": "雅诗兰黛官网标题写明三层叠加，约 5.7 折",
+  "evidence": "「雅诗兰黛官网黑五75折上93折上82折」82 赞；「澳洲·Lamer黑五下单啦」65 赞；「澳洲最划算的Aesop护手霜有货了！」48 赞",
+  "link": ""
+ },
+ {
+  "id": "saros10",
+  "kind": "选品",
+  "title": "Roborock Saros 10",
+  "detail": "清单里是 Qrevo Curv，华人关注的是更新的 Saros 10",
+  "evidence": "「Boxing day低价入手石头Saros10攻略」51 赞",
+  "link": ""
+ },
+ {
+  "id": "giftcard-stack",
+  "kind": "买法",
+  "title": "打折礼品卡叠加",
+  "detail": "Coles / Woolworths 的 85–90 折礼品卡（JB、Apple 等），再叠加积分活动，用来付黑五价",
+  "evidence": "「coles85折礼品卡」60 赞；「11月4号苹果礼品卡20倍积分@Coles」50 赞；「黑五折上折攻略！Coles 85折礼品卡开抢!」24 赞",
+  "link": "/guides/discounted-giftcard-price-match-stack-au"
+ },
+ {
+  "id": "officeworks-match",
+  "kind": "买法",
+  "title": "Officeworks 比价",
+  "detail": "别家更便宜时找 Officeworks 比价。笔记说连 Costco 的价也能比（不用会员），具体以门店政策为准",
+  "evidence": "「Officework居然可以pricematch Costco」93 赞",
+  "link": "/guides/discounted-giftcard-price-match-stack-au"
+ },
+ {
+  "id": "apple-cashback",
+  "kind": "买法",
+  "title": "Apple 官网返现",
+  "detail": "ShopBack 有 Apple 官网返现时，和礼品卡、积分一起叠",
+  "evidence": "「shop back突然上线苹果官网返现！」76 赞",
+  "link": "/guides/buy-apple-products-au"
+ },
+ {
+  "id": "mall-voucher",
+  "kind": "买法",
+  "title": "商场返券",
+  "detail": "Chadstone 黑五消费满额领 $50 礼品卡",
+  "evidence": "「Chadstone领黑五50刀礼品卡攻略」43 赞",
+  "link": ""
+ },
+ {
+  "id": "danmurphys",
+  "kind": "买法",
+  "title": "Dan Murphy's 全场 85 折叠加礼品卡",
+  "detail": "酒类，全场折扣再用打折礼品卡付",
+  "evidence": "「Dan家黑五全场八五折叠加礼品卡教程」35 赞",
+  "link": ""
+ }
+]

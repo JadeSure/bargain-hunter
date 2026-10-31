@@ -213,6 +213,41 @@ def check_objects(
                 err(f"{name}[{i}]", f"{f} must be an integer")
 
 
+def check_signals(root: Path) -> None:
+    name = "signals.json"
+    fields = ("id", "kind", "title", "detail", "evidence", "link")
+    path = root / name
+    if not path.exists():  # optional file, same as the loader
+        return
+    check_objects(root, name, fields)  # reports unreadable / non-array files once
+    try:
+        rows = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return
+    if not isinstance(rows, list):
+        return
+    seen: set[str] = set()
+    for i, row in enumerate(rows):
+        if not isinstance(row, dict):
+            continue
+        where = f"{name}[{i}]"
+        if row.get("kind") not in ("选品", "买法"):
+            err(where, f"bad kind {row.get('kind')!r}")
+        link = row.get("link")
+        if (
+            isinstance(link, str)
+            and link != ""
+            and not link.startswith(("https://", "http://"))
+            and not (link.startswith("/") and not link.startswith("//"))
+        ):
+            err(where, "link must be empty, http(s)://, or a single-slash internal path")
+        rid = row.get("id")
+        if isinstance(rid, str):
+            if rid in seen:
+                err(where, f"duplicate id {rid!r}")
+            seen.add(rid)
+
+
 def check_unique(root: Path, name: str, field: str) -> None:
     rows = load(root / name)
     if rows is None:
@@ -253,6 +288,7 @@ def main() -> int:
     check_objects(
         root, "prep.json", ("phase", "by", "task", "detail", "source"), int_fields=("step",)
     )
+    check_signals(root)
     check_objects(root, "facts.json", ("id", "label", "value", "source"))
     check_objects(root, "rules.json", ("id", "topic", "value", "status", "note", "source"))
     if errors:
