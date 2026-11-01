@@ -18,6 +18,54 @@
   --green:         #4ade80;
 }
 
+/* ── BF2026 page: repeated class bundles live here so the HTML (sent twice with the RSC payload) stays small ── */
+@layer components {
+  .bf-note { @apply mt-2 break-words text-xs leading-relaxed text-zinc-400; }
+  .bf-img { @apply aspect-square shrink-0 rounded-lg bg-white object-contain p-1; }
+  .bf-pill { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium; }
+  .bf-sky { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-sky-500/15 text-sky-300; }
+  .bf-emerald { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-500/15 text-emerald-300; }
+  .bf-amber { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-500/15 text-amber-300; }
+  .bf-rose { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-rose-500/15 text-rose-300; }
+  .bf-zinc { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-zinc-500/15 text-zinc-300; }
+  .bf-dot { @apply absolute left-[12px] top-[3px] flex -translate-x-1/2 items-center justify-center rounded-full; }
+  .bf-m { @apply text-xs text-zinc-400; }
+  .bf-barrow { @apply mt-1.5 flex items-center gap-3; }
+  .bf-need { @apply text-sm font-bold text-zinc-50; }
+  .bf-sub { @apply mt-1 text-sm text-zinc-400; }
+  .bf-grow { @apply min-w-0 flex-1 break-words; }
+  .bf-dots { @apply tracking-tighter text-zinc-200; }
+  .bf-mn { @apply text-xs tabular-nums text-zinc-400; }
+  .bf-mf { @apply text-xs font-normal text-zinc-400; }
+  .bf-due { @apply inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-orange-500/15 text-orange-300 tabular-nums; }
+  .bf-toggle { @apply cursor-pointer text-zinc-400 underline decoration-dotted underline-offset-4 hover:text-zinc-200; }
+  .bf-kw { @apply select-all break-all rounded-md bg-zinc-800 px-2 py-1 text-[13px] text-zinc-100; }
+  .bf-card { @apply min-w-0 rounded-2xl border border-zinc-800/60 bg-zinc-900; }
+  .bf-link { @apply underline underline-offset-2 hover:text-zinc-50; }
+  .bf-rcard { @apply min-w-0 rounded-2xl border border-zinc-800/60 bg-zinc-900 flex flex-col items-center p-3 text-center; }
+  .bf-rname { @apply mt-2.5 line-clamp-2 min-h-[2.5rem] break-words text-sm font-medium leading-5 text-zinc-100; }
+  .bf-tl-label { @apply col-span-2 row-start-2 min-w-0 break-words sm:col-span-1 sm:col-start-2 sm:row-start-1; }
+  .bf-tl-days { @apply col-start-2 row-start-1 shrink-0 text-sm tabular-nums text-zinc-400 sm:col-start-3; }
+  .bf-chip { @apply inline-flex min-h-10 items-center whitespace-nowrap rounded-full border border-zinc-700/70 bg-zinc-900 px-4 text-sm font-medium text-zinc-200 hover:border-orange-400/60 hover:text-orange-200; }
+  .bf-tl-row { @apply grid grid-cols-[1fr_auto] gap-x-3 gap-y-0.5 sm:grid-cols-[7.5rem_1fr_auto]; }
+  .bf-badges { @apply mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1; }
+  .bf-step-body { @apply flex min-w-0 flex-1 flex-wrap items-start justify-between gap-x-3 gap-y-2; }
+  .bf-kwrow { @apply mt-4 flex flex-wrap items-center gap-2 text-sm; }
+  .bf-price { @apply text-2xl font-bold tabular-nums text-zinc-50; }
+  .bf-step { @apply flex gap-3 rounded-xl border border-zinc-800/60 bg-zinc-900 p-3.5; }
+  .bf-tl-date { @apply col-start-1 row-start-1 font-bold tabular-nums; }
+  .bf-check { @apply mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 border-zinc-600; }
+  .bf-detail { @apply mt-0.5 break-words text-sm leading-relaxed text-zinc-400; }
+  .bf-gname { @apply text-sm font-medium leading-snug text-zinc-100; }
+  .bf-brand { @apply rounded-full bg-zinc-800 px-3 py-1 text-sm text-zinc-200; }
+  .bf-section { @apply min-w-0 scroll-mt-4 rounded-2xl border border-zinc-800/60 bg-zinc-900/50 p-5 sm:p-6; }
+  .bf-rprice { @apply mt-1.5 text-lg font-bold tabular-nums text-zinc-50; }
+  .bf-name { @apply font-bold leading-snug text-zinc-50; }
+  .bf-track { @apply h-3.5 min-w-0 flex-1 overflow-hidden rounded-full bg-zinc-800; }
+  .bf-track-thin { @apply h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-zinc-800; }
+  .bf-fill { @apply h-full min-w-[6px] rounded-full bg-gradient-to-r; }
+}
+
 /* ── Reset & base ────────────────────────────────────────── */
 @layer base {
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

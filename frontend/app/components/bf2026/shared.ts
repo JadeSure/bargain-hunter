@@ -25,3 +25,13 @@ export function unpackUrl(packed: string): string {
 }
 
 export const clip = (s: string, n = 70) => (s.length > n ? s.slice(0, n - 1) + '…' : s)
+
+// One colour per meaning, used by pills, group labels and gift lists. Classes are written out in full so Tailwind finds them.
+export const ADVICE: { verdict: string; title: string; short: string; pill: string }[] = [
+  { verdict: '黑五入手', title: '等黑五买', short: '等黑五买', pill: 'bf-sky' },
+  { verdict: '现在可买', title: '现在就可以买', short: '现在可买', pill: 'bf-emerald' },
+  { verdict: '不用等黑五', title: '不用等黑五（别的时候更便宜）', short: '不用等黑五', pill: 'bf-amber' },
+  { verdict: '小心虚标', title: '小心假折扣', short: '小心假折扣', pill: 'bf-rose' },
+]
+export const OTHER_PILL = 'bf-zinc'
+export const pillFor = (verdict: string) => ADVICE.find((a) => a.verdict === verdict)?.pill ?? OTHER_PILL

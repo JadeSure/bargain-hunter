@@ -248,6 +248,31 @@ def check_signals(root: Path) -> None:
             seen.add(rid)
 
 
+def check_images(root: Path) -> None:
+    name = "images.json"
+    path = root / name
+    if not path.exists():  # optional file, same as the loader
+        return
+    data = load(path)
+    if data is None:
+        return
+    if not isinstance(data, dict):
+        err(name, "must be a JSON object")
+        return
+    for key, row in data.items():
+        where = f"{name}[{key!r}]"
+        if not isinstance(row, dict):
+            err(where, "must be an object")
+            continue
+        for field, prefix in (
+            ("image", "https://files.ozbargain.com.au/"),
+            ("page", "https://www.ozbargain.com.au/"),
+        ):
+            v = row.get(field)
+            if not isinstance(v, str) or not v.startswith(prefix):
+                err(where, f"{field} must be a string starting with {prefix}")
+
+
 def check_unique(root: Path, name: str, field: str) -> None:
     rows = load(root / name)
     if rows is None:
@@ -289,6 +314,7 @@ def main() -> int:
         root, "prep.json", ("phase", "by", "task", "detail", "source"), int_fields=("step",)
     )
     check_signals(root)
+    check_images(root)
     check_objects(root, "facts.json", ("id", "label", "value", "source"))
     check_objects(root, "rules.json", ("id", "topic", "value", "status", "note", "source"))
     if errors:

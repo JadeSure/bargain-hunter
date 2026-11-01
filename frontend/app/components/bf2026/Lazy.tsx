@@ -12,10 +12,10 @@ export type HistoryRow = [date: string, event: string, price: number, conditions
 export function HistoryDetails({ summary, rows, more }: { summary: string; rows: HistoryRow[]; more: number }) {
   const [open, setOpen] = useState(false)
   return (
-    <details className="mt-3 text-sm" onToggle={(e) => setOpen(e.currentTarget.open)}>
-      <summary className="cursor-pointer text-zinc-300">{summary}</summary>
+    <details className="mt-4 text-sm" onToggle={(e) => setOpen(e.currentTarget.open)}>
+      <summary className="bf-toggle">{summary}</summary>
       {open && (
-        <div className="mt-2 overflow-x-auto">
+        <div className="mt-3 overflow-x-auto rounded-lg bg-zinc-950/60 p-2">
           <table className="w-full min-w-[420px] text-xs text-zinc-300 [&_td]:whitespace-nowrap [&_td]:py-1 [&_td]:pr-3">
             <tbody>
               {rows.map((r, i) => (

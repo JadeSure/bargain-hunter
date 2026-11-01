@@ -1,7 +1,7 @@
 // Hidden Black Friday 2026 page data. Reads ../data/bf2026 at build time (see lib/guides.ts
 // for why fs/path are imported dynamically). Pure derivations live in bf2026-derive.ts so the
 // client bundle never pulls in the fs loader.
-import type { Bf2026Data, CalendarEvent, Fact, PrepStep, Promo, Point, Rule, Signal, Watch } from './bf2026-derive'
+import type { Bf2026Data, CalendarEvent, Fact, ItemImage, PrepStep, Promo, Point, Rule, Signal, Watch } from './bf2026-derive'
 
 export * from './bf2026-derive'
 
@@ -23,6 +23,27 @@ async function readJson<T>(path: string, errors: string[]): Promise<T[]> {
   } catch (e) {
     errors.push(`${basename(path)}: ${e instanceof Error ? e.message : String(e)}`)
     return []
+  }
+}
+
+// Same contract as readJson, for a file holding one object (images.json: item key -> picture).
+async function readMap<T>(path: string, errors: string[]): Promise<Record<string, T>> {
+  const { promises: fs } = await import('fs')
+  const { basename } = await import('path')
+  let raw: string
+  try {
+    raw = await fs.readFile(path, 'utf-8')
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code !== 'ENOENT') errors.push(`${basename(path)}: ${String(e)}`)
+    return {}
+  }
+  try {
+    const map = JSON.parse(raw)
+    if (map === null || typeof map !== 'object' || Array.isArray(map)) throw new Error('not a JSON object')
+    return map as Record<string, T>
+  } catch (e) {
+    errors.push(`${basename(path)}: ${e instanceof Error ? e.message : String(e)}`)
+    return {}
   }
 }
 
@@ -50,7 +71,7 @@ export async function loadBf2026(): Promise<Bf2026Data> {
   const { default: process } = await import('process')
   const root = join(process.cwd(), '..', 'data', 'bf2026')
   const errors: string[] = []
-  const [points, promos, watch, calendar, prep, rules, facts, signals] = await Promise.all([
+  const [points, promos, watch, calendar, prep, rules, facts, signals, images] = await Promise.all([
     readFolder<Omit<Point, 'file'>>(join(root, 'points'), errors),
     readFolder<Omit<Promo, 'file'>>(join(root, 'promos'), errors),
     readJson<Watch>(join(root, 'watch.json'), errors),
@@ -59,6 +80,7 @@ export async function loadBf2026(): Promise<Bf2026Data> {
     readJson<Rule>(join(root, 'rules.json'), errors),
     readJson<Fact>(join(root, 'facts.json'), errors),
     readJson<Signal>(join(root, 'signals.json'), errors),
+    readMap<ItemImage>(join(root, 'images.json'), errors),
   ])
-  return { points, promos, watch, calendar, prep, rules, facts, signals, errors }
+  return { points, promos, watch, calendar, prep, rules, facts, signals, images, errors }
 }

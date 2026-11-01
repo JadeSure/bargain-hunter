@@ -99,6 +99,11 @@ export interface Signal {
   link: string
 }
 
+export interface ItemImage {
+  image: string
+  page: string
+}
+
 export interface Bf2026Data {
   points: Point[]
   promos: Promo[]
@@ -108,6 +113,7 @@ export interface Bf2026Data {
   rules: Rule[]
   facts: Fact[]
   signals: Signal[]
+  images: Record<string, ItemImage>
   errors: string[]
 }
 
