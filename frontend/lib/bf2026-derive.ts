@@ -104,6 +104,11 @@ export interface ItemImage {
   page: string
 }
 
+export interface Gift {
+  key: string
+  who: string
+}
+
 export interface Bf2026Data {
   points: Point[]
   promos: Promo[]
@@ -114,6 +119,7 @@ export interface Bf2026Data {
   facts: Fact[]
   signals: Signal[]
   images: Record<string, ItemImage>
+  gifts: Gift[]
   errors: string[]
 }
 
@@ -268,13 +274,17 @@ const ozbBfRows = (points: Point[]) =>
 // Bucket = [first offset, last offset] in days from Black Friday of that year.
 const TIMING_BUCKETS: [number, number][] = [[-Infinity, -11], [-10, -10], [-9, -1], [0, 0], [1, Infinity]]
 
+const bucketOf = (p: Point) => {
+  const off = Math.round((Date.parse(p.date + 'T00:00:00Z') - blackFridayDate(yearOf(p))) / 86400000)
+  return TIMING_BUCKETS.findIndex(([lo, hi]) => off >= lo && off <= hi)
+}
+
 // Percent per bucket by largest remainder, so the five numbers always add up to 100.
 export function timingShares(points: Point[]) {
   const counts = TIMING_BUCKETS.map(() => 0)
   const rows = ozbBfRows(points)
   for (const p of rows) {
-    const off = Math.round((Date.parse(p.date + 'T00:00:00Z') - blackFridayDate(yearOf(p))) / 86400000)
-    counts[TIMING_BUCKETS.findIndex(([lo, hi]) => off >= lo && off <= hi)]++
+    counts[bucketOf(p)]++
   }
   const total = rows.length
   const exact = counts.map((n) => (total ? (n / total) * 100 : 0))
@@ -283,6 +293,78 @@ export function timingShares(points: Point[]) {
   const spare = total ? 100 - pct.reduce((a, b) => a + b, 0) : 0
   for (let k = 0; k < spare; k++) pct[order[k][1]]++
   return { total, counts, pct, beforeShare: total ? (counts[0] + counts[1] + counts[2]) / total : 0 }
+}
+
+// Median discount per timing bucket, over the same rows as timingShares that pass the outlier rules.
+// `before` = buckets 1-3, `after` = buckets 4-5. A group without rows has median null.
+export function timingDepth(points: Point[]) {
+  const ds = discountCandidates(ozbBfRows(points), '黑五季').filter((d) => excludeReason(d) === null)
+  const group = (idx: number[]) => {
+    const pcts = ds.filter((d) => idx.includes(bucketOf(d.point))).map((d) => d.pct)
+    return { n: pcts.length, median: pcts.length ? median(pcts) : null }
+  }
+  return {
+    total: ds.length,
+    buckets: TIMING_BUCKETS.map((_, i) => group([i])),
+    before: group([0, 1, 2]),
+    after: group([3, 4]),
+  }
+}
+
+// ── Gift depth ──────────────────────────────────────────────
+
+export const GIFT_BANDS = ['$50 以下 · 适合 Secret Santa', '$50–300', '$300 以上 · 大礼'] as const
+
+export interface GiftDeal {
+  key: string
+  name: string
+  category: string
+  who: string
+  pct: number
+  was: number
+  price: number
+  year: number
+  source: string
+}
+
+const bandOf = (price: number) => (price < 50 ? 0 : price < 300 ? 1 : 2)
+
+// Best BF-season discount (any year) per gift candidate: watch rows meant as gifts plus gifts.json.
+// Broad watch keys mix products, so only hand-checked (curated) points count for them.
+export function giftDepth(points: Point[], watch: Watch[], gifts: Gift[]) {
+  const wanted = watch.filter((w) => w.who.includes('送') || w.who.includes('Santa'))
+  const watchKeys = new Set(wanted.map((w) => w.key))
+  const candidates = [
+    ...wanted.map((w) => ({ key: w.key, name: w.item as string | null, who: w.who, broad: !!w.broad })),
+    ...gifts.filter((g) => !watchKeys.has(g.key)).map((g) => ({ key: g.key, name: null, who: g.who, broad: false })),
+  ]
+  const bands = GIFT_BANDS.map((title) => ({ title, items: [] as GiftDeal[] }))
+  const noData: string[] = []
+  for (const c of candidates) {
+    const rows = points.filter((p) => p.key === c.key && isBf(p) && (!c.broad || p.file === 'curated'))
+    const best = discounts(rows).reduce<Discount | null>(
+      (m, d) => (m && (m.pct > d.pct || (m.pct === d.pct && m.point.date >= d.point.date)) ? m : d),
+      null,
+    )
+    if (!best) {
+      noData.push(c.name ?? c.key)
+      continue
+    }
+    const p = best.point
+    bands[bandOf(p.price)].items.push({
+      key: c.key,
+      name: c.name ?? p.item,
+      category: p.category,
+      who: c.who,
+      pct: best.pct,
+      was: p.was_price as number,
+      price: p.price,
+      year: yearOf(p),
+      source: p.source,
+    })
+  }
+  for (const b of bands) b.items.sort((a, b2) => b2.pct - a.pct)
+  return { bands, noData }
 }
 
 // ── Recurring deals ─────────────────────────────────────────

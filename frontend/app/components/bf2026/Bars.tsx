@@ -2,6 +2,7 @@ export interface BarRow {
   label: string
   value: number
   text: string
+  sub?: string
   accent?: boolean
 }
 
@@ -20,7 +21,10 @@ export default function Bars({ rows, thin = false }: { rows: BarRow[]; thin?: bo
                 style={{ width: `${(r.value / max) * 100}%` }}
               />
             </div>
-            <span className={`shrink-0 font-bold tabular-nums text-zinc-50 ${thin ? 'text-sm' : 'text-base'}`}>{r.text}</span>
+            <span className="shrink-0 text-right">
+              <span className={`block font-bold tabular-nums text-zinc-50 ${thin ? 'text-sm' : 'text-base'}`}>{r.text}</span>
+              {r.sub && <span className="bf-mn block">{r.sub}</span>}
+            </span>
           </div>
         </li>
       ))}

@@ -179,6 +179,44 @@ const mk = (o: Partial<Point>): Point => ({
   assert.equal(d.timingShares([]).total, 0)
 }
 
+// median discount per timing bucket: outliers out, before/after groups combined
+{
+  const row = (date: string, price: number, o: Partial<Point> = {}) => mk({ date, price, was_price: 100, ...o })
+  const pts = [
+    row('2025-11-10', 60), row('2025-11-10', 80), row('2025-11-18', 70), row('2025-11-20', 50),
+    row('2025-11-28', 40), row('2025-11-30', 55), row('2025-11-30', 20, { conditions: '合约' }),
+    row('2025-11-30', 10, { was_suspect: true }), row('2025-11-30', 50, { was_price: null }),
+    row('2025-11-30', 50, { id: 'cur-x', file: 'curated' }), row('2025-12-05', 3),
+  ]
+  const t = d.timingDepth(pts)
+  assert.equal(t.total, 6)
+  assert.deepEqual(t.buckets.map((b) => [b.n, b.median]), [[2, 30], [1, 30], [1, 50], [1, 60], [1, 45]])
+  assert.deepEqual([t.before.n, t.before.median], [4, 35])
+  assert.deepEqual([t.after.n, t.after.median], [2, 53])
+  assert.deepEqual(d.timingDepth([]).before, { n: 0, median: null })
+}
+
+// gift depth: best discount, no-data keys, broad keys use curated points only, band edges, sort
+{
+  const w = (key: string, who: string, broad = false): Watch => ({ key, item: `item-${key}`, category: '礼品', who, verdict: '黑五入手', why: '', kw: '', broad })
+  const bf = (key: string, price: number, was: number, o: Partial<Point> = {}) => mk({ key, price, was_price: was, item: `p-${key}`, ...o })
+  const pts = [
+    bf('a', 70, 100, { date: '2024-11-29' }), bf('a', 50, 100, { date: '2025-11-28' }),
+    bf('t', 60, 100, { date: '2024-11-29' }), bf('t', 60, 100, { date: '2025-11-28' }),
+    bf('b', 20, 100), bf('c', 80, 100, { file: 'curated', id: 'cur-c' }), bf('c', 20, 100),
+    bf('e1', 49.99, 100), bf('e2', 50, 100), bf('e3', 299.99, 1000), bf('e4', 300, 1000),
+    bf('lo', 10, 12),
+  ]
+  const watch = [w('a', '送国内亲友'), w('t', 'Secret Santa'), w('b', '自用'), w('c', '送伴侣家人', true), w('none', '送国内亲友')]
+  const g = d.giftDepth(pts, watch, [{ key: 'e1', who: '送伴侣家人' }, { key: 'e2', who: '送伴侣家人' }, { key: 'e3', who: '送伴侣家人' }, { key: 'e4', who: '送伴侣家人' }, { key: 'lo', who: '送伴侣家人' }])
+  assert.deepEqual(g.bands.map((b) => b.items.map((i) => i.key)), [['e1', 'lo'], ['e3', 'a', 'e2', 't', 'c'], ['e4']])
+  const item = (k: string) => g.bands.flatMap((b) => b.items).find((i) => i.key === k)
+  assert.deepEqual([item('a')?.pct, item('a')?.year, item('a')?.price, item('a')?.name], [50, 2025, 50, 'item-a'])
+  assert.equal(item('t')?.year, 2025)
+  assert.deepEqual([item('c')?.pct, item('e1')?.name], [20, 'p-e1'])
+  assert.deepEqual(g.noData, ['item-none'])
+}
+
 // this-week checklist window on a fixed "today"
 {
   const step = (n: number, by: string): PrepStep => ({ step: n, phase: 'p', by, task: `t${n}`, detail: '', source: '' })

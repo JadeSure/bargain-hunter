@@ -273,6 +273,35 @@ def check_images(root: Path) -> None:
                 err(where, f"{field} must be a string starting with {prefix}")
 
 
+def check_gifts(root: Path) -> None:
+    name = "gifts.json"
+    path = root / name
+    if not path.exists():  # optional file, same as the loader
+        return
+    rows = load(path)
+    if rows is None:
+        return
+    if not isinstance(rows, list):
+        err(name, "must be a JSON array")
+        return
+    seen: set[str] = set()
+    for i, row in enumerate(rows):
+        where = f"{name}[{i}]"
+        if not isinstance(row, dict):
+            err(where, "must be an object")
+            continue
+        key = row.get("key")
+        if not isinstance(key, str) or not KEY_RE.fullmatch(key):
+            err(where, "key must be a kebab-case string")
+        elif key in seen:
+            err(where, f"duplicate key {key!r}")
+        else:
+            seen.add(key)
+        who = row.get("who")
+        if not isinstance(who, str) or not who.strip():
+            err(where, "who must be a non-empty string")
+
+
 def check_unique(root: Path, name: str, field: str) -> None:
     rows = load(root / name)
     if rows is None:
@@ -315,6 +344,7 @@ def main() -> int:
     )
     check_signals(root)
     check_images(root)
+    check_gifts(root)
     check_objects(root, "facts.json", ("id", "label", "value", "source"))
     check_objects(root, "rules.json", ("id", "topic", "value", "status", "note", "source"))
     if errors:

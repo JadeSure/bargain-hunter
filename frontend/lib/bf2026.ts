@@ -1,7 +1,7 @@
 // Hidden Black Friday 2026 page data. Reads ../data/bf2026 at build time (see lib/guides.ts
 // for why fs/path are imported dynamically). Pure derivations live in bf2026-derive.ts so the
 // client bundle never pulls in the fs loader.
-import type { Bf2026Data, CalendarEvent, Fact, ItemImage, PrepStep, Promo, Point, Rule, Signal, Watch } from './bf2026-derive'
+import type { Bf2026Data, CalendarEvent, Fact, Gift, ItemImage, PrepStep, Promo, Point, Rule, Signal, Watch } from './bf2026-derive'
 
 export * from './bf2026-derive'
 
@@ -71,7 +71,7 @@ export async function loadBf2026(): Promise<Bf2026Data> {
   const { default: process } = await import('process')
   const root = join(process.cwd(), '..', 'data', 'bf2026')
   const errors: string[] = []
-  const [points, promos, watch, calendar, prep, rules, facts, signals, images] = await Promise.all([
+  const [points, promos, watch, calendar, prep, rules, facts, signals, images, gifts] = await Promise.all([
     readFolder<Omit<Point, 'file'>>(join(root, 'points'), errors),
     readFolder<Omit<Promo, 'file'>>(join(root, 'promos'), errors),
     readJson<Watch>(join(root, 'watch.json'), errors),
@@ -81,6 +81,7 @@ export async function loadBf2026(): Promise<Bf2026Data> {
     readJson<Fact>(join(root, 'facts.json'), errors),
     readJson<Signal>(join(root, 'signals.json'), errors),
     readMap<ItemImage>(join(root, 'images.json'), errors),
+    readJson<Gift>(join(root, 'gifts.json'), errors),
   ])
-  return { points, promos, watch, calendar, prep, rules, facts, signals, images, errors }
+  return { points, promos, watch, calendar, prep, rules, facts, signals, images, gifts, errors }
 }

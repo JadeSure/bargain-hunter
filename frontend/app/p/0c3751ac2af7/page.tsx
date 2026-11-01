@@ -5,6 +5,7 @@ import {
   bfVsBoxing,
   daysBetween,
   fileCoverage,
+  giftDepth,
   forecast,
   keyHistory,
   loadBf2026,
@@ -12,6 +13,7 @@ import {
   monthDay,
   recurring,
   recurringBrands,
+  timingDepth,
   timingShares,
   weekday,
   weekPlan,
@@ -59,6 +61,8 @@ const PICK_EMOJI: [keyword: string, emoji: string][] = [
   ['雅诗兰黛', '💄'],
   ['Roborock', '🤖'],
 ]
+// Short recipient labels: only the 送-type parts of `who` (自用 is dropped), e.g. 送伴侣家人 -> 伴侣家人.
+const giftWho = (who: string) => who.split(' / ').filter((w) => w.startsWith('送') || w.includes('Santa')).map((w) => w.replace(/^送/, ''))
 const pickEmoji = (title: string) => PICK_EMOJI.find(([k]) => title.includes(k))?.[1] ?? '🔥'
 const TREND_CHIP: Record<string, string> = {
   降价中: 'bf-emerald',
@@ -142,12 +146,14 @@ const DOT: Record<TimelineKind, string> = {
 }
 
 export default async function Bf2026Page() {
-  const { points, watch, calendar, prep, rules, facts, signals, images, errors } = await loadBf2026()
+  const { points, watch, calendar, prep, rules, facts, signals, images, gifts, errors } = await loadBf2026()
   const today = sydneyToday()
   const daysLeft = daysBetween(today, BF_DATE)
   const fc = forecast(watch, points)
   const files = fileCoverage(points)
   const tm = timingShares(points)
+  const td = timingDepth(points)
+  const gd = giftDepth(points, watch, gifts)
   const rec = recurring(points, watch)
   const brands = recurringBrands(points)
   const depth = categoryDepth(points)
@@ -181,6 +187,14 @@ export default async function Bf2026Page() {
     `黑五之后（${monthDay(addDays(BF_DATE, 1))} 起）`,
   ]
   const beforePct = tm.pct[0] + tm.pct[1] + tm.pct[2]
+  const depthSub = (b: { n: number; median: number | null }) => (b.median == null ? undefined : b.n < 10 ? '样本少' : `中位便宜 ${b.median}%`)
+  const depthLine =
+    td.before.median != null && td.after.median != null
+      ? td.after.median > td.before.median
+        ? `力度：黑五当天和之后折扣略深（约 ${td.after.median}% vs 之前约 ${td.before.median}%，仅供参考）`
+        : `力度：前后差不多（约 ${td.after.median}% vs ${td.before.median}%，仅供参考）`
+      : null
+  const giftMax = Math.max(...gd.bands.flatMap((b) => b.items.map((i) => i.pct)), 1)
   const beforeTens = NUMERALS[Math.round(tm.beforeShare * 10)]
 
   // ── forecast cards ──
@@ -341,9 +355,12 @@ export default async function Bf2026Page() {
 
       {tm.total > 0 && (
         <Section emoji="⏰" title="好价什么时候出">
-          <Takeaway>别等黑五当天：{beforePct}% 在之前就出了</Takeaway>
-          <Bars rows={timingLabels.map((label, i) => ({ label, value: tm.pct[i], text: `${tm.pct[i]}%`, accent: i < 3 }))} />
-          <Evidence>依据：OzBargain 2024、2025 年黑五季 {tm.total} 条好价的发帖日期</Evidence>
+          <Takeaway>
+            <span className="block">数量：{beforePct}% 在黑五当天之前就出了</span>
+            {depthLine && <span className="mt-1 block">{depthLine}</span>}
+          </Takeaway>
+          <Bars rows={timingLabels.map((label, i) => ({ label, value: tm.pct[i], text: `${tm.pct[i]}%`, sub: depthSub(td.buckets[i]), accent: i < 3 }))} />
+          <Evidence>依据：OzBargain 2024、2025 年黑五季 {tm.total} 条好价的发帖日期；折扣只算有原价的 {td.total} 条，各类商品混在一起，仅供参考</Evidence>
         </Section>
       )}
 
@@ -419,6 +436,38 @@ export default async function Bf2026Page() {
       )}
 
       <Section id="gifts" emoji="🎁" title="送礼">
+        <h3 className="mb-4 text-lg font-bold text-zinc-50">折扣力度对比：哪些礼物最划算</h3>
+        <p className="bf-m -mt-2 mb-4">便宜多少按商家标的原价算；不少东西平时就打折，到底划不划算看上面卡片里的提醒价。</p>
+        <div className="mb-8 space-y-6">
+          {gd.bands.filter((b) => b.items.length > 0).map((b) => (
+            <div key={b.title}>
+              <SubHead>{b.title}</SubHead>
+              <ul className="space-y-3">
+                {b.items.map((i) => (
+                  <li key={i.key} className="flex items-start gap-3">
+                    <Thumb image={images[i.key]?.image} name={i.name} category={i.category} size={40} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="bf-gname">{i.name}</span>
+                        {giftWho(i.who).map((w) => <span key={w} className="bf-zinc">{w}</span>)}
+                      </div>
+                      <div className="bf-barrow">
+                        <div className="bf-track">
+                          <div className="bf-fill from-sky-400 to-indigo-500" style={{ width: `${(i.pct / giftMax) * 100}%` }} />
+                        </div>
+                        <span className="shrink-0 font-bold tabular-nums text-zinc-50">便宜 {i.pct}%</span>
+                      </div>
+                      <div className="bf-m mt-1 tabular-nums">
+                        {money(i.was)} → {money(i.price)}（{i.year} 黑五）{' '}<Src href={i.source}>来源</Src>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          {gd.noData.length > 0 && <p className="bf-m">没有原价数据：{gd.noData.join('、')}</p>}
+        </div>
         <div className="grid gap-4 md:grid-cols-3">
           {GIFT_BLOCKS.map(([match, title, emoji]) => {
             const rows = fc.filter((f) => f.watch.who.includes(match))
