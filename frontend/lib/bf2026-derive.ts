@@ -1,5 +1,5 @@
 // Pure data types and derivations for the hidden BF 2026 page. No fs, no relative imports:
-// the client explorer and the node selftest both import this file directly.
+// the node selftest imports this file directly.
 
 export const CATEGORIES = ['数码电子', '家电厨房', '美妆个护', '户外运动', '保健食品', '礼品', '其他'] as const
 
@@ -127,8 +127,6 @@ export type SaleEvent = '黑五季' | '节礼日'
 export const yearOf = (p: Point) => Number(p.date.slice(0, 4))
 // A January Boxing Day sale belongs to the season that started the December before.
 export const seasonYear = (p: Point) => (isBoxing(p) && p.date.slice(5, 7) === '01' ? yearOf(p) - 1 : yearOf(p))
-// Shopping year Y runs Y-06-01 .. (Y+1)-05-31 (EOFY, Prime Day, Click Frenzy, BF, Boxing Day).
-export const shopYear = (p: Point) => (Number(p.date.slice(5, 7)) >= 6 ? yearOf(p) : yearOf(p) - 1)
 
 // Only OzBargain rows carry meaningful votes; votes on any other source are ignored.
 export const isOzb = (p: { id: string }) => p.id.startsWith('ozb-')
@@ -171,14 +169,7 @@ export function excludeReason(d: Discount): string | null {
 export const discounts = (points: Point[], event: SaleEvent = '黑五季'): Discount[] =>
   discountCandidates(points, event).filter((d) => excludeReason(d) === null)
 
-export function excludedDiscounts(points: Point[]): (Discount & { reason: string })[] {
-  return discountCandidates(points).flatMap((d) => {
-    const reason = excludeReason(d)
-    return reason ? [{ ...d, reason }] : []
-  })
-}
-
-// Median only with at least MIN_SAMPLE rows; smaller samples report null ("样本不足").
+// Median only with at least MIN_SAMPLE rows; smaller samples report null.
 export function categorySummary(ds: Discount[]) {
   return CATEGORIES.map((category) => {
     const pcts = ds.filter((d) => d.point.category === category).map((d) => d.pct)
@@ -186,191 +177,20 @@ export function categorySummary(ds: Discount[]) {
   }).filter((c) => c.n > 0)
 }
 
-export const overallMedian = (ds: Discount[]): number | null => (ds.length >= MIN_SAMPLE ? median(ds.map((d) => d.pct)) : null)
-
-// Rows with votes first (most votes first), then the rest by discount.
-export function rankDeals(ds: Discount[]): Discount[] {
-  return [...ds].sort((a, b) => {
-    const va = votesOf(a.point)
-    const vb = votesOf(b.point)
-    if ((va != null) !== (vb != null)) return va != null ? -1 : 1
-    if (va != null && vb != null && va !== vb) return vb - va
-    return b.pct - a.pct
-  })
-}
-
-// ── Comparable-item guard ───────────────────────────────────
-
-const tokens = (s: string) => new Set(s.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean))
-
-// ponytail: compares only the two min rows' item strings (same digit-bearing tokens, Jaccard >= 0.5);
-// the proper fix is canonical product keys in the data.
-export function comparableItems(a: string, b: string): boolean {
-  const ta = tokens(a)
-  const tb = tokens(b)
-  const digits = (t: Set<string>) => [...t].filter((x) => /\d/.test(x)).sort().join('|')
-  if (digits(ta) !== digits(tb)) return false
-  const inter = [...ta].filter((x) => tb.has(x)).length
-  const union = new Set([...ta, ...tb]).size
-  return union > 0 && inter / union >= 0.5
-}
-
-// ── Compare (same shopping year) and BF vs Boxing Day ───────
-
-export interface Side {
-  item: string
-  price: number
-  date: string
-  event: string
-  retailer: string
-  file: string
-  votes: number | null
-  source: string
-  note: string
-}
-
-const sideOf = (p: Point): Side => ({
-  item: p.item,
-  price: p.price,
-  date: p.date,
-  event: p.event,
-  retailer: p.retailer,
-  file: p.file,
-  votes: votesOf(p),
-  source: p.source,
-  note: p.note,
-})
-
-export interface ComparePair {
-  key: string
-  category: string
-  year: number
-  bf: Side
-  other: Side
-  beaten: boolean
-  premium_pct: number
-  comparable: boolean
-}
-
-const byKey = (points: Point[]) => {
-  const m = new Map<string, Point[]>()
-  for (const p of points) if (p.conditions === '') m.set(p.key, [...(m.get(p.key) ?? []), p])
-  return m
-}
-
-// BF season Y's cheapest price against the cheapest non-BF price inside shopping year Y.
-export function comparePairs(points: Point[]): ComparePair[] {
-  const out: ComparePair[] = []
-  for (const [key, rows] of byKey(points)) {
-    const bfs = rows.filter(isBf)
-    for (const year of new Set(bfs.map(yearOf))) {
-      const bf = minBy(bfs.filter((p) => yearOf(p) === year))
-      const other = minBy(rows.filter((p) => !isBf(p) && shopYear(p) === year))
-      if (!bf || !other) continue
-      out.push({
-        key,
-        category: bf.category,
-        year,
-        bf: sideOf(bf),
-        other: sideOf(other),
-        beaten: other.price < bf.price,
-        premium_pct: Math.round((bf.price / other.price - 1) * 100),
-        comparable: comparableItems(bf.item, other.item),
-      })
-    }
-  }
-  return out.sort((a, b) => Number(b.beaten) - Number(a.beaten) || b.premium_pct - a.premium_pct)
-}
-
-export interface BoxingPair {
-  key: string
-  category: string
-  year: number
-  bf: Side
-  bd: Side
-  boxing_cheaper: boolean
-  saving_pct: number
-  comparable: boolean
-}
-
-// BF season Y against Boxing Day season Y (January counts toward the previous year).
-export function boxingPairs(points: Point[]): BoxingPair[] {
-  const out: BoxingPair[] = []
-  for (const [key, rows] of byKey(points)) {
-    const bfs = rows.filter(isBf)
-    const bds = rows.filter(isBoxing)
-    for (const year of new Set(bfs.map(yearOf))) {
-      const bf = minBy(bfs.filter((p) => yearOf(p) === year))
-      const bd = minBy(bds.filter((p) => seasonYear(p) === year))
-      if (!bf || !bd) continue
-      out.push({
-        key,
-        category: bf.category,
-        year,
-        bf: sideOf(bf),
-        bd: sideOf(bd),
-        boxing_cheaper: bd.price < bf.price,
-        saving_pct: Math.round((1 - bd.price / bf.price) * 100),
-        comparable: comparableItems(bf.item, bd.item),
-      })
-    }
-  }
-  return out.sort((a, b) => Number(b.boxing_cheaper) - Number(a.boxing_cheaper) || b.saving_pct - a.saving_pct)
-}
-
-// Distinct product keys whose pair failed the comparable-item guard.
-export const suspectCount = (pairs: { key: string; comparable: boolean }[]) =>
-  new Set(pairs.filter((p) => !p.comparable).map((p) => p.key)).size
-
-// ── Filters (shared by the client explorer) ─────────────────
-
-export interface Filters {
-  cats: string[]
-  year: number | null
-  file: string | null
-  minVotes: number
-}
-
-const votesOk = (votes: number | null, f: Filters) => votes == null || votes >= f.minVotes
-
-export function pairPasses(
-  p: { category: string; year: number; sides: { file: string; votes: number | null }[] },
-  f: Filters,
-): boolean {
-  return (
-    f.cats.includes(p.category) &&
-    (f.year == null || p.year === f.year) &&
-    (f.file == null || p.sides.some((s) => s.file === f.file)) &&
-    p.sides.every((s) => votesOk(s.votes, f))
-  )
-}
-
-// ── Headline ────────────────────────────────────────────────
-
-export function headline(points: Point[]) {
-  const bf = discounts(points, '黑五季')
-  const bd = discounts(points, '节礼日')
-  const cmp = comparePairs(points).filter((c) => c.comparable)
-  const box = boxingPairs(points).filter((c) => c.comparable)
-  return {
-    bf,
-    bd,
-    bf_median: overallMedian(bf),
-    bd_median: overallMedian(bd),
-    n_compare: cmp.length,
-    n_beaten: cmp.filter((c) => c.beaten).length,
-    n_boxing: box.length,
-    n_boxing_cheaper: box.filter((c) => c.boxing_cheaper).length,
-  }
-}
-
 // ── Forecast (提醒价) ───────────────────────────────────────
+
+export type Confidence = '高' | '中' | '低'
+export const confidenceOf = (bfYears: number): Confidence => (bfYears >= 2 ? '高' : bfYears === 1 ? '中' : '低')
 
 export interface Forecast {
   watch: Watch
   low: number | null
   latest: number | null
   seen26: Point | null
+  newest26: Point | null
+  confidence: Confidence
+  earliest: string | null
+  seasonMins: { year: number; point: Point }[]
   target: number | null
   targetPoint: Point | null
   range_text: string
@@ -378,7 +198,8 @@ export interface Forecast {
 }
 
 // Broad keys mix many products, so only hand-checked (curated) points may set their numbers.
-// low/latest/target use unconditional points only; seen26 is the cheapest 2026-season point.
+// low/latest/target/seen26 use unconditional points only (seen26 = cheapest 2026-season one, newest26 = most recent one). earliest is the first month-day (MM-DD)
+// a dated BF point showed up; seasonMins are the cheapest BF points of the last two seasons.
 export function forecast(watch: Watch[], points: Point[]): Forecast[] {
   return watch.map((w) => {
     const mine = points.filter((p) => p.key === w.key && (!w.broad || p.file === 'curated'))
@@ -388,14 +209,18 @@ export function forecast(watch: Watch[], points: Point[]): Forecast[] {
     const low = lowPt?.price ?? null
     const lastYear = Math.max(0, ...bfs.map(yearOf))
     const latest = minBy(bfs.filter((p) => yearOf(p) === lastYear))?.price ?? null
-    const seen26 = minBy(mine.filter((p) => seasonYear(p) === 2026))
-    const plain26 = minBy(plain.filter((p) => seasonYear(p) === 2026))
-    const targetPoint = [lowPt, plain26].reduce<Point | null>((m, p) => (p && (!m || p.price < m.price) ? p : m), null)
+    const seen26 = minBy(plain.filter((p) => seasonYear(p) === 2026))
+    const bfYears = [...new Set(bfs.map(yearOf))].sort()
+    const seasonMins = bfYears.slice(-2).map((year) => ({ year, point: minBy(bfs.filter((p) => yearOf(p) === year)) as Point }))
+    const dated = bfs.filter((p) => p.date.length === 10).map((p) => p.date.slice(5)).sort()
+    const newest26 = plain.filter((p) => seasonYear(p) === 2026).reduce<Point | null>((m, p) => (!m || p.date > m.date || (p.date === m.date && p.price < m.price) ? p : m), null)
+    const targetPoint = [lowPt, seen26].reduce<Point | null>((m, p) => (p && (!m || p.price < m.price) ? p : m), null)
     const target = targetPoint?.price ?? null
     const range_text = low == null ? '' : latest === low ? `约 ${money(low)}` : `${money(low)} – ${money(latest as number)}`
-    return { watch: w, low, latest, seen26, target, targetPoint, range_text, kw: target == null ? w.kw : `${w.kw} <=${Math.ceil(target)}` }
+    return { watch: w, low, latest, seen26, newest26, confidence: confidenceOf(bfYears.length), earliest: dated[0] ?? null, seasonMins, target, targetPoint, range_text, kw: target == null ? w.kw : `${w.kw} <=${Math.ceil(target)}` }
   })
 }
+
 
 // All price points of one watch key: count, latest price, and the newest rows.
 export function keyHistory(points: Point[], key: string, limit = 30) {
@@ -403,7 +228,13 @@ export function keyHistory(points: Point[], key: string, limit = 30) {
   return { n: rows.length, latest: rows[0] ?? null, rows: rows.slice(0, limit) }
 }
 
-// ── Timing (daily count of new deals around the sale) ───────
+// ── Dates ───────────────────────────────────────────────────
+
+export const dayNum = (iso: string) => Date.parse(iso + 'T00:00:00Z') / 86400000
+export const daysBetween = (from: string, to: string) => Math.round(dayNum(to) - dayNum(from))
+export const addDays = (iso: string, n: number) => new Date((dayNum(iso) + n) * 86400000).toISOString().slice(0, 10)
+export const monthDay = (iso: string) => `${Number(iso.slice(5, 7))}/${Number(iso.slice(8, 10))}`
+export const weekday = (iso: string) => '日一二三四五六'[new Date(iso + 'T00:00:00Z').getUTCDay()]
 
 // Black Friday = day after the 4th Thursday of November.
 export function blackFridayDate(year: number): number {
@@ -411,34 +242,155 @@ export function blackFridayDate(year: number): number {
   return Date.UTC(year, 10, 1 + ((4 - first + 7) % 7) + 21 + 1)
 }
 
-export interface TimingDay {
-  off: number
-  n: number
-  hot: number
+// ── This week's checklist ───────────────────────────────────
+
+// Steps due from today through today+7; when that is fewer than 3, the next 3 upcoming steps.
+// Steps already past are dropped. `later` is every other upcoming step.
+export function weekPlan(prep: PrepStep[], today: string) {
+  const upcoming = prep.filter((s) => s.by >= today).sort((a, b) => a.by.localeCompare(b.by) || a.step - b.step)
+  const inWeek = upcoming.filter((s) => s.by <= addDays(today, 7))
+  const now = inWeek.length >= 3 ? inWeek : upcoming.slice(0, 3)
+  return { now, later: upcoming.filter((s) => !now.includes(s)) }
 }
 
-export function timing(points: Point[], event: SaleEvent, lo: number, hi: number) {
-  const years = [...new Set(points.filter((p) => p.event === event).map(seasonYear))].sort()
-  return years.map((year) => {
-    const anchor = event === '黑五季' ? blackFridayDate(year) : Date.UTC(year, 11, 26)
-    const days: TimingDay[] = []
-    for (let off = lo; off <= hi; off++) days.push({ off, n: 0, hot: 0 })
-    for (const p of points) {
-      if (p.event !== event || seasonYear(p) !== year || p.date.length !== 10) continue
-      const off = Math.round((Date.parse(p.date + 'T00:00:00Z') - anchor) / 86400000)
-      if (off < lo || off > hi) continue
-      const d = days[off - lo]
-      d.n++
-      if ((votesOf(p) ?? 0) >= 50) d.hot++
-    }
-    return { year, days, total: days.reduce((s, d) => s + d.n, 0) }
-  }).filter((t) => t.total > 0)
+// ── When BF deals appear ────────────────────────────────────
+
+// OzBargain BF-season rows of 2024 and 2025 that carry a full date.
+const ozbBfRows = (points: Point[]) =>
+  points.filter((p) => isOzb(p) && isBf(p) && p.date.length === 10 && (yearOf(p) === 2024 || yearOf(p) === 2025))
+
+// Bucket = [first offset, last offset] in days from Black Friday of that year.
+const TIMING_BUCKETS: [number, number][] = [[-Infinity, -11], [-10, -10], [-9, -1], [0, 0], [1, Infinity]]
+
+// Percent per bucket by largest remainder, so the five numbers always add up to 100.
+export function timingShares(points: Point[]) {
+  const counts = TIMING_BUCKETS.map(() => 0)
+  const rows = ozbBfRows(points)
+  for (const p of rows) {
+    const off = Math.round((Date.parse(p.date + 'T00:00:00Z') - blackFridayDate(yearOf(p))) / 86400000)
+    counts[TIMING_BUCKETS.findIndex(([lo, hi]) => off >= lo && off <= hi)]++
+  }
+  const total = rows.length
+  const exact = counts.map((n) => (total ? (n / total) * 100 : 0))
+  const pct = exact.map(Math.floor)
+  const order = exact.map((x, i) => [x - pct[i], i]).sort((a, b) => b[0] - a[0])
+  const spare = total ? 100 - pct.reduce((a, b) => a + b, 0) : 0
+  for (let k = 0; k < spare; k++) pct[order[k][1]]++
+  return { total, counts, pct, beforeShare: total ? (counts[0] + counts[1] + counts[2]) / total : 0 }
 }
 
-// ── Coverage ────────────────────────────────────────────────
+// ── Recurring deals ─────────────────────────────────────────
 
-export function coverage(points: Point[], watch: Watch[]) {
-  const files = [...new Set(points.map((p) => p.file))].map((file) => {
+export interface Recurring {
+  key: string
+  item: string
+  category: string
+  p2024: number
+  p2025: number
+  trend: '降价中' | '涨价了' | '差不多'
+  votes: number
+  source: string
+}
+
+const RECUR_MIN_PRICE = 50
+
+const words = (s: string) => new Set(s.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean))
+
+// Same product, not a different size or model: identical digit-bearing words and word overlap >= 0.5.
+export function comparableItems(a: string, b: string): boolean {
+  const wa = words(a)
+  const wb = words(b)
+  const digits = (w: Set<string>) => [...w].filter((x) => /\d/.test(x)).sort().join('|')
+  if (digits(wa) !== digits(wb)) return false
+  const inter = [...wa].filter((x) => wb.has(x)).length
+  return inter / new Set([...wa, ...wb]).size >= 0.5
+}
+
+// Keys with an unconditional BF price in both 2024 and 2025, 2025 minimum at least $50.
+// Broad watch keys mix several products, so they never count as recurring; keys whose two yearly
+// minimums are different sizes or models are dropped too.
+export function recurring(points: Point[], watch: Watch[]): Recurring[] {
+  const broad = new Set(watch.filter((w) => w.broad).map((w) => w.key))
+  const byKey = new Map<string, Point[]>()
+  for (const p of points) {
+    if (broad.has(p.key) || !isBf(p) || p.conditions !== '' || p.category === '其他' || ![2024, 2025].includes(seasonYear(p))) continue
+    byKey.set(p.key, [...(byKey.get(p.key) ?? []), p])
+  }
+  const out: Recurring[] = []
+  for (const [key, rows] of byKey) {
+    const min = (y: number) => minBy(rows.filter((p) => seasonYear(p) === y))
+    const a = min(2024)
+    const b = min(2025)
+    if (!a || !b || b.price < RECUR_MIN_PRICE || !comparableItems(a.item, b.item)) continue
+    out.push({
+      key,
+      item: b.item,
+      category: b.category,
+      p2024: a.price,
+      p2025: b.price,
+      trend: b.price < a.price * 0.95 ? '降价中' : b.price > a.price * 1.05 ? '涨价了' : '差不多',
+      votes: Math.max(0, ...rows.map((p) => votesOf(p) ?? 0)),
+      source: b.source,
+    })
+  }
+  return out
+}
+
+const BRAND_STOP = new Set(['the', 'new', 'a', 'an', 'ozbargain', 'kogan'])
+const BRAND_NAME: Record<string, string> = { tp: 'TP-Link', oral: 'Oral-B' }
+const BRAND_MIN_ROWS = 3
+
+// Brands (first word of the item) with at least 3 unconditional BF rows in each of 2024 and 2025.
+export function recurringBrands(points: Point[], limit = 15) {
+  const seen = new Map<string, { n: [number, number]; spelled: Map<string, number> }>()
+  for (const p of points) {
+    const y = seasonYear(p)
+    if (!isBf(p) || p.conditions !== '' || (y !== 2024 && y !== 2025)) continue
+    const word = p.item.trim().split(/\s+/)[0] ?? ''
+    const id = word.toLowerCase()
+    if (!id || BRAND_STOP.has(id) || id.startsWith('[') || id.startsWith('(')) continue
+    const b = seen.get(id) ?? { n: [0, 0], spelled: new Map() }
+    b.n[y - 2024]++
+    b.spelled.set(word, (b.spelled.get(word) ?? 0) + 1)
+    seen.set(id, b)
+  }
+  return [...seen]
+    .filter(([, b]) => Math.min(...b.n) >= BRAND_MIN_ROWS)
+    .map(([id, b]) => ({
+      name: BRAND_NAME[id] ?? [...b.spelled].sort((x, y) => y[1] - x[1])[0][0],
+      n: Math.min(...b.n),
+    }))
+    .sort((a, b) => b.n - a.n || a.name.localeCompare(b.name))
+    .slice(0, limit)
+}
+
+// ── Discount depth and BF vs Boxing Day ─────────────────────
+
+const inSeasons = (ds: Discount[]) => ds.filter((d) => [2024, 2025].includes(seasonYear(d.point)))
+
+// Median BF discount per category over the 2024 and 2025 seasons; 其他 and categories under MIN_SAMPLE rows are dropped.
+export const categoryDepth = (points: Point[]) =>
+  categorySummary(inSeasons(discounts(points, '黑五季'))).flatMap((c) =>
+    c.median == null || c.category === '其他' ? [] : [{ category: c.category, n: c.n, median: c.median }],
+  )
+
+// Deal counts are OzBargain-only, averaged per season; medians use every file.
+export function bfVsBoxing(points: Point[]) {
+  const perYear = (event: SaleEvent) =>
+    points.filter((p) => isOzb(p) && p.event === event && [2024, 2025].includes(seasonYear(p))).length / 2
+  const med = (event: SaleEvent) => {
+    const pcts = inSeasons(discounts(points, event)).map((d) => d.pct)
+    return pcts.length >= MIN_SAMPLE ? median(pcts) : null
+  }
+  const bf = perYear('黑五季')
+  const bd = perYear('节礼日')
+  return { bfPerYear: bf, bdPerYear: bd, ratio: bd > 0 ? bf / bd : null, bfMedian: med('黑五季'), bdMedian: med('节礼日') }
+}
+
+// ── Coverage (appendix) ─────────────────────────────────────
+
+export function fileCoverage(points: Point[]) {
+  return [...new Set(points.map((p) => p.file))].map((file) => {
     const mine = points.filter((p) => p.file === file)
     const years = mine.map(yearOf)
     return {
@@ -450,16 +402,4 @@ export function coverage(points: Point[], watch: Watch[]) {
       latest: mine.map((p) => p.retrieved_at).sort().at(-1) ?? '',
     }
   })
-  const keys = watch.map((w) => {
-    const mine = points.filter((p) => p.key === w.key)
-    return {
-      key: w.key,
-      item: w.item,
-      bf_years: new Set(mine.filter(isBf).map(yearOf)).size,
-      boxing_years: new Set(mine.filter(isBoxing).map(seasonYear)).size,
-      non_bf: mine.filter((p) => !isBf(p)).length,
-      retailers_2026: new Set(mine.filter((p) => seasonYear(p) === 2026 && p.retailer).map((p) => p.retailer)).size,
-    }
-  })
-  return { files, keys }
 }
