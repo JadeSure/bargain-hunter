@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xlboqi",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xlboqi/llama2c_on_a_2006_ipod_80_mhz_w_64_mb_ram_and_no/",
+  "title": "llama2.c on a 2006 iPod @ 80 MHz w/ 64 MB ram and no FPU",
+  "author": "/u/r0tlier0",
+  "body": "hardware: PortalPlayer PP5022, ARM7TDMI @ 80 MHz, 64 MB ram wrote a fun rockbox plugin that runs Karpathy's llama2.c TinyStories models on an ipod video 5.5G. since there's no FPU, I ported llama2.c's int8 runq.c to use only integer math. it uses lookup tables -> exp/softmax + an integer square root for RMSNorm the 15M model is 17 MB, so it loads directly off the hard drive into the music buffer. Unfortunately you can't listen to music while it works lol want to eventually run this on both cores, and set up a more ipod themed model that does local music recommendation submitted by /u/r0tlier0 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-01T19:15:26Z",
+  "fetched_at": "2026-11-01T19:51:04.419435Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "b3aa441d57ac4681",
+  "key": "reddit:1xlboqi"
+}

@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xklq96",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xklq96/well_my_local_ai_addiction_officially_got_out_of/",
+  "title": "Well, my local AI addiction officially got out of hand tonight.",
+  "author": "/u/AnouarRifi",
+  "body": "Met a guy off Facebook Marketplace and scored 2x RTX 3090 Founders Editions for €1,700. The problem? I already had one 3090 FE. I am now sitting in my room looking at three 3090 FEs (72 GB GDDR6X VRAM) , and my current case barely fits one card, and that was only after I literally took pliers and bent the inner metal bracket to shove it in. My motherboard is just a standard B760. I clearly can't put three 3-slot cards in this PC. What is the cheapest, most sensible way forward to run all three (or two) for LLMs? Open-air mining frame + PCIe 4.0 risers + dual PSU? Get a giant full-tower case? Just sell the 3rd card for €1,100, keep 48 GB VRAM, and fund a proper dual-GPU build? Any chassis/frame or PSU recommendations for handling ~1,100W+ of 3090s would be appreciated. submitted by /u/AnouarRifi [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-10-31T21:21:02Z",
+  "fetched_at": "2026-11-01T19:51:04.419435Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "495df536022d0223",
+  "key": "reddit:1xklq96"
+}
