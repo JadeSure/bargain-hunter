@@ -117,20 +117,17 @@ export default async function Bf2026Page() {
   const d10 = addDays(BF_DATE, -10)
   const d11 = addDays(BF_DATE, -11)
   const cal = (id: string) => calendar.find((e) => e.id === id)
-  const rule = (id: string) => rules.find((r) => r.id === id)
 
   // ── timeline ──
   const timeline = [
-    { date: today, label: '今天', due: false },
+    { date: today, label: '今天' },
     ...[...new Set(prep.map((p) => p.by))].map((by) => {
       const steps = prep.filter((p) => p.by === by)
-      return { date: by, label: `截止：${steps.slice(0, 3).map((p) => p.task).join('；')}${steps.length > 3 ? ` 等 ${steps.length} 件` : ''}`, due: false }
+      return { date: by, label: `截止：${steps.slice(0, 3).map((p) => p.task).join('；')}${steps.length > 3 ? ` 等 ${steps.length} 件` : ''}` }
     }),
-    ...['s11', 'd10', 'amazon', 'jb', 'bf', 'cm', 'cn-std', 'cn-exp', 'bd-open', 'boxing'].flatMap((id) => {
+    ...['s11', 'd10', 'amazon', 'jb', 'bf', 'cm', 'bd-open', 'boxing'].flatMap((id) => {
       const e = cal(id)
-      if (!e) return []
-      const due = id === 'cn-std' || id === 'cn-exp'
-      return [{ date: e.start, label: due ? e.event.replace('：', '').replace('截止', '') : e.event, due }]
+      return e ? [{ date: e.start, label: e.event }] : []
     }),
   ]
     .filter((r) => r.date >= today && r.date <= BOXING_DATE)
@@ -202,9 +199,6 @@ export default async function Bf2026Page() {
 
   const buy = signals.filter((s) => s.kind === '买法')
   const picks = signals.filter((s) => s.kind === '选品')
-  const cnStd = cal('cn-std')
-  const parcel = rule('parcel')
-  const tax = rule('tax50')
   const latestRetrieved = points.map((p) => p.retrieved_at).reduce((a, b) => (a > b ? a : b), '')
 
   return (
@@ -258,7 +252,6 @@ export default async function Bf2026Page() {
                 {monthDay(r.date)} 周{weekday(r.date)}
               </span>
               <span className="min-w-0 flex-1 break-words">
-                {r.due && <span className="mr-1 font-semibold text-amber-400">截止</span>}
                 {r.label}
               </span>
               <span className="shrink-0 text-zinc-400">{r.date === today ? '' : inDays(daysBetween(today, r.date))}</span>
@@ -355,11 +348,6 @@ export default async function Bf2026Page() {
                     </li>
                   ))}
                 </ul>
-                {match === '国内亲友' && cnStd && parcel && tax && (
-                  <p className="mt-2 text-sm text-amber-300">
-                    寄回国：标准包裹 {monthDay(cnStd.start)} 截止，每个包裹 ≤ {parcel.value}，{tax.value.replace('应缴税额', '税额')}（见下方规则）
-                  </p>
-                )}
               </div>
             )
           })}
@@ -421,7 +409,7 @@ export default async function Bf2026Page() {
             <li>已知缺口：没有 2021–2023 年的黑五数据；商品分组比较粗；Dealmoon 的数据没有抽查。</li>
           </ul>
 
-          <h3 className="mb-2 mt-6 font-medium text-zinc-100">寄回国规则</h3>
+          <h3 className="mb-2 mt-6 font-medium text-zinc-100">带回国规则</h3>
           <div className="overflow-x-auto rounded-lg border border-zinc-800">
             <table className={TABLE_CLASS} style={{ minWidth: 640 }}>
               <thead><tr><Th>事项</Th><Th>规则</Th><Th>状态</Th><Th>备注</Th></tr></thead>

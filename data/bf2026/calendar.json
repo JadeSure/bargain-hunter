@@ -130,36 +130,6 @@
   "source": "https://www.ozbargain.com.au/event/black-friday"
  },
  {
-  "id": "cn-std",
-  "event": "寄中国：标准包裹截止",
-  "start": "2026-12-04",
-  "end": "2026-12-04",
-  "date_label": "12月4日 周五",
-  "status": "已确认",
-  "note": "经济包裹今年暂停",
-  "source": "https://auspost.com.au/personal/sending/christmas-sending-dates"
- },
- {
-  "id": "cn-exp",
-  "event": "寄中国：Express 截止",
-  "start": "2026-12-08",
-  "end": "2026-12-08",
-  "date_label": "12月8日 周二",
-  "status": "已确认",
-  "note": "",
-  "source": "https://auspost.com.au/personal/sending/christmas-sending-dates"
- },
- {
-  "id": "cn-cour",
-  "event": "寄中国：Courier 截止",
-  "start": "2026-12-15",
-  "end": "2026-12-15",
-  "date_label": "12月15日 周二",
-  "status": "已确认",
-  "note": "",
-  "source": "https://auspost.com.au/personal/sending/christmas-sending-dates"
- },
- {
   "id": "au-post",
   "event": "澳洲境内同州包裹截止",
   "start": "2026-12-22",
