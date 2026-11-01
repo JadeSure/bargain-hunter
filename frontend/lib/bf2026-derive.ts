@@ -274,8 +274,10 @@ const ozbBfRows = (points: Point[]) =>
 // Bucket = [first offset, last offset] in days from Black Friday of that year.
 const TIMING_BUCKETS: [number, number][] = [[-Infinity, -11], [-10, -10], [-9, -1], [0, 0], [1, Infinity]]
 
+const bfOffset = (p: Point) => Math.round((Date.parse(p.date + 'T00:00:00Z') - blackFridayDate(yearOf(p))) / 86400000)
+
 const bucketOf = (p: Point) => {
-  const off = Math.round((Date.parse(p.date + 'T00:00:00Z') - blackFridayDate(yearOf(p))) / 86400000)
+  const off = bfOffset(p)
   return TIMING_BUCKETS.findIndex(([lo, hi]) => off >= lo && off <= hi)
 }
 
@@ -309,6 +311,41 @@ export function timingDepth(points: Point[]) {
     before: group([0, 1, 2]),
     after: group([3, 4]),
   }
+}
+
+const DEEP_PCT = 50
+const SAME_BAND = 0.98
+// leading [tag]: platform, membership, state…
+const leadTagOf = (p: Point) => /^\s*(\[[^\]]*\])/.exec(p.evidence)?.[1] ?? ''
+
+// Early (before BF) vs BF day and after. Same item: per key and year, the cheapest unconditional row on each side,
+// paired only when the item words and the leading [tag] match; a gap under 2% is `same`.
+// Deep deals: timingDepth rows at 50%+ off, before BF vs on or after BF.
+export function earlyVsBfDay(points: Point[]) {
+  const rows = ozbBfRows(points)
+  const groups = new Map<string, Point[]>()
+  for (const p of rows) {
+    if (p.conditions !== '' || p.category === '其他') continue
+    const k = `${p.key}|${yearOf(p)}`
+    groups.set(k, [...(groups.get(k) ?? []), p])
+  }
+  let pairs = 0
+  let afterCheaper = 0
+  let beforeCheaper = 0
+  for (const g of groups.values()) {
+    const before = minBy(g.filter((p) => bfOffset(p) < 0))
+    const after = minBy(g.filter((p) => bfOffset(p) >= 0))
+    if (!before || !after || leadTagOf(before) !== leadTagOf(after)) continue
+    const wb = words(before.item)
+    const wa = words(after.item)
+    if (wb.size !== wa.size || [...wb].some((w) => !wa.has(w))) continue
+    pairs++
+    if (after.price < before.price * SAME_BAND) afterCheaper++
+    else if (before.price < after.price * SAME_BAND) beforeCheaper++
+  }
+  const deep = discounts(rows).filter((d) => d.pct >= DEEP_PCT).map((d) => d.point)
+  const deepBefore = deep.filter((p) => bfOffset(p) < 0).length
+  return { pairs, afterCheaper, same: pairs - afterCheaper - beforeCheaper, beforeCheaper, deepBefore, deepAfter: deep.length - deepBefore }
 }
 
 // ── Gift depth ──────────────────────────────────────────────

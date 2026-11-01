@@ -4,6 +4,7 @@ import {
   categoryDepth,
   bfVsBoxing,
   daysBetween,
+  earlyVsBfDay,
   fileCoverage,
   giftDepth,
   forecast,
@@ -153,6 +154,7 @@ export default async function Bf2026Page() {
   const files = fileCoverage(points)
   const tm = timingShares(points)
   const td = timingDepth(points)
+  const ev = earlyVsBfDay(points)
   const gd = giftDepth(points, watch, gifts)
   const rec = recurring(points, watch)
   const brands = recurringBrands(points)
@@ -283,7 +285,7 @@ export default async function Bf2026Page() {
         {tm.total > 0 && (
           <div className="mt-6 flex gap-3 rounded-2xl border border-sky-400/20 bg-sky-950/60 p-4 text-base font-medium leading-relaxed text-sky-50 sm:text-lg">
             <span aria-hidden>💡</span>
-            <p>往年{beforeTens}成好价在黑五当天之前出现，{monthDay(d10)} 最集中。{monthDay(d11)} 前把清单、提醒和礼品卡准备好。</p>
+            <p>往年{beforeTens}成好价在黑五当天之前出现，{monthDay(d10)} 最集中。到提醒价就买，没到就等黑五当天。{monthDay(d11)} 前把清单、提醒和礼品卡准备好。</p>
           </div>
         )}
       </header>
@@ -360,6 +362,28 @@ export default async function Bf2026Page() {
             {depthLine && <span className="mt-1 block">{depthLine}</span>}
           </Takeaway>
           <Bars rows={timingLabels.map((label, i) => ({ label, value: tm.pct[i], text: `${tm.pct[i]}%`, sub: depthSub(td.buckets[i]), accent: i < 3 }))} />
+          {(ev.deepBefore > 0 || ev.pairs > 0) && (
+            <div className="bf-card mt-5 space-y-3 p-4">
+              {ev.deepBefore > 0 && (
+                <div className="flex gap-3">
+                  <span aria-hidden>🏃</span>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-zinc-50">黑五前也常有超低价 → 到提醒价就买</p>
+                    <p className="bf-m">往年黑五前便宜一半以上的好价 {ev.deepBefore} 个，黑五当天及之后 {ev.deepAfter} 个</p>
+                  </div>
+                </div>
+              )}
+              {ev.pairs > 0 && (
+                <div className="flex gap-3">
+                  <span aria-hidden>⏳</span>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-zinc-50">{ev.beforeCheaper > ev.afterCheaper ? '同一件东西，黑五前反而常更便宜 → 到提醒价就买' : '同一件东西，黑五当天及之后一般更便宜或持平 → 没到提醒价就等黑五'}</p>
+                    <p className="bf-m">黑五前和黑五当天及之后都有价的同款 {ev.pairs} 件：黑五当天及之后更便宜 {ev.afterCheaper} 件，差不多 {ev.same} 件，黑五前更便宜 {ev.beforeCheaper} 件（样本小，且降价了才常有人再发帖，仅供参考）</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <Evidence>依据：OzBargain 2024、2025 年黑五季 {tm.total} 条好价的发帖日期；折扣只算有原价的 {td.total} 条，各类商品混在一起，仅供参考</Evidence>
         </Section>
       )}

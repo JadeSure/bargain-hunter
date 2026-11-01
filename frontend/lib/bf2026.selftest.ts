@@ -196,6 +196,35 @@ const mk = (o: Partial<Point>): Point => ({
   assert.deepEqual(d.timingDepth([]).before, { n: 0, median: null })
 }
 
+// early vs BF day: same-item pairs (2% band, word sets, leading tag, ignored rows) and deep deals
+{
+  const bef = '2025-11-20'
+  const aft = '2025-11-28'
+  const r = (key: string, date: string, price: number, o: Partial<Point> = {}) => mk({ key, date, price, item: 'Widget Pro', ...o })
+  const pair = (key: string, before: number, after: number, o: Partial<Point> = {}) => [r(key, bef, before, o), r(key, aft, after, o)]
+  const pts = [
+    ...pair('cheap', 100, 97), ...pair('edge-a', 100, 98), ...pair('edge-b', 98, 100), ...pair('rev', 90, 100),
+    r('words', bef, 100, { item: 'Ring Battery Video Doorbell' }), r('words', aft, 50, { item: 'Ring Battery Video Doorbell Plus + Ring Chime' }),
+    r('plat', bef, 100, { evidence: '[PS5] game' }), r('plat', aft, 50, { evidence: '[XSX] game' }),
+    ...pair('cond', 100, 50, { conditions: '合约' }), ...pair('misc', 100, 50, { category: '其他' }),
+    r('tag-same', bef, 100, { evidence: '[PS5] game, deal A' }), r('tag-same', aft, 50, { evidence: '[PS5] game, deal B' }),
+    r('xyear', '2024-11-20', 100), r('xyear', aft, 50),
+    r('min', bef, 90), r('min', '2025-11-21', 150), r('min', aft, 100),
+    r('only-before', bef, 100),
+  ]
+  const e = d.earlyVsBfDay(pts)
+  assert.deepEqual([e.pairs, e.afterCheaper, e.same, e.beforeCheaper], [6, 2, 2, 2])
+
+  const deep = [
+    r('d1', bef, 40, { was_price: 100 }), r('d1', aft, 80, { was_price: 100 }),
+    r('d2', bef, 50, { was_price: 100 }), r('d2', aft, 30, { was_price: 100, conditions: '合约' }),
+    r('d3', aft, 49, { was_price: 100 }), r('d4', bef, 51, { was_price: 100 }), r('d5', bef, 4, { was_price: 100 }),
+  ]
+  const f = d.earlyVsBfDay(deep)
+  assert.deepEqual([f.deepBefore, f.deepAfter], [2, 1])
+  assert.deepEqual(d.earlyVsBfDay([]), { pairs: 0, afterCheaper: 0, same: 0, beforeCheaper: 0, deepBefore: 0, deepAfter: 0 })
+}
+
 // gift depth: best discount, no-data keys, broad keys use curated points only, band edges, sort
 {
   const w = (key: string, who: string, broad = false): Watch => ({ key, item: `item-${key}`, category: '礼品', who, verdict: '黑五入手', why: '', kw: '', broad })
