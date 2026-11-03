@@ -284,4 +284,159 @@ const mk = (o: Partial<Point>): Point => ({
   assert.equal(new Date(d.blackFridayDate(2024)).toISOString().slice(0, 10), '2024-11-29')
 }
 
+// ── P0 acceptance (docs/BF2026_UI_PRD.md §6) ────────────────
+
+const pack = (u: string) => u
+
+// 1. Same shopping year only: a 2025 Black Friday price is never compared with a 2018
+// Boxing Day price, nor with a July 2026 one. Shopping year Y = Y-06-01 .. (Y+1)-05-31.
+{
+  assert.equal(d.shoppingYear(mk({ date: '2025-11-28' })), 2025)
+  assert.equal(d.shoppingYear(mk({ date: '2026-01-03', event: '节礼日' })), 2025)
+  assert.equal(d.shoppingYear(mk({ date: '2026-05-31', event: '其他促销' })), 2025)
+  assert.equal(d.shoppingYear(mk({ date: '2026-06-01', event: 'EOFY' })), 2026)
+  assert.equal(d.shoppingYear(mk({ date: '2026-07-15', event: 'Prime Day' })), 2026)
+
+  const pts = [
+    mk({ key: 'tv', date: '2025-11-28', price: 900 }),
+    mk({ key: 'tv', date: '2018-12-26', event: '节礼日', price: 150 }),
+    mk({ key: 'tv', date: '2026-07-15', event: 'Prime Day', price: 100 }),
+    mk({ key: 'tv', date: '2026-01-05', event: '节礼日', price: 800 }),
+  ]
+  const rows = d.seasonRows(pts, pack)
+  // 2025: BF 900 vs the Jan-2026 Boxing Day 800 — the 2018 and the 2026-07 rows are other years.
+  const y2025 = rows.filter((r) => r[1] === 2025)
+  assert.equal(y2025.length, 1)
+  assert.equal(y2025[0][4], 900)
+  assert.equal(y2025[0][5], 800)
+  assert.equal(y2025[0][6], '节礼日')
+  // 2018 and 2026 have only one side each, so they make no pair at all.
+  assert.deepEqual(rows.map((r) => r[1]).sort(), [2025])
+
+  const f = d.defaultFilter()
+  const cmp = d.compareShoppingYear(rows, { ...f, minVotes: 0 })
+  assert.equal(cmp.pairs, 1)
+  assert.equal(cmp.otherCheaper, 1)
+  assert.equal(cmp.bfCheaper, 0)
+
+  // A gap under 2% counts as "about the same".
+  const near = d.seasonRows(
+    [mk({ key: 'x', date: '2025-11-28', price: 100 }), mk({ key: 'x', date: '2025-12-26', event: '节礼日', price: 99 })],
+    pack,
+  )
+  const nearCmp = d.compareShoppingYear(near, { ...f, minVotes: 0 })
+  assert.equal(nearCmp.same, 1)
+}
+
+// 2. Outlier exclusion feeds both the board rows and the "已排除 n 条" list.
+{
+  const contract = mk({ price: 13.86, was_price: 998.64, conditions: '合约', item: 'iPhone 16e 128GB' })
+  const cheap = mk({ price: 3, was_price: 20 })
+  const fine = mk({ price: 60, was_price: 100, votes: 30 })
+  const rows = d.boardRows([contract, cheap, fine], ['ozbargain'], pack)
+  assert.equal(rows.length, 1)
+  assert.equal(rows[0][6], 60)
+  const ex = d.excludedRows([contract, cheap, fine], pack)
+  assert.equal(ex.length, 2)
+  assert.ok(ex[0][5].startsWith('带条件'))
+  assert.equal(ex[0][2], 99)
+  assert.ok(ex[1][5].includes('$5'))
+}
+
+// 3. A January Boxing Day price belongs to the previous season, in the board rows too.
+{
+  const jan = d.boardRows([mk({ event: '节礼日', date: '2026-01-03', price: 50, was_price: 100 })], ['ozbargain'], pack)
+  assert.equal(jan[0][2], 2025)
+  assert.equal(jan[0][1], d.BD_EVENT)
+}
+
+// 4. Board order: rows with votes first, by votes; rows without votes after, by discount.
+{
+  const row = (votes: number, pct: number): d.BoardRow => [0, d.BF_EVENT, 2025, 0, votes, pct, 100, 200, 'i', 'r', 'u']
+  const sorted = d.boardSort([row(d.NO_VOTES, 80), row(5, 10), row(40, 20), row(d.NO_VOTES, 90), row(12, 70)])
+  assert.deepEqual(sorted.map((r) => [r[4], r[5]]), [
+    [40, 20],
+    [12, 70],
+    [5, 10],
+    [d.NO_VOTES, 90],
+    [d.NO_VOTES, 80],
+  ])
+}
+
+// 5. Under MIN_SAMPLE rows a category reports no median, and the vote threshold only
+// touches OzBargain rows.
+{
+  const f = { ...d.defaultFilter(), minVotes: 0, other: true }
+  const four = Array.from({ length: 4 }, () => mk({ price: 50, was_price: 100, votes: 30 }))
+  const rows4 = d.boardRows(four, ['ozbargain'], pack)
+  assert.equal(d.depthOf(rows4, f)[0].median, null)
+  assert.equal(d.depthOf(rows4, f)[0].n, 4)
+  const rows5 = d.boardRows([...four, mk({ price: 50, was_price: 100, votes: 30 })], ['ozbargain'], pack)
+  assert.equal(d.depthOf(rows5, f)[0].median, 50)
+
+  // votes >= 20 keeps the OzBargain row and never drops a source that has no votes at all.
+  const ozbLow = mk({ price: 50, was_price: 100, votes: 3 })
+  const dealmoon = mk({ id: 'dm-1', file: 'dealmoon', price: 50, was_price: 100, votes: 500 })
+  const mixed = d.boardRows([ozbLow, dealmoon], ['ozbargain', 'dealmoon'], pack)
+  assert.equal(d.filterRows(mixed, { ...f, minVotes: 0 }).length, 2)
+  const gated = d.filterRows(mixed, { ...f, minVotes: d.DEFAULT_MIN_VOTES })
+  assert.equal(gated.length, 1)
+  assert.equal(gated[0][4], d.NO_VOTES)
+  assert.ok(d.passesVotes(d.NO_VOTES, 50))
+  assert.ok(!d.passesVotes(19, 20))
+  assert.ok(d.passesVotes(20, 20))
+}
+
+// 其他 is out unless asked for; an empty category pick means every category.
+{
+  const f = d.defaultFilter()
+  assert.ok(!d.keepsCat(d.OTHER_CAT, f))
+  assert.ok(d.keepsCat(d.OTHER_CAT, { ...f, other: true }))
+  assert.ok(d.keepsCat(0, f))
+  assert.ok(!d.keepsCat(1, { ...f, cats: [0] }))
+}
+
+// Deal counts average over the seasons the filter leaves in, and name them.
+{
+  const cells: d.CountCell[] = [
+    [0, d.BF_EVENT, 2024, 0, 10, 4, 1],
+    [0, d.BF_EVENT, 2025, 0, 20, 6, 2],
+    [0, d.BD_EVENT, 2024, 0, 5, 2, 0],
+    [0, d.BD_EVENT, 2025, 0, 5, 3, 0],
+  ]
+  const f = { ...d.defaultFilter(), minVotes: 0 }
+  const all = d.countsOf(cells, f)
+  assert.deepEqual(all.years, [2024, 2025])
+  assert.equal(all.bfPerYear, 15)
+  assert.equal(all.bdPerYear, 5)
+  assert.equal(all.ratio, 3)
+  const y2025 = d.countsOf(cells, { ...f, year: 2025 })
+  assert.deepEqual(y2025.years, [2025])
+  assert.equal(y2025.bfPerYear, 20)
+  // the vote threshold picks the matching pre-counted column
+  assert.equal(d.countsOf(cells, { ...f, minVotes: 20 }).bfPerYear, 5)
+  assert.equal(d.countsOf(cells, { ...f, minVotes: 50 }).bfPerYear, 1.5)
+}
+
+// URL round-trip: the default is written as a clean URL and read back unchanged. A missing
+// `votes` key must keep the default threshold, not parse as the valid value 0.
+{
+  const files = ['curated', 'dealmoon', 'ozbargain']
+  const dflt = d.defaultFilter()
+  assert.equal(d.writeFilter(dflt, files), '')
+  assert.deepEqual(d.readFilter('', files), dflt)
+  assert.equal(d.readFilter('', files).minVotes, d.DEFAULT_MIN_VOTES)
+  assert.equal(d.readFilter('?cat=home', files).minVotes, d.DEFAULT_MIN_VOTES)
+  assert.equal(d.readFilter('?votes=0', files).minVotes, 0)
+  assert.equal(d.readFilter('?votes=7', files).minVotes, d.DEFAULT_MIN_VOTES)
+
+  const picked: d.Filter = { cats: [0, 1], year: 2025, file: 2, minVotes: 50, other: true }
+  const qs = d.writeFilter(picked, files)
+  assert.equal(qs, '?cat=tech%2Chome&year=2025&src=ozbargain&votes=50&other=1')
+  assert.deepEqual(d.readFilter(qs, files), picked)
+
+  // junk falls back to the default rather than throwing
+  assert.deepEqual(d.readFilter('?cat=nope&year=abc&src=nope&votes=nope', files), dflt)
+}
+
 console.log('bf2026 selftest: ok')

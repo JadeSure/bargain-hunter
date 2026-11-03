@@ -35,3 +35,16 @@ export function HistoryDetails({ summary, rows, more }: { summary: string; rows:
     </details>
   )
 }
+
+// A <details> whose body is built only once it is opened. Same reason as HistoryDetails:
+// closed <details> content still ships in the HTML, so hundreds of table cells would be
+// sent twice (rendered markup + props). Client-only, so the body is a render function.
+export function LazyDetails({ summary, className, children }: { summary: string; className?: string; children: () => React.ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <details className={className} onToggle={(e) => setOpen(e.currentTarget.open)}>
+      <summary className="bf-toggle">{summary}</summary>
+      {open && children()}
+    </details>
+  )
+}
