@@ -4,6 +4,8 @@ export interface BarRow {
   text: string
   sub?: string
   accent?: boolean
+  // Hover tooltip; every chart needs one (see docs/BF2026_UI_PRD.md §5.6).
+  title?: string
 }
 
 // Horizontal bars: label on top, bar below, the number printed at the bar end. No axes, no legend.
@@ -12,7 +14,7 @@ export default function Bars({ rows, thin = false }: { rows: BarRow[]; thin?: bo
   return (
     <ul className={thin ? 'space-y-2' : 'space-y-4'}>
       {rows.map((r) => (
-        <li key={r.label}>
+        <li key={r.label} title={r.title}>
           <div className={`break-words text-zinc-300 ${thin ? 'text-xs' : 'text-sm'}`}>{r.label}</div>
           <div className="bf-barrow">
             <div className={thin ? 'bf-track-thin' : 'bf-track'}>
