@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xmtlm7",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xmtlm7/balbalv2_turkish_speech_recognition_that_runs_on/",
+  "title": "balbal-v2: Turkish speech recognition that runs on CPU, 2nd on Mu-Bench TR after Google Chirp 3",
+  "author": "/u/Shadomia",
+  "body": "I've been working on Turkish ASR for a while and put out v2 recently. Two models, both CTC + KenLM, both meant for CPU (both trained for under $250): - balbal-v2-manas: 313M, Turkish + English, ~123x real time on 8 threads - balbal-v2: 45M, Turkish only, ~236x real time. It even runs faster than real time on one core of an old Celeron POS box running Windows 7. Mu-Bench is a Turkish benchmark of 846 real customer service calls. Numbers from the official harness: Model WER sigWER Google Chirp 3 8.03 14.30 balbal-v2-manas 8.20 14.89 Gemini 3.5 Transcribe 8.68 18.20 ElevenLabs Scribe v2 9.43 19.15 balbal-v2 9.46 18.44 Deepgram Nova-3 13.37 24.35 Azure Speech 14.02 30.73 Qwen3-ASR 1.7B 14.76 30.61 whisper-large-v3-turbo 24.65 47.04 On FLEURS Turkish manas is basically tied with whisper-large-v3-turbo (4.06 vs 4.07) but about 75x faster on the same CPU. English is ok too, 8.67 average WER on the Open ASR leaderboard sets. The model uses a unique architecture that has a product-key-memory inspired by engrams and a refiner that loops 3 times before giving the output. Also, turns out a team (LocalDoc) already trained an Azerbaijani model on the manas architecture, 10.98 WER on FLEURS Azerbaijani. ( https://huggingface.co/LocalDoc/speakwrite-azerbaijani ) I was happy that they took my model decisions which made me happy :D `pip install balbal`, then `balbal run file.wav`. There's also a live mic mode and an OpenAI-compatible server. Code is Apache-2.0. Weights are free for research, non-commercial use and small businesses, but you can't resell it as an ASR product or API. Full terms are on the model page. Weights: https://huggingface.co/erayyapagci/balbal-v2-manas and https://huggingface.co/erayyapagci/balbal-v2 Code: https://github.com/erayyap/balbal Demo + offline Android app: https://erayy.com/balbal submitted by /u/Shadomia [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-03T13:57:18Z",
+  "fetched_at": "2026-11-03T21:13:01.665174Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "006adc0b5af15edb",
+  "key": "reddit:1xmtlm7"
+}
