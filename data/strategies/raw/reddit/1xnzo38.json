@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xnzo38",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xnzo38/qwen38_27b_q4_on_my_lowend_laptop_and_it_became/",
+  "title": "Qwen3.8 27B Q4 on my low-end Laptop, and it became my main Model usage for coding",
+  "author": "/u/Felix_455-788",
+  "body": "my laptop is very old, like 20G of ram 4G Vram 256G NVMe Gen3 From samsung i7 8th gen on these specs i got around 0.67 - 0.77 token per second yes, extremely slow, most of you won't even like it, or use it but free APIs these days are rare, and extremely limited usage, and my country has banned worldwide transactions, so No Claude, No GPT, No Argon my only way is Local LLMs, and here we are i achieved some projects with Qwen, actually, it fixed bugs in my old projects, i used it for modding games (like grey hack, Cell to Singularity, Some of itch io games, using Dnspy and Ghidra) it done pretty well, some tasks required iterations i used LM Studio, and for coding i used Pi agent mostly, and sometimes Opencode i genuinly loved that model, but lately i have been interested more in Ornith 1.5 122B A10B, i am planning to download it, and use mmap with Q3 K XL, i loved to share my experience here submitted by /u/Felix_455-788 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-04T20:56:55Z",
+  "fetched_at": "2026-11-04T21:25:00.381319Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "f5c7bf7c010eba28",
+  "key": "reddit:1xnzo38"
+}

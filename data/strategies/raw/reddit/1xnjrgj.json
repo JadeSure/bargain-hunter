@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xnjrgj",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xnjrgj/paper_specpilot_autonomous_algorithm_discovery/",
+  "title": "[Paper] SpecPilot: Autonomous Algorithm Discovery and Systems Optimization for Speculative Decoding 🚀🚀🚀",
+  "author": "/u/pmttyji",
+  "body": "Speculative decoding accelerates memory-bound LLM decoding with a lightweight drafter, and parallel drafters extend this speedup by drafting a whole block in one forward pass. However, it remains unclear whether their released systems (stock) attain the full speedup that parallel drafting permits. We identify three challenges. First, with one request, each step accepts few tokens but reads every target weight. Second, with batching, per-request verification work roughly halves the speedup over autoregressive (AR) decoding. Third, speculative decoding is deployment-specific, and no universal optimization fits every serving regime, drafter, target model and GPU. To address these challenges, we present SpecPilot, an autonomous agentic loop that discovers algorithms and systems optimizations for each deployment. In each round, a cost model locates the largest gaps between the current system and its ceiling. Parallel agents explore directions and integrate the successful ones. Token forcing checks every output token against stock to detect reward hacking. A structured memory carries validated mechanisms to new rounds and deployments. SpecPilot discovered a general lossless 12-bit weight format, tree verification for hybrid recurrent targets, two-level verification and three batching mechanisms. We evaluate it across four target models, three drafters, two GPU platforms and five benchmarks. Without training or quality loss, it raises the speedup over AR from stock's 4.46× to 10.87× with one request, and from 1.94× to 3.93× with batching . arXiv : https://arxiv.org/abs/2611.02501 PDF : https://arxiv.org/pdf/2611.02501 GitHub : https://github.com/StargazerX0/SpecPilot Project : https://stargazerx0.github.io/specpilot-project-page/ 🚀🚀🚀 submitted by /u/pmttyji [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-04T09:18:44Z",
+  "fetched_at": "2026-11-04T21:25:00.381319Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "efee4df68a08b6f0",
+  "key": "reddit:1xnjrgj"
+}
