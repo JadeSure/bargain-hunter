@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xor5nr",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xor5nr/the_ultimate_moe_training_handbook_training/",
+  "title": "The Ultimate MoE Training Handbook: training Mixture-of-Experts models with Megatron-LM, setting by setting.",
+  "author": "/u/lvwerra",
+  "body": "This handbook is for people who have trained a dense model and want to train an MoE next, or who are curious how MoE training works. Chapter 2 is a Megatron-LM runbook: test the hardware, build the image, train a dense baseline, then a first MoE on one node, compared against that baseline. Chapter 3 takes the MoE layer apart (router, routing, load balancing, experts, block layout, training, systems). For each part we give the Megatron-LM code, what to watch, our recommendation, and what frontier MoEs chose. Chapter 4 follows the model into serving and RL. Chapters 3 and 4 need no GPU. When a result comes from our runs, we say so. Claims about frontier models cite their paper, config or code, and the toy simulations are labelled as such. The lessons come from about 800k GH200 GPU-hours of MoE training on the Alps cluster at CSCS. Released: the handbook, its 55 figures as a gallery ( https://huggingface.co/spaces/huggingface/moe-gallery ), the scripts ( https://gist.github.com/nmntz/5de952d686f66d7bce5bce8cba9d7139 ), and every recommended flag in one Megatron-LM block. Happy to answer questions! submitted by /u/lvwerra [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-05T19:01:53Z",
+  "fetched_at": "2026-11-05T21:31:07.942431Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "7d01e746b2a8e625",
+  "key": "reddit:1xor5nr"
+}

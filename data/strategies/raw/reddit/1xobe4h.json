@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xobe4h",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xobe4h/ccore_glb3dcoder_4b_final_model_and_full_weights/",
+  "title": "CCORE GLB-3D-Coder 4B final model and full weights are out",
+  "author": "/u/ConfidentDinner6648",
+  "body": "Hey everyone! Following up on my previous post : the final version of CCORE GLB-3D-Coder is now available, including the full Safetensors weights. It’s a full fine-tune of Qwen3.5-4B for generating reusable 3D assets. Describe what you want, and it writes a complete Three.js HTML scene with an Export GLB button. You can open the HTML in your browser, inspect the result, and export it into Godot, Blender, Unity, or other tools that support GLB. The video shows examples from the final model, including selected side-by-side comparisons with DeepSeek V4.1 Flash. I’m particularly happy with the character designs and the amount of detail it can produce at just 4B parameters. It covers more than fantasy characters: buildings, environments, weapons, vehicles, laboratory equipment, sports props, furniture, and other objects. It can also generate animations and include them in the exported GLB. Available now: Q4_K_M GGUF, around 2.7 GB Q8_0 GGUF Full model weights in Safetensors The training dataset is planned for release tomorrow, November 6. Model, downloads, system prompt, and recommended settings on Hugging Face Some generations still need a retry or a small code correction, but I’m very happy with the improvement over the earlier release. If you’re interested in the next models, or would like to help support future datasets and training runs, there’s more information on the Hugging Face page. Testing it and sharing your results or failure cases also helps a lot. Thanks to everyone who tried the earlier version I made RIFTWARD, a small browser arena using characters, terrain and props generated locally by CCORE GLB-3D-Coder 4B. An orchestration and validation harness helped assemble, refine and integrate the assets and build the gameplay. Play it here: https://huggingface.co/spaces/ccore/RIFTWARD Feel free to share what you make with it! I’d be really happy to hear that the model has been useful to you :) submitted by /u/ConfidentDinner6648 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-05T06:14:09Z",
+  "fetched_at": "2026-11-05T21:31:07.942431Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "5fc59efc4d043f3e",
+  "key": "reddit:1xobe4h"
+}
