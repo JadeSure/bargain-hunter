@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xr3qes",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xr3qes/motion_graphics_video_made_with_qwen38_flash_next/",
+  "title": "Motion graphics video made with Qwen3.8 Flash Next GSQ RCO IQ3_XXS on strata",
+  "author": "/u/Yhojm",
+  "body": "I've seen the insane motion graphics videos people made when opus 5.5 first came out and wondered how good QFN would do with the same recipe. Decided to make a short video for my nephew who loves trains This is Qwen3.8 Flash Next GSQ RCO IQ3_XXS on 16GB VRAM RTX 4080 + 64GB DDR5 5600 with strata and opencode at about 95 tps decode and 3000 tps prefill. It took ~40 minutes for the first render, with about 3 followup prompts to fix the rough edges and broken text etc so about 2 hours in total. The \"recipe\" is explicitly telling the model to use three.js, playwright and ffmpeg to create the video, then just describe in simple words the style of video and video dimensions, what the video is about, audio, animation style etc.. in this case the first prompt was: \"Make a 15-second, 1920×1080, 60fps video in Three.js that showcases the famous japan shinkansen train, like a showreel. Render it frame by frame to MP4 with Playwright and ffmpeg, go all out, 1s hook, loop.\" It required a few followup prompts (the first render was dark and there were no buildings and there was too much text), but this \"stack\" of threejs + playwright + ffmpeg works pretty well for fixes. Oh and btw this doesn't have any duration limit the videos can be as long as you want. Now, is it comparable to opus? no lol but it's pretty good I'd say. Can't wait to try this with qwen 4! submitted by /u/Yhojm [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-08T17:23:29Z",
+  "fetched_at": "2026-11-08T19:52:42.396565Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "045a65bde39e7954",
+  "key": "reddit:1xr3qes"
+}

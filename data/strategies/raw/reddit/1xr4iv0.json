@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xr4iv0",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xr4iv0/what_are_people_finding_local_models_actually/",
+  "title": "What are people finding local models actually useful for?",
+  "author": "/u/prestodigitarium",
+  "body": "I think that a lot of people get into local models because they get a sense of potential with this stuff, but it can be hard to make local models concretely useful sometimes, compared to frontier models. I think it would help people a lot if we had a place where people shared concretely what they find them most useful for, in the form of what model they're running. I'll start. I'm running DeepSeek v4.1 Flash 1017, using Fraser Price's BRRR ( github.com/fraserprice/DeepSeek-4.1-Flash-1017-BRRR ) on 4x RTX 6000 Blackwells. It gets around 550 tps in c=1, a couple thousand at c=16 iirc. What I'm finding most useful so far: Scouts - commercial frontier models call my local web research agents to go do web research - the frontier models would waste a huge amount of tokens researching relatively trivial stuff, so this has helped save its effort and time. Masons - frontier models spec out small pieces of code, which the local model builds out and delivers back to the frontier model to integrate. Hermes agents which filter Hacker News/Youtube/other sites for news I'd find interesting, it's surprisingly good at calling out what I'd usually click into An events crawler setup, it judges each event, and emails our family with the top 10 every week A personal assistant records all my terminal usage, including harnesses, and my browser usage, and every morning, messages me with a summary of what I was working on when I left off last night to help me get right back into it. Speech to text on local models is revolutionary - so much faster than typing, even though I'm a pretty fast typist, and the local models feel almost instantaneous. I'm sure I'm not using this as well as I could, it relies on me driving it, it's definitely bottlenecked by me, and I'd love to make it do more useful work while I sleep. I've made several stabs at making a \"software factory\", but haven't come up with anything amazing there. What are other people finding success with? submitted by /u/prestodigitarium [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-08T17:56:13Z",
+  "fetched_at": "2026-11-08T19:52:42.396565Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "53d3dc5e05a59136",
+  "key": "reddit:1xr4iv0"
+}
