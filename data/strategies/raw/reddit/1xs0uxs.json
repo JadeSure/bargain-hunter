@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xs0uxs",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xs0uxs/best_practices_for_provisioning_local_inference/",
+  "title": "Best Practices for Provisioning Local Inference to a Team?",
+  "author": "/u/Anarchaotic",
+  "body": "Hey everyone, I recently built a Radiance inference server for my company, and now want to start provisioning access to the rest of my team. My current plan: Tailscale as the only way to access the server via HTTPs. Hermes as the harness - each user would have their own container with access restrictions, but open access to the central skills repository. Hermes is hosted on a Framework Desktop. Radiance is running separately on its own server with access only configured via the Framework. I'm wondering how everyone else has managed to do this successfully? Right now the biggest thing to figure out is how to get the harness (Hermes in this case) to work across the team without a huge headache of getting API tokens from things like Google, etc... submitted by /u/Anarchaotic [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-09T19:17:35Z",
+  "fetched_at": "2026-11-09T23:50:05.590089Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "81583537743f6675",
+  "key": "reddit:1xs0uxs"
+}

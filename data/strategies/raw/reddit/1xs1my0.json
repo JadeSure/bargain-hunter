@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xs1my0",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xs1my0/llmpsicotest_a_seeded_38turn_conversation_to/",
+  "title": "llm-psicotest: a seeded 38-turn conversation to check whether a quant swap changed behaviour",
+  "author": "/u/msalsas",
+  "body": "llm-psicotest runs one 38-turn conversation against any OpenAI-compatible endpoint: 29 capability items plus protocol turns. The items come from seeded generators, so a seed gives byte-identical prompts on any machine, and code scores every turn against a computed key. That includes constrained prose, and whether output rules declared early still hold 20 turns later. Most code-scored benchmarks dodge both by using multiple choice. Calibration on my rig: one base model (Qwen3.8-Flash-Next GGUF), four arms, four seeds. Means out of 29 came out 28.25 and 27.50 for UD-Q3_K_XL and IQ2_XS on Unsloth Studio, and 28.00 and 25.50 for IQ3_S and IQ2_XS on Strata, the llama-server stack I run myself. IQ3_S beat IQ2_XS on all four Strata seeds: 29, 28, 28 and 27 out of 29 against 25, 26, 26 and 25, same server and settings. Python 3.11+, stdlib only, MIT: export PSICOTEST_API_KEY=*** psicotest run --base-url http://127.0.0.1:8080/v1 --model my-model --seed 7 RESULTS.md takes community rows; a row needs server version, context size, KV dtype and output budget. github.com/msalsas/llm-psicotest submitted by /u/msalsas [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-09T19:45:49Z",
+  "fetched_at": "2026-11-09T23:50:05.590089Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "da2af7c3b14f87c0",
+  "key": "reddit:1xs1my0"
+}
