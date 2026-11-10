@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xso32l",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xso32l/adventistsaisophonrealtimev1_hugging_face/",
+  "title": "adventists-ai/Sophon-Realtime-v1 · Hugging Face",
+  "author": "/u/pmttyji",
+  "body": "An open full-duplex voice model family that hears your tone and speaks with one. Adventists AI · Apache-2.0 · Recommended: Tag · Flash · Try it online · GitHub Talking to it feels like a phone call with a person: it listens the whole time you talk, picks up as soon as you stop, and stops the moment you cut in. It hears how you say things (hesitation, emphasis, sarcasm, laughter, sighs) and answers with tone of its own: it laughs, sighs and clears its throat when the conversation calls for it. This is the home page of the Sophon-Realtime v1 family. Three builds share one brain (the same 32B model listens, decides when to take the turn and writes the reply); they differ only in how the reply becomes sound. Start with Tag. Three builds: which one? Tag (recommended) Flash E2E (research preview) How it speaks the brain writes the reply with sound tags; an expressive speech model performs them the same tagged reply, spoken by a lighter, faster speech model a talker inside the 32B model, no separate speech model Best for expressive voice: companions, characters, demos speed and scale: customer service, in-car, many users per GPU research on end-to-end expressive speech Non-verbal sounds (NVV-SuperBench, zh / en) 0.86 / 0.80 0.77 / 0.63 0.77 / 0.60 First audio, one user ~0.6 s 0.31 s ~1 s Users per 80 GB GPU (recommended) 16 40 4–5 GPUs 1 1 2 Serving vLLM-Omni, one command vLLM-Omni, one command own engine Pick Tag if you want the voice to act; pick Flash if latency and users per GPU matter most. Same APIs, so you can switch later. Highlights VoiceBench 82.8 and Big Bench Audio 81.8%: the strongest brain among open full-duplex models. #1 among open full-duplex models on both; level with GPT-4o-mini-Audio on VoiceBench. All three builds share this brain. Paralinguistic understanding 48.6, #1 overall: it hears your tone. Ahead of Gemini 3.8 Flash (46.9) and Qwen3-Omni (44.6) on LISTEN, StressTest and MSPB. Its ears are DuplexJev, our open speech-decision model. NVV-SuperBench 0.86 (Chinese) and 0.80 (English) with the Tag build: it speaks with tone. The model decides when to laugh, sigh, breathe or clear its throat, and the voice performs it instead of reading the tag aloud. Fast: first audio in 0.31 s with Flash. It drafts its reply while you talk; when you cut in, it stops and answers your new question. Full-Duplex-Bench v3 tool calling: Pass@1 48%, ahead of Grok (43%), with a 100% response rate: it gets work done. Live mode is compatible with the OpenAI GPT-Live interface and lets it work with a larger backend model. Every reply comes with an auditable transcript. One 80 GB GPU, one command (Tag and Flash). Served by vLLM-Omni; up to 16 (Tag) or 40 (Flash) concurrent users per GPU. Apache-2.0 code and weights, free for commercial use. submitted by /u/pmttyji [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-10T14:20:01Z",
+  "fetched_at": "2026-11-10T21:23:02.816759Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "bbf491a1944c8504",
+  "key": "reddit:1xso32l"
+}

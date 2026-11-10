@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xsl4qt",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xsl4qt/paper_exploring_weightspace_programming/",
+  "title": "[Paper] Exploring Weight-Space Programming: Capabilities, Generalization, and Limitations",
+  "author": "/u/pmttyji",
+  "body": "Weight-Space Programming (WSP) enables reasoning agents to directly inspect and modify neural network parameters, offering an alternative to gradient-based model adaptation. However, its capabilities, cross-task generalization, and practical limitations remain insufficiently understood. We systematically investigate WSP through 16 editing trajectories across seven benchmarks and two model scales (Qwen3.5-0.8B and Qwen3.5-9B). Our findings reveal three key insights. First, WSP can achieve substantial performance gains through highly localized interventions. On full held-out evaluations, accuracy improves by up to 29.45, 4.42, 36.72, and 17.11 percentage points on MATH-500, GPQA Diamond, IFEval, and SciBench, respectively. Notably, modifying only 1,023 parameters yields a 29.45-point improvement . Second, WSP exhibits promising but uneven cross-task generalization. A Math-edited checkpoint improves GPQA Diamond, IFEval, and SciBench by 3.03, 12.18, and 20.10 points , respectively, without further editing, while leaving SciCode performance unchanged. Third, effective editing remains challenging and inconsistent. Outcomes vary substantially across trajectories, and six of the 16 trajectories retain the original weights when candidate improvements cannot be reliably validated. Together, these results highlight WSP's potential for highly localized model adaptation while revealing important challenges in intervention discovery, reliability, and cross-task transfer. arXiv : https://arxiv.org/abs/2611.09382 PDF : https://arxiv.org/pdf/2611.09382 GitHub : https://github.com/WSP-Scope/WSP-Scope-Project (Repo to be updated) Project : https://wsp-scope.github.io/ (For detailed benchmarks) Related Thread : [Paper] Sparks of Weight-Space Programming: LLMs can natively read & write neural network weights submitted by /u/pmttyji [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-10T12:02:19Z",
+  "fetched_at": "2026-11-10T21:23:02.816759Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "c7b21b53deed174a",
+  "key": "reddit:1xsl4qt"
+}
