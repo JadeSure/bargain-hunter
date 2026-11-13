@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xvbq3s",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xvbq3s/modules_for_my_opensource_gpl3_harness_have/",
+  "title": "modules for my opensource (GPL3) harness have evolved to the point where this is possible. this is a full fledged videogame running inside it!",
+  "author": "/u/rosie254",
+  "body": "my harness for local AI that i've been working on since February this year (2026) has evolved to the point where this is possible. What you see here is a module for my harness's webui, it's not a seperate program. This demonstration is running on Gemma4 26b locally , believe it or not, using only a SINGLE model and one local API endpoint (via llamacpp). No multi-API tomfoolery here! The stable diffusion image generation is moss-image which i'm able to do because i have a strix halo now, but on smaller hardware you could do something like z-image turbo at Q4 quant, which is what i used to do before i got the strix halo. I've been working for almost a week on this module, and i'm excited to finally release it! It's a text adventure engine . It supports asset packs, that can contain music, sound effects, images, weathers (CSS+js+glsl shaders), skies (same tech as weathers), loading screens, text flourishes, and more! You can create your own asset packs easily. The AI sees the files in the asset packs and forms adventures around them, but there is no prompt telling it what the story should be, that's completely up to the way you prompt it! I recommend using it together with the characters module in openlumara in order to set up a world and story You can get it here: https://github.com/Rose22/openlumara-adventure-games-module More footage on the github! (had to delete and repost because i couldnt change the video. this video is a much better showcase for it) submitted by /u/rosie254 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-13T16:03:17Z",
+  "fetched_at": "2026-11-13T21:30:08.101500Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "a5743a7ba373dcc5",
+  "key": "reddit:1xvbq3s"
+}

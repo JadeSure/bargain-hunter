@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xvcmm0",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xvcmm0/i_built_speedy_strix_halo_kernels_for_the_top51/",
+  "title": "I built speedy Strix Halo kernels for the top-51 LLMs with AMD Loom (and you can too)",
+  "author": "/u/jfowers_amd",
+  "body": "I’ve been trying out a new experimental software flow from AMD’s AI Group, and I’ve been having a lot of fun with it, so I thought I’d share and see what y’all think too. hrx-loom is a new end-to-end tool stack (compiler, runtime, serving tools) that lets anyone build, optimize, serve, and share model programs without any modifications to the inference engine or server. The kernels are written in .loom files, a vector programming model reminiscent of MLIR, which can be complex for humans but easy for agents (C++ is also supported). Over the past couple weeks, I developed an agent skill that writes kernels for any LLM’s Q4_K_M GGUF and found that it is consistently faster than llama.cpp Vulkan and ROCm on Stix Halo for a variety decode and prefill metrics, as you can see in the post’s image. Next, I ran the skill across the top-51 trending LLMs from Hugging Face that would fit on Strix Halo and posted the model programs back to Hugging Face. All models ported successfully with tool calling, speculative decoding, and image input working. Anyone can try these on Linux and Windows with the loom-fetch and loom-serve commands provided in Loom’s PyPI package, and anyone can make and upload their own using the /loom skill. Fetch and serve a model: pip install \"hrx-loom[hf]==0.1.0\" loom-fetch https://huggingface.co/loom-fun/bartowski-Qwen3.8-27B-loom/resolve/main/model.json --output=qwen3.8-27b loom-serve --model=qwen3.8-27b/model.json --device=amdgpu --memory_bytes=52gb Port and optimize your own model: /loom get <hf-org>/<model-gguf> working on loom-serve, optimize it, and report the performance relative to llamacpp rocm Links: - All the data I collected across 51 models: https://loom-fun.github.io/loom-dev - Loom skills: https://github.com/loom-fun/loom-skills - Loom compiler and server: https://github.com/ROCm/hrx-system - HF collection of top-51 models ported to Loom: https://huggingface.co/loom-fun We’re still evaluating how the community will use and deploy new inference stacks, so we’d love to have your feedback! Loom can be used as standalone inference server with loom-serve and the compiler/runtime layers can also integrate into other engines. For example, the team is working on adding an hrx-loom backend to llama.cpp . The underlying SDK (compiler, runtimes, and devtools) has no dependencies, can be easily downloaded as a wheel or linked into your own applications, builds from source in a minute, and if this were the 90s, would still fit on a few floppy disks, while being able to target x86, AMD-GPU, AMD-NPU, and generic Vulkan devices. submitted by /u/jfowers_amd [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-13T16:37:41Z",
+  "fetched_at": "2026-11-13T21:30:08.101500Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "608a01bd29870fbd",
+  "key": "reddit:1xvcmm0"
+}
