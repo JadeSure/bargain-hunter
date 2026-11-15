@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xwfbgy",
+  "url": "https://www.reddit.com/r/AusFinance/comments/1xwfbgy/etf_vs_leaving_cash_in_redrawoffset_what/",
+  "title": "ETF vs leaving cash in redraw/offset: what variables am I missing? (AU)",
+  "author": "/u/menocom",
+  "body": "I am trying to work out the yearly price growth an ETF needs just to break even with the interest I would save by leaving the same cash in my home loan redraw/offset. I have been building a small calculator for myself (with AI help) and want to check I have covered the right variables. What I have included Amount invested and how many years I hold it Home loan rate, with interest compounding monthly Brokerage, charged on the buy and on the sell ETF dividend yield, with dividends assumed to go against the loan (no DRP) Dividend tax: the foreign income tax offset for funds holding overseas shares (15% US withholding assumed), or franking credits for Australian shares My tax rate on dividends while I am working, and a separate tax rate in the year I sell The announced CGT changes from 1 July 2027: indexed cost base (CPI) and a 30% minimum tax A flat yearly growth rate What I have deliberately left out for now Dollar cost averaging (one lump sum only) Volatility and the order of good and bad years Changes in the loan rate over time The old 50% CGT discount for gains before 1 July 2027 The 45 day holding rule for franking credits What am I missing? Anything that would change the answer for you, for example: Is the 30% CGT minimum applied on top of Medicare or instead of it? Anything about fund fees, spreads or currency I should not ignore? Anything about how you think about access to cash, risk or the redraw buffer that belongs in the comparison? The tool is just a basic website (one page only), and the code is on GitHub along with all the calculations, so you can check every formula. My posts keep getting removed when they include links, so I have left the links out. Send me a message or ask in the comments and I will share them. General information only, not advice. Happy to hear anything I have wrong or overlooked. submitted by /u/menocom [link] [comments]",
+  "board": "r/AusFinance",
+  "created_at": "2026-11-14T22:36:35Z",
+  "fetched_at": "2026-11-15T20:29:45.516983Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "f27022f58bb080c5",
+  "key": "reddit:1xwfbgy"
+}
