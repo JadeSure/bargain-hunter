@@ -1,0 +1,17 @@
+{
+  "source": "reddit",
+  "post_id": "1xxxbt9",
+  "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xxxbt9/open_weight_models_account_for_30_usage_at/",
+  "title": "Open weight models account for 30% usage at enterprises to save money",
+  "author": "/u/Terminator857",
+  "body": "Growing from nearly zero to 30% since July. Models used mostly to reduce costs on high volume workloads (large batch workloads, coding, etc). https://x.com/pwendell/status/2122377964784611636 submitted by /u/Terminator857 [link] [comments]",
+  "board": "r/LocalLLaMA",
+  "created_at": "2026-11-16T18:38:24Z",
+  "fetched_at": "2026-11-16T23:47:56.847799Z",
+  "score": null,
+  "num_comments": null,
+  "tags": [],
+  "relevance": 1,
+  "content_hash": "13f7a077ba9afd5b",
+  "key": "reddit:1xxxbt9"
+}
