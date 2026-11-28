@@ -528,3 +528,256 @@ export function fileCoverage(points: Point[]) {
     }
   })
 }
+
+// ── Filterable views (P0-2 / P0-3 / P0-4 / P0-6) ────────────
+// The page is static, so the filter UI runs in the browser over compact rows the server
+// pre-aggregates here. Every row carries just what the filters and the charts need.
+
+// Only OzBargain rows carry votes, so NO_VOTES marks a row the vote threshold must ignore.
+export const NO_VOTES = -1
+export const VOTE_OPTIONS = [0, 20, 50] as const
+export const DEFAULT_MIN_VOTES = 20
+
+export const passesVotes = (votes: number, min: number) => votes === NO_VOTES || votes >= min
+
+export const catIndex = (category: string) => {
+  const i = (CATEGORIES as readonly string[]).indexOf(category)
+  return i === -1 ? CATEGORIES.length - 1 : i
+}
+export const OTHER_CAT = CATEGORIES.length - 1
+
+// A shopping year runs 1 June to 31 May, so EOFY, Prime Day, Click Frenzy, Black Friday and
+// the Boxing Day sale that closes the season all land in the same year Y.
+export const shoppingYear = (p: Point) => (Number(p.date.slice(5, 7)) >= 6 ? yearOf(p) : yearOf(p) - 1)
+
+export interface Filter {
+  cats: number[]
+  year: number
+  file: number
+  minVotes: number
+  other: boolean
+}
+
+export const ALL_YEARS = 0
+export const ALL_FILES = -1
+export const defaultFilter = (): Filter => ({ cats: [], year: ALL_YEARS, file: ALL_FILES, minVotes: DEFAULT_MIN_VOTES, other: false })
+
+// [category, event, season year, source file, votes, discount %, price, was price, item, retailer, packed source]
+export type BoardRow = [number, number, number, number, number, number, number, number, string, string, string]
+export const BF_EVENT = 0
+export const BD_EVENT = 1
+
+const rowCat = (r: BoardRow) => r[0]
+const rowEvent = (r: BoardRow) => r[1]
+const rowYear = (r: BoardRow) => r[2]
+const rowFile = (r: BoardRow) => r[3]
+const rowVotes = (r: BoardRow) => r[4]
+const rowPct = (r: BoardRow) => r[5]
+
+// `cats` empty means every category; 其他 is in only when `other` is set, whether or not it was picked.
+export function keepsCat(cat: number, f: Filter): boolean {
+  if (cat === OTHER_CAT) return f.other
+  return f.cats.length === 0 || f.cats.includes(cat)
+}
+
+export function filterRows(rows: BoardRow[], f: Filter): BoardRow[] {
+  return rows.filter(
+    (r) =>
+      keepsCat(rowCat(r), f) &&
+      (f.year === ALL_YEARS || rowYear(r) === f.year) &&
+      (f.file === ALL_FILES || rowFile(r) === f.file) &&
+      passesVotes(rowVotes(r), f.minVotes),
+  )
+}
+
+// Rows with votes rank first, highest vote count first; rows without votes follow, deepest discount
+// first. Ties keep the deeper discount, then the newer season, so the order never depends on input order.
+export function boardSort(rows: BoardRow[]): BoardRow[] {
+  return [...rows].sort((a, b) => {
+    const av = rowVotes(a) === NO_VOTES
+    const bv = rowVotes(b) === NO_VOTES
+    if (av !== bv) return av ? 1 : -1
+    if (!av && rowVotes(a) !== rowVotes(b)) return rowVotes(b) - rowVotes(a)
+    return rowPct(b) - rowPct(a) || rowYear(b) - rowYear(a)
+  })
+}
+
+export const BOARD_LIMIT = 20
+
+// One block per category, in the fixed CATEGORIES order, each cut to BOARD_LIMIT rows.
+export function board(rows: BoardRow[], f: Filter, limit = BOARD_LIMIT) {
+  const kept = filterRows(rows, f)
+  return CATEGORIES.map((category, cat) => {
+    const mine = kept.filter((r) => rowCat(r) === cat)
+    return { category, cat, n: mine.length, rows: boardSort(mine).slice(0, limit) }
+  }).filter((c) => c.n > 0)
+}
+
+// Median discount per category over the filtered rows; under MIN_SAMPLE the median is null
+// ("样本不足") rather than a number read off a handful of deals.
+export function depthOf(rows: BoardRow[], f: Filter, event = BF_EVENT) {
+  const kept = filterRows(rows, f).filter((r) => rowEvent(r) === event)
+  return CATEGORIES.map((category, cat) => {
+    const pcts = kept.filter((r) => rowCat(r) === cat).map(rowPct)
+    return { category, cat, n: pcts.length, median: pcts.length >= MIN_SAMPLE ? median(pcts) : null }
+  }).filter((c) => c.n > 0)
+}
+
+// [category, event, season year, source file, rows, rows with >= 20 votes, rows with >= 50 votes]
+export type CountCell = [number, number, number, number, number, number, number]
+
+// Deal counts per sale event, averaged over the seasons the filter leaves in. `years` names
+// those seasons so the page can state the basis instead of a hard-coded year pair.
+export function countsOf(cells: CountCell[], f: Filter) {
+  const slot = VOTE_OPTIONS.indexOf(f.minVotes as (typeof VOTE_OPTIONS)[number])
+  const col = slot === -1 ? 4 : 4 + slot
+  const kept = cells.filter((c) => keepsCat(c[0], f) && (f.year === ALL_YEARS || c[2] === f.year) && (f.file === ALL_FILES || c[3] === f.file))
+  const years = [...new Set(kept.filter((c) => c[col] > 0).map((c) => c[2]))].sort()
+  const n = years.length || 1
+  const sum = (event: number) => kept.filter((c) => c[1] === event).reduce((a, c) => a + c[col], 0)
+  const bf = sum(BF_EVENT) / n
+  const bd = sum(BD_EVENT) / n
+  return { bfPerYear: bf, bdPerYear: bd, ratio: bd > 0 ? bf / bd : null, years }
+}
+
+// Black Friday against the rest of the same shopping year, per watch key.
+// [category, shopping year, source file, votes, BF price, best non-BF price, that event, item, packed source]
+export type SeasonRow = [number, number, number, number, number, number, string, string, string]
+
+export function compareShoppingYear(rows: SeasonRow[], f: Filter) {
+  const kept = rows.filter(
+    (r) => keepsCat(r[0], f) && (f.year === ALL_YEARS || r[1] === f.year) && (f.file === ALL_FILES || r[2] === f.file) && passesVotes(r[3], f.minVotes),
+  )
+  let bfCheaper = 0
+  let otherCheaper = 0
+  for (const r of kept) {
+    if (r[4] < r[5] * SAME_BAND) bfCheaper++
+    else if (r[5] < r[4] * SAME_BAND) otherCheaper++
+  }
+  return { pairs: kept.length, bfCheaper, same: kept.length - bfCheaper - otherCheaper, otherCheaper, rows: kept }
+}
+
+// Pairs the cheapest unconditional Black Friday price of a key with the cheapest price that key
+// reached at any other sale in the same shopping year. Only keys with both sides count.
+export function seasonRows(points: Point[], packSource: (url: string) => string): SeasonRow[] {
+  const groups = new Map<string, Point[]>()
+  for (const p of points) {
+    if (p.conditions !== '' || p.date.length !== 10) continue
+    const k = `${p.key}|${shoppingYear(p)}`
+    groups.set(k, [...(groups.get(k) ?? []), p])
+  }
+  const out: SeasonRow[] = []
+  for (const g of groups.values()) {
+    const bf = minBy(g.filter(isBf))
+    const other = minBy(g.filter((p) => !isBf(p)))
+    if (!bf || !other) continue
+    out.push([
+      catIndex(bf.category),
+      shoppingYear(bf),
+      0,
+      votesOf(bf) ?? NO_VOTES,
+      bf.price,
+      other.price,
+      other.event,
+      clipItem(bf.item),
+      packSource(bf.source),
+    ])
+  }
+  return out
+}
+
+// [category, season year, discount %, price, was price, reason, item, packed source]
+export type ExcludedRow = [number, number, number, number, number, string, string, string]
+
+// Every candidate excludeReason drops, so the page can say how many and show which.
+export function excludedRows(points: Point[], packSource: (url: string) => string): ExcludedRow[] {
+  return discountCandidates(points).flatMap((d) => {
+    const reason = excludeReason(d)
+    if (reason === null) return []
+    const p = d.point
+    return [[catIndex(p.category), seasonYear(p), d.pct, p.price, p.was_price as number, reason, clipItem(p.item), packSource(p.source)] as ExcludedRow]
+  })
+}
+
+const ITEM_CHARS = 44
+const clipItem = (s: string) => (s.length > ITEM_CHARS ? s.slice(0, ITEM_CHARS - 1) + '…' : s)
+
+// Every kept discount, compact, for the board / depth chart / exclusion count in the browser.
+export function boardRows(points: Point[], files: string[], packSource: (url: string) => string): BoardRow[] {
+  return discounts2(points).map((d) => {
+    const p = d.point
+    const file = files.indexOf(p.file)
+    return [
+      catIndex(p.category),
+      isBf(p) ? BF_EVENT : BD_EVENT,
+      seasonYear(p),
+      file === -1 ? 0 : file,
+      votesOf(p) ?? NO_VOTES,
+      d.pct,
+      p.price,
+      p.was_price as number,
+      clipItem(p.item),
+      p.retailer,
+      packSource(p.source),
+    ] as BoardRow
+  })
+}
+
+// Both sale events at once, outliers already dropped.
+const discounts2 = (points: Point[]): Discount[] => discountCandidates(points).filter((d) => excludeReason(d) === null)
+
+// Count cells for the deal-count comparison: OzBargain only, as on the unfiltered page.
+export function countCells(points: Point[], files: string[], seasons: number[]): CountCell[] {
+  const cells = new Map<string, CountCell>()
+  for (const p of points) {
+    if (!isOzb(p) || !(isBf(p) || isBoxing(p)) || !seasons.includes(seasonYear(p))) continue
+    const file = Math.max(0, files.indexOf(p.file))
+    const key = `${catIndex(p.category)}|${isBf(p) ? BF_EVENT : BD_EVENT}|${seasonYear(p)}|${file}`
+    const cell = cells.get(key) ?? [catIndex(p.category), isBf(p) ? BF_EVENT : BD_EVENT, seasonYear(p), file, 0, 0, 0]
+    const v = votesOf(p) ?? NO_VOTES
+    cell[4]++
+    if (passesVotes(v, VOTE_OPTIONS[1])) cell[5]++
+    if (passesVotes(v, VOTE_OPTIONS[2])) cell[6]++
+    cells.set(key, cell)
+  }
+  return [...cells.values()]
+}
+
+// ── Filter state in the URL ─────────────────────────────────
+// Short ASCII slugs keep a bookmarked link readable and survive a reordering of CATEGORIES.
+
+export const CAT_SLUGS = ['tech', 'home', 'beauty', 'outdoor', 'health', 'gift', 'other'] as const
+
+// Every field falls back to the default when absent or unrecognised. `votes` is read only when
+// the key is present: 0 is a valid threshold, so a missing key must not parse as 0.
+export function readFilter(search: string, files: string[]): Filter {
+  const q = new URLSearchParams(search)
+  const d = defaultFilter()
+  const cats = (q.get('cat') ?? '')
+    .split(',')
+    .map((s) => (CAT_SLUGS as readonly string[]).indexOf(s.trim()))
+    .filter((i) => i >= 0)
+  const year = Number(q.get('year'))
+  const file = files.indexOf(q.get('src') ?? '')
+  const votes = Number(q.get('votes'))
+  return {
+    cats,
+    year: q.has('year') && Number.isInteger(year) && year > 2000 ? year : d.year,
+    file: file === -1 ? d.file : file,
+    minVotes: q.has('votes') && (VOTE_OPTIONS as readonly number[]).includes(votes) ? votes : d.minVotes,
+    other: q.get('other') === '1',
+  }
+}
+
+// Only what differs from the default is written, so an untouched page keeps a clean URL.
+export function writeFilter(f: Filter, files: string[]): string {
+  const q = new URLSearchParams()
+  const d = defaultFilter()
+  if (f.cats.length) q.set('cat', f.cats.map((i) => CAT_SLUGS[i]).join(','))
+  if (f.year !== d.year) q.set('year', String(f.year))
+  if (f.file !== d.file && files[f.file]) q.set('src', files[f.file])
+  if (f.minVotes !== d.minVotes) q.set('votes', String(f.minVotes))
+  if (f.other) q.set('other', '1')
+  const s = q.toString()
+  return s ? `?${s}` : ''
+}

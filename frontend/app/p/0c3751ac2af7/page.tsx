@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import {
   addDays,
-  categoryDepth,
-  bfVsBoxing,
+  boardRows,
+  catIndex,
+  countCells,
   daysBetween,
   earlyVsBfDay,
+  excludedRows,
   fileCoverage,
   giftDepth,
   forecast,
@@ -14,17 +16,21 @@ import {
   monthDay,
   recurring,
   recurringBrands,
+  seasonRows,
   timingDepth,
   timingShares,
   weekday,
   weekPlan,
 } from '@/lib/bf2026'
-import type { PrepStep, Recurring } from '@/lib/bf2026'
+import type { PrepStep } from '@/lib/bf2026'
 import Bars from '@/app/components/bf2026/Bars'
 import Cards from '@/app/components/bf2026/Cards'
 import type { WatchCard } from '@/app/components/bf2026/Cards'
+import Explorer from '@/app/components/bf2026/Explorer'
+import type { ExplorerData, RecRow } from '@/app/components/bf2026/Explorer'
 import type { HistoryRow } from '@/app/components/bf2026/Lazy'
 import Thumb from '@/app/components/bf2026/Thumb'
+import { Evidence, Section, SubHead, Src, Takeaway } from '@/app/components/bf2026/Ui'
 import { ADVICE, TABLE_CLASS, clip, packUrl, pillFor, verifyLabel } from '@/app/components/bf2026/shared'
 
 export const metadata: Metadata = {
@@ -35,8 +41,6 @@ export const metadata: Metadata = {
 const BF_DATE = '2026-11-27'
 const BOXING_DATE = '2026-12-26'
 const HISTORY_ROWS = 6
-const TOP_PER_CATEGORY = 6
-const CATEGORY_ORDER = ['数码电子', '家电厨房', '美妆个护', '户外运动', '保健食品', '礼品']
 const NUMERALS = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 const GIFT_BLOCKS: [match: string, title: string, emoji: string][] = [
   ['国内亲友', '送国内亲友', '👵'],
@@ -65,45 +69,9 @@ const PICK_EMOJI: [keyword: string, emoji: string][] = [
 // Short recipient labels: only the 送-type parts of `who` (自用 is dropped), e.g. 送伴侣家人 -> 伴侣家人.
 const giftWho = (who: string) => who.split(' / ').filter((w) => w.startsWith('送') || w.includes('Santa')).map((w) => w.replace(/^送/, ''))
 const pickEmoji = (title: string) => PICK_EMOJI.find(([k]) => title.includes(k))?.[1] ?? '🔥'
-const TREND_CHIP: Record<string, string> = {
-  降价中: 'bf-emerald',
-  涨价了: 'bf-rose',
-  差不多: 'bf-zinc',
-}
-const TREND_ARROW: Record<string, string> = { 降价中: '↓', 涨价了: '↑', 差不多: '→' }
-
 const sydneyToday = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Australia/Sydney' })
 const cnDate = (iso: string) => `${Number(iso.slice(5, 7))}月${Number(iso.slice(8, 10))}日`
 const inDays = (n: number) => (n === 0 ? '今天' : n > 0 ? `还有 ${n} 天` : `已过 ${-n} 天`)
-
-function Src({ href, children }: { href: string; children: React.ReactNode }) {
-  if (!href.startsWith('http') && !(href.startsWith('/') && !href.startsWith('//'))) return <>{children}</>
-  const external = href.startsWith('http')
-  return (
-    <a
-      href={href}
-      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-      className="bf-link"
-    >
-      {children}
-    </a>
-  )
-}
-
-function Section({ id, emoji, title, children }: { id?: string; emoji: string; title: string; children: React.ReactNode }) {
-  return (
-    <section id={id} className="bf-section">
-      <h2 className="mb-5 text-xl font-semibold text-zinc-50">
-        <span aria-hidden className="mr-2">{emoji}</span>{title}
-      </h2>
-      {children}
-    </section>
-  )
-}
-
-const Takeaway = ({ children }: { children: React.ReactNode }) => <p className="mb-5 text-lg font-bold leading-snug text-zinc-50 sm:text-xl">{children}</p>
-const Evidence = ({ children }: { children: React.ReactNode }) => <p className="mt-5 text-xs leading-relaxed text-zinc-400">{children}</p>
-const SubHead = ({ children }: { children: React.ReactNode }) => <h3 className="mb-3 text-sm font-semibold text-zinc-300">{children}</h3>
 
 function Step({ s, today }: { s: PrepStep; today: string }) {
   return (
@@ -115,21 +83,6 @@ function Step({ s, today }: { s: PrepStep; today: string }) {
           <div className="bf-detail">{s.detail}</div>
         </div>
         <span className="bf-due">截止 {monthDay(s.by)} · {inDays(daysBetween(today, s.by))}</span>
-      </div>
-    </li>
-  )
-}
-
-function RecurringCard({ r, image }: { r: Recurring; image?: string }) {
-  return (
-    <li className="bf-rcard">
-      <Thumb image={image} name={r.item} category={r.category} size={88} />
-      <div className="bf-rname">{clip(r.item, 50)}</div>
-      <div className="bf-rprice">预计 {money(r.p2025)}<span className="bf-mf"> 左右</span></div>
-      <div className="bf-mn">2024 {money(r.p2024)} → 2025 {money(r.p2025)}</div>
-      <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-        <span className={`${TREND_CHIP[r.trend]}`}>{TREND_ARROW[r.trend]} {r.trend}</span>
-        <Src href={r.source}><span className="bf-m">来源</span></Src>
       </div>
     </li>
   )
@@ -158,8 +111,6 @@ export default async function Bf2026Page() {
   const gd = giftDepth(points, watch, gifts)
   const rec = recurring(points, watch)
   const brands = recurringBrands(points)
-  const depth = categoryDepth(points)
-  const vs = bfVsBoxing(points)
   const plan = weekPlan(prep, today)
   const d10 = addDays(BF_DATE, -10)
   const d11 = addDays(BF_DATE, -11)
@@ -240,21 +191,21 @@ export default async function Bf2026Page() {
   const otherCards = fc.filter((f) => !known.includes(f.watch.verdict))
   if (otherCards.length) groups.push({ verdict: '', title: '其他', cards: otherCards.map(buildCard) })
 
-  // ── recurring ──
-  const recByCat = CATEGORY_ORDER.map((category) => ({
-    category,
-    rows: rec.filter((r) => r.category === category).sort((a, b) => b.votes - a.votes || b.p2025 - a.p2025).slice(0, TOP_PER_CATEGORY),
-  })).filter((c) => c.rows.length > 0)
-
-  // ── category depth ──
-  const depthRows = CATEGORY_ORDER.flatMap((c) => depth.filter((x) => x.category === c))
-  const ranked = [...depthRows].sort((a, b) => b.median - a.median || a.n - b.n)
-  const depthTakeaway =
-    ranked.length >= 3
-      ? `${ranked[0].category}、${ranked[1].category}折扣最深，${ranked[ranked.length - 1].category}最浅`
-      : ranked.length > 0
-        ? `${ranked[0].category}折扣最深`
-        : ''
+  // ── explorer: everything the filtered blocks need, pre-aggregated into compact rows ──
+  const fileNames = files.map((f) => f.file)
+  const rows = boardRows(points, fileNames, packUrl)
+  // Count cells cover every season present, so the year filter works outside 2024/2025 too.
+  const ozbSeasonYears = [...new Set(rows.map((r) => r[2]))]
+  const explorer: ExplorerData = {
+    rows,
+    cells: countCells(points, fileNames, ozbSeasonYears),
+    seasons: seasonRows(points, packUrl),
+    excluded: excludedRows(points, packUrl),
+    rec: rec.map((r): RecRow => [catIndex(r.category), clip(r.item, 50), r.p2024, r.p2025, r.trend, r.votes, packUrl(r.source), r.key, images[r.key]?.image ?? '']),
+    brands,
+    files: fileNames,
+    years: [...new Set(rows.map((r) => r[2]))].sort((a, b) => b - a),
+  }
 
   const buy = signals.filter((s) => s.kind === '买法')
   const picks = signals.filter((s) => s.kind === '选品')
@@ -264,7 +215,10 @@ export default async function Bf2026Page() {
     ['todo', '这周要做'],
     ['dates', '关键日期'],
     ['forecast', '预测'],
-    ...(recByCat.length > 0 ? [['recurring', '大概率打折']] : []),
+    ['explore', '往年数据'],
+    ...(rec.length > 0 ? [['recurring', '大概率打折']] : []),
+    ['board', '好价榜'],
+    ['cheapest', '黑五最便宜吗'],
     ['gifts', '送礼'],
     ...(signals.length > 0 ? [['buy', '怎么买']] : []),
   ]
@@ -392,72 +346,7 @@ export default async function Bf2026Page() {
         <Cards groups={groups} />
       </Section>
 
-      {recByCat.length > 0 && (
-        <Section id="recurring" emoji="🔥" title="今年大概率会打折（往年两年黑五都出现过）">
-          {recByCat.map((c) => (
-            <div key={c.category} className="mb-6">
-              <SubHead>{c.category}</SubHead>
-              <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">{c.rows.map((r) => <RecurringCard key={r.key} r={r} image={images[r.key]?.image} />)}</ul>
-            </div>
-          ))}
-          {brands.length > 0 && (
-            <div>
-              <SubHead>每年都有折扣的品牌：</SubHead>
-              <ul className="flex flex-wrap gap-2">
-                {brands.map((b) => <li key={b.name} className="bf-brand">{b.name}</li>)}
-              </ul>
-            </div>
-          )}
-          <Evidence>依据：OzBargain 和人工核对的 2024、2025 年黑五季无附加条件的价格，每款取各年最低价，按网友票数排序</Evidence>
-        </Section>
-      )}
-
-      {depthRows.length > 0 && (
-        <Section emoji="🏷️" title="今年各品类预计打几折">
-          <Takeaway>{depthTakeaway}</Takeaway>
-          <Bars
-            rows={depthRows.map((c) => ({
-              label: `${c.category} · 约便宜 ${c.median}%（${c.n} 条）`,
-              value: c.median,
-              text: `${c.median}%`,
-              accent: c === ranked[0],
-            }))}
-          />
-          <Evidence>依据：2024、2025 年黑五季有原价的好价折扣中位数；已排除带条件、折扣超过 90%、低于 $5 的；样本少于 5 条的品类不显示</Evidence>
-        </Section>
-      )}
-
-      {vs.ratio != null && (
-        <Section emoji="⚖️" title="黑五还是节礼日">
-          <p className="mb-5 rounded-xl border border-sky-400/20 bg-sky-500/10 p-4 text-base font-bold leading-snug text-zinc-50">
-            想买明确的型号 → 黑五（好价是节礼日的 {vs.ratio.toFixed(1)} 倍）；衣服、清仓、Sonos → 节礼日
-            {vs.bfMedian != null && vs.bdMedian != null && (vs.bdMedian > vs.bfMedian ? '（折扣深一点）' : '（折扣差不多）')}
-          </p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="bf-card p-4">
-              <SubHead>每年好价数量</SubHead>
-              <Bars
-                rows={[
-                  { label: '黑五', value: vs.bfPerYear, text: String(Math.round(vs.bfPerYear)), accent: true },
-                  { label: '节礼日', value: vs.bdPerYear, text: String(Math.round(vs.bdPerYear)) },
-                ]}
-              />
-            </div>
-            {vs.bfMedian != null && vs.bdMedian != null && (
-              <div className="bf-card p-4">
-                <SubHead>中位折扣</SubHead>
-                <Bars
-                  rows={[
-                    { label: '黑五', value: vs.bfMedian, text: `${vs.bfMedian}%` },
-                    { label: '节礼日', value: vs.bdMedian, text: `${vs.bdMedian}%`, accent: vs.bdMedian > vs.bfMedian },
-                  ]}
-                />
-              </div>
-            )}
-          </div>
-          <Evidence>依据：2024、2025 年两个季节的平均；数量只算 OzBargain，折扣用全部来源</Evidence>
-        </Section>
-      )}
+      <Explorer data={explorer} />
 
       <Section id="gifts" emoji="🎁" title="送礼">
         <h3 className="mb-4 text-lg font-bold text-zinc-50">折扣力度对比：哪些礼物最划算</h3>
